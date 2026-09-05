@@ -18,11 +18,18 @@ public:
 
     static const QStringList &defaultApps();
 
+    static QString normalize(const QString &s);
+    
+    // Async: fetches package details including size and dependencies
+    void fetchDetails(const QString &pkgName);
+
 signals:
     void resultsReady(QVector<Package> packages);
+    void detailsReady(PackageDetails details);
 
 private:
     static QVector<Package> runDefaults();
     static QVector<Package> runSearch(QString query);
-    static QString normalize(const QString &s);
+    static PackageDetails runFetchDetails(QString pkgName);
+    static long long parseSize(const QString &sizeStr);
 };
