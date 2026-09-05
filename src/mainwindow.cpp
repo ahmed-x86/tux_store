@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     m_stack->addWidget(buildHomePage());
 
-    m_detailsView = new DetailsView(m_stack);
+    m_detailsView = new DetailsView(m_pacman, m_stack);
     auto *detailsScroll = new QScrollArea(m_stack);
     detailsScroll->setWidgetResizable(true);
     detailsScroll->setFrameShape(QFrame::NoFrame);
