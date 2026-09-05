@@ -2,9 +2,6 @@
 #include "package.h"
 #include "log.h"
 #include <QNetworkReply>
-#include <QPixmapCache>
-#include <QSvgRenderer>
-#include <QPainter>
 #include <QFile>
 #include <QTimer>
 
@@ -12,7 +9,6 @@ IconFetcher::IconFetcher(QDir cacheDir, QObject *parent)
     : QObject(parent), m_cacheDir(std::move(cacheDir))
 {
     m_cacheDir.mkpath(".");
-    QPixmapCache::setCacheLimit(20 * 1024); // ~20MB of decoded icons in memory
     qCInfo(logIcon) << "cache dir:" << m_cacheDir.absolutePath()
                      << "maxGlobalInFlight:" << kMaxGlobalInFlight;
 }
@@ -112,14 +108,6 @@ QString IconFetcher::findCached(const QString &appName) const
 // ---------------------------------------------------------------------------
 void IconFetcher::request(const QString &appName, int pixelSize)
 {
-    const QString memKey = QStringLiteral("icon:%1:%2").arg(appName).arg(pixelSize);
-    QPixmap cached;
-    if (QPixmapCache::find(memKey, &cached)) {
-        qCDebug(logIcon) << "mem-cache hit:" << appName;
-        emit iconReady(appName, cached);
-        return;
-    }
-
     if (m_jobs.contains(appName)) {
         qCDebug(logIcon) << "already in flight, coalescing:" << appName;
         return;
@@ -127,19 +115,7 @@ void IconFetcher::request(const QString &appName, int pixelSize)
 
     if (const QString path = findCached(appName); !path.isEmpty()) {
         qCDebug(logIcon) << "disk-cache hit:" << appName << path;
-        QPixmap pm;
-        if (path.endsWith(".svg")) {
-            QSvgRenderer renderer(path);
-            pm = QPixmap(pixelSize, pixelSize);
-            pm.fill(Qt::transparent);
-            QPainter painter(&pm);
-            renderer.render(&painter);
-        } else {
-            pm.load(path);
-            pm = pm.scaled(pixelSize, pixelSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        }
-        QPixmapCache::insert(memKey, pm);
-        emit iconReady(appName, pm);
+        emit iconReady(appName, path);
         return;
     }
 
@@ -292,23 +268,8 @@ void IconFetcher::finishSuccess(Job *job, const QByteArray &bytes, const QString
         qCWarning(logIcon) << "failed to write cache file:" << savePath;
     }
 
-    QPixmap pm;
-    if (ext == "svg") {
-        QSvgRenderer renderer(bytes);
-        pm = QPixmap(job->pixelSize, job->pixelSize);
-        pm.fill(Qt::transparent);
-        QPainter painter(&pm);
-        renderer.render(&painter);
-    } else {
-        pm.loadFromData(bytes);
-        pm = pm.scaled(job->pixelSize, job->pixelSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-
-    const QString memKey = QStringLiteral("icon:%1:%2").arg(job->appName).arg(job->pixelSize);
-    QPixmapCache::insert(memKey, pm);
-
     m_jobs.remove(job->appName);
-    emit iconReady(job->appName, pm);
+    emit iconReady(job->appName, savePath);
 
     // Only free the job once every sibling request from its race has
     // reported back (inFlight == 0). Stragglers still in flight will see
