@@ -1,6 +1,6 @@
 #pragma once
 #include <QObject>
-#include <QPixmap>
+
 #include <QNetworkAccessManager>
 #include <QHash>
 #include <QSet>
@@ -24,13 +24,13 @@ class IconFetcher : public QObject
 public:
     explicit IconFetcher(QDir cacheDir, QObject *parent = nullptr);
 
-    // Requests an icon for `appName`. Emits iconReady(appName, pixmap) on success,
+    // Requests an icon for `appName`. Emits iconReady(appName, diskPath) on success,
     // or iconFailed(appName) if nothing was found in any repo.
     // Safe to call many times concurrently; in-flight duplicate requests are coalesced.
     void request(const QString &appName, int pixelSize);
 
 signals:
-    void iconReady(QString appName, QPixmap pixmap);
+    void iconReady(QString appName, QString diskPath);
     void iconFailed(QString appName);
 
 private:
@@ -46,8 +46,7 @@ private:
         QElapsedTimer timer;
     };
 
-    // Max HTTP requests in flight across ALL jobs at once. Keeps the whole
-    // app responsive even when the grid populates 35+ cards at once.
+    // Max HTTP requests in flight across ALL jobs at once.
     static constexpr int kMaxGlobalInFlight = 6;
     // Max parallel candidate URLs raced per single icon job.
     static constexpr int kPerJobParallelism = 2;
