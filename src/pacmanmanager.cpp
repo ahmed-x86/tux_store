@@ -2,6 +2,7 @@
 #include "log.h"
 #include <QProcess>
 #include <QSet>
+#include <QRegularExpression>
 #include <QtConcurrent/QtConcurrent>
 #include <QFutureWatcher>
 #include <QElapsedTimer>
@@ -147,4 +148,109 @@ void PacmanManager::search(const QString &query)
         watcher->deleteLater();
     });
     watcher->setFuture(QtConcurrent::run(&PacmanManager::runSearch, query));
+}
+
+long long PacmanManager::parseSize(const QString &sizeStr)
+{
+    QStringList parts = sizeStr.trimmed().split(' ', Qt::SkipEmptyParts);
+    if (parts.size() < 2) return 0;
+    double val = parts[0].toDouble();
+    QString unit = parts[1].toLower();
+    if (unit == "kib") return val * 1024;
+    if (unit == "mib") return val * 1024 * 1024;
+    if (unit == "gib") return val * 1024 * 1024 * 1024;
+    if (unit == "b") return val;
+    return val;
+}
+
+PackageDetails PacmanManager::runFetchDetails(QString pkgName)
+{
+    PackageDetails details;
+    
+    QProcess proc;
+    proc.start("pacman", QStringList{"-Si", pkgName});
+    if (!proc.waitForFinished(5000)) {
+        proc.kill();
+        proc.waitForFinished(1000);
+    }
+    
+    QString out = QString::fromUtf8(proc.readAllStandardOutput());
+    if (out.isEmpty()) {
+        // Fallback to -Qi if not in sync db
+        proc.start("pacman", QStringList{"-Qi", pkgName});
+        proc.waitForFinished(5000);
+        out = QString::fromUtf8(proc.readAllStandardOutput());
+    }
+    
+    QString currentKey;
+    QMap<QString, QString> fields;
+    
+    for (const QString &line : out.split('\n')) {
+        if (line.isEmpty()) continue;
+        if (!line.startsWith(' ') && line.contains(':')) {
+            currentKey = line.section(':', 0, 0).trimmed();
+            fields[currentKey] = line.section(':', 1).trimmed();
+        } else if (line.startsWith("  ") && !currentKey.isEmpty()) {
+            fields[currentKey] += " " + line.trimmed();
+        }
+    }
+    
+    details.appSizeBytes = parseSize(fields["Installed Size"]);
+    
+    QString depsStr = fields["Depends On"];
+    QStringList deps;
+    if (depsStr != "None" && !depsStr.isEmpty()) {
+        for (const QString &d : depsStr.split(' ', Qt::SkipEmptyParts)) {
+            QString name = d;
+            int idx = name.indexOf(QRegularExpression("[=><]"));
+            if (idx != -1) name = name.left(idx);
+            if (!deps.contains(name)) deps << name;
+        }
+    }
+    
+    if (!deps.isEmpty()) {
+        QProcess procDeps;
+        QStringList args = {"-Si"};
+        args << deps;
+        procDeps.start("pacman", args);
+        if (procDeps.waitForFinished(10000)) {
+            QString outDeps = QString::fromUtf8(procDeps.readAllStandardOutput());
+            
+            for (const QString &block : outDeps.split("\n\n", Qt::SkipEmptyParts)) {
+                QString cKey;
+                QMap<QString, QString> fDeps;
+                for (const QString &line : block.split('\n')) {
+                    if (line.isEmpty()) continue;
+                    if (!line.startsWith(' ') && line.contains(':')) {
+                        cKey = line.section(':', 0, 0).trimmed();
+                        fDeps[cKey] = line.section(':', 1).trimmed();
+                    } else if (line.startsWith("  ") && !cKey.isEmpty()) {
+                        fDeps[cKey] += " " + line.trimmed();
+                    }
+                }
+                QString depName = fDeps["Name"];
+                long long depSize = parseSize(fDeps["Installed Size"]);
+                if (!depName.isEmpty()) {
+                    PackageDependency pd;
+                    pd.name = depName;
+                    pd.sizeBytes = depSize;
+                    details.dependencies.push_back(pd);
+                    details.totalDepsBytes += depSize;
+                }
+            }
+        }
+    }
+    
+    details.totalBytes = details.appSizeBytes + details.totalDepsBytes;
+    return details;
+}
+
+void PacmanManager::fetchDetails(const QString &pkgName)
+{
+    auto *watcher = new QFutureWatcher<PackageDetails>(this);
+    connect(watcher, &QFutureWatcher<PackageDetails>::finished, this, [this, watcher]() {
+        emit detailsReady(watcher->result());
+        watcher->deleteLater();
+    });
+    watcher->setFuture(QtConcurrent::run(&PacmanManager::runFetchDetails, pkgName));
 }
