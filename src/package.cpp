@@ -30,3 +30,11 @@ QString sanitizeName(const QString &name)
     }
     return result;
 }
+
+QString formatSize(long long bytes)
+{
+    if (bytes < 1024) return QString::number(bytes) + " B";
+    if (bytes < 1024 * 1024) return QString::number(bytes / 1024.0, 'f', 2) + " KiB";
+    if (bytes < 1024 * 1024 * 1024) return QString::number(bytes / (1024.0 * 1024.0), 'f', 2) + " MiB";
+    return QString::number(bytes / (1024.0 * 1024.0 * 1024.0), 'f', 2) + " GiB";
+}
