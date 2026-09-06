@@ -92,7 +92,7 @@ QVector<Package> PacmanManager::runSearch(QString query)
     bool has = false;
 
     auto flush = [&]() {
-        if (has) {
+        if (has && pkgs.size() < 60) {
             if (normalize(current.name).contains(normQuery))
                 pkgs.push_back(current);
         }
