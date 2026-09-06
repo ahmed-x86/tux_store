@@ -4,6 +4,8 @@
 #include <QNetworkReply>
 #include <QFile>
 #include <QTimer>
+#include <QIcon>
+#include <QPixmap>
 
 IconFetcher::IconFetcher(QDir cacheDir, QObject *parent)
     : QObject(parent), m_cacheDir(std::move(cacheDir))
@@ -119,6 +121,8 @@ void IconFetcher::request(const QString &appName, int pixelSize)
         return;
     }
 
+
+
     enqueueJob(appName, pixelSize);
 }
 
@@ -162,6 +166,32 @@ void IconFetcher::tryStartNext()
         Job *job = m_jobs.value(appName);
         if (!job || job->done) continue; // may have been cancelled/coalesced away
         if (job->started) continue;
+        
+        // NEW: Check system icon theme before hitting the network
+        bool foundSystemIcon = false;
+        for (const QString &c : job->candidates) {
+            if (QIcon::hasThemeIcon(c)) {
+                QIcon sysIcon = QIcon::fromTheme(c);
+                if (!sysIcon.isNull()) {
+                    QPixmap pix = sysIcon.pixmap(job->pixelSize, job->pixelSize);
+                    if (!pix.isNull()) {
+                        QString savePath = diskPathFor(appName, "png");
+                        if (pix.save(savePath, "PNG")) {
+                            qCInfo(logIcon) << "system theme hit:" << appName << "via candidate:" << c;
+                            job->done = true;
+                            m_jobs.remove(appName);
+                            emit iconReady(appName, savePath);
+                            delete job;
+                            foundSystemIcon = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (foundSystemIcon) continue; // move to next job in the while loop
+
         job->started = true;
         job->timer.start();
         qCDebug(logIcon) << "starting job:" << appName
