@@ -2,7 +2,6 @@
 #include "log.h"
 #include <QProcess>
 #include <QSet>
-#include <QRegularExpression>
 #include <QtConcurrent/QtConcurrent>
 #include <QFutureWatcher>
 #include <QElapsedTimer>
@@ -167,6 +166,7 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
 {
     PackageDetails details;
 
+    // --- Step 1: basic info about the target package itself ---------------
     QProcess proc;
     proc.start("pacman", QStringList{"-Si", pkgName});
     if (!proc.waitForFinished(5000)) {
@@ -175,8 +175,9 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
     }
 
     QString out = QString::fromUtf8(proc.readAllStandardOutput());
+    bool inSyncDb = !out.isEmpty();
     if (out.isEmpty()) {
-        // Fallback to -Qi if not in sync db
+        // Fallback to -Qi if not in sync db (e.g. foreign/AUR package already installed)
         proc.start("pacman", QStringList{"-Qi", pkgName});
         proc.waitForFinished(5000);
         out = QString::fromUtf8(proc.readAllStandardOutput());
@@ -184,7 +185,6 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
 
     QString currentKey;
     QMap<QString, QString> fields;
-
     for (const QString &line : out.split('\n')) {
         if (line.isEmpty()) continue;
         if (!line.startsWith(' ') && line.contains(':')) {
@@ -194,79 +194,119 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
             fields[currentKey] += " " + line.trimmed();
         }
     }
-
     details.appSizeBytes = parseSize(fields["Installed Size"]);
 
-    QString depsStr = fields["Depends On"];
-    QStringList deps;
-    if (depsStr != "None" && !depsStr.isEmpty()) {
-        for (const QString &d : depsStr.split(' ', Qt::SkipEmptyParts)) {
-            QString name = d;
-            int idx = name.indexOf(QRegularExpression("[=><]"));
-            if (idx != -1) name = name.left(idx);
-            if (!deps.contains(name)) deps << name;
-        }
-    }
+    // --- Step 2: ask pacman's own resolver for the real transaction -------
+    // `pacman -Sp --print-format "%n|%s"` performs full dependency resolution
+    // (transitively, exactly like `pacman -S` would) and prints every package
+    // that would be part of the transaction, without downloading or
+    // installing anything. "%s" is pacman's Download Size for that package.
+    // No --needed here: we want the full app+dependency tree even for an
+    // already-installed app, so the UI can still show its breakdown; we
+    // classify installed vs new ourselves right below.
+    QVector<PackageDependency> installedDeps;
+    QVector<PackageDependency> newDeps;
 
-    // Find out which of these deps are already installed locally, so we can
-    // separate "already on disk" from "will actually be downloaded".
-    QSet<QString> installedNames;
-    if (!deps.isEmpty()) {
-        QProcess procLocal;
-        QStringList localArgs = {"-Q"};
-        localArgs << deps;
-        procLocal.start("pacman", localArgs);
-        procLocal.waitForFinished(5000);
-        const QString localOut = QString::fromUtf8(procLocal.readAllStandardOutput());
-        for (const QString &line : localOut.split('\n', Qt::SkipEmptyParts)) {
-            const QStringList parts = line.split(' ', Qt::SkipEmptyParts);
-            if (!parts.isEmpty()) installedNames.insert(parts[0]);
-        }
-    }
+    if (inSyncDb) {
+        QProcess procPlan;
+        procPlan.start("pacman", QStringList{"-Sp", "--print-format", "%n|%s", pkgName});
+        if (procPlan.waitForFinished(15000)) {
+            const QString planOut = QString::fromUtf8(procPlan.readAllStandardOutput());
 
-    if (!deps.isEmpty()) {
-        QProcess procDeps;
-        QStringList args = {"-Si"};
-        args << deps;
-        procDeps.start("pacman", args);
-        if (procDeps.waitForFinished(10000)) {
-            QString outDeps = QString::fromUtf8(procDeps.readAllStandardOutput());
+            QStringList plannedNames;
+            QMap<QString, long long> plannedDownloadBytes;
 
-            for (const QString &block : outDeps.split("\n\n", Qt::SkipEmptyParts)) {
-                QString cKey;
-                QMap<QString, QString> fDeps;
-                for (const QString &line : block.split('\n')) {
-                    if (line.isEmpty()) continue;
-                    if (!line.startsWith(' ') && line.contains(':')) {
-                        cKey = line.section(':', 0, 0).trimmed();
-                        fDeps[cKey] = line.section(':', 1).trimmed();
-                    } else if (line.startsWith("  ") && !cKey.isEmpty()) {
-                        fDeps[cKey] += " " + line.trimmed();
-                    }
-                }
-                QString depName = fDeps["Name"];
-                long long depSize = parseSize(fDeps["Installed Size"]);
-                if (!depName.isEmpty()) {
-                    PackageDependency pd;
-                    pd.name = depName;
-                    pd.sizeBytes = depSize;
-                    pd.installed = installedNames.contains(depName);
-                    details.dependencies.push_back(pd);
-
-                    if (pd.installed) details.installedDepsBytes += depSize;
-                    else details.newDepsBytes += depSize;
-                }
+            for (const QString &line : planOut.split('\n', Qt::SkipEmptyParts)) {
+                const int sep = line.indexOf('|');
+                if (sep < 0) continue;
+                const QString name = line.left(sep).trimmed();
+                const long long dlBytes = line.mid(sep + 1).trimmed().toLongLong();
+                if (name.isEmpty()) continue;
+                plannedNames << name;
+                plannedDownloadBytes[name] = dlBytes;
             }
 
-            // Sort so already-installed dependencies are listed first.
-            std::stable_sort(details.dependencies.begin(), details.dependencies.end(),
-                              [](const PackageDependency &a, const PackageDependency &b) {
-                                  return a.installed && !b.installed;
-                              });
+            if (!plannedNames.isEmpty()) {
+                // Which of these are already installed locally (so we know
+                // installedDeps vs newDeps, and can skip the target itself).
+                QProcess procLocal;
+                QStringList localArgs = {"-Q"};
+                localArgs << plannedNames;
+                procLocal.start("pacman", localArgs);
+                procLocal.waitForFinished(5000);
+                const QString localOut = QString::fromUtf8(procLocal.readAllStandardOutput());
+                QSet<QString> installedNames;
+                for (const QString &line : localOut.split('\n', Qt::SkipEmptyParts)) {
+                    const QStringList parts = line.split(' ', Qt::SkipEmptyParts);
+                    if (!parts.isEmpty()) installedNames.insert(parts[0]);
+                }
+
+                // Installed Size for each planned package (needed for the
+                // Total Installed Size / Net Upgrade Size figures).
+                QProcess procInfo;
+                QStringList infoArgs = {"-Si"};
+                infoArgs << plannedNames;
+                procInfo.start("pacman", infoArgs);
+                QMap<QString, long long> plannedInstalledBytes;
+                if (procInfo.waitForFinished(15000)) {
+                    const QString infoOut = QString::fromUtf8(procInfo.readAllStandardOutput());
+                    for (const QString &block : infoOut.split("\n\n", Qt::SkipEmptyParts)) {
+                        QString cKey;
+                        QMap<QString, QString> fInfo;
+                        for (const QString &line : block.split('\n')) {
+                            if (line.isEmpty()) continue;
+                            if (!line.startsWith(' ') && line.contains(':')) {
+                                cKey = line.section(':', 0, 0).trimmed();
+                                fInfo[cKey] = line.section(':', 1).trimmed();
+                            } else if (line.startsWith("  ") && !cKey.isEmpty()) {
+                                fInfo[cKey] += " " + line.trimmed();
+                            }
+                        }
+                        const QString n = fInfo["Name"];
+                        if (!n.isEmpty()) plannedInstalledBytes[n] = parseSize(fInfo["Installed Size"]);
+                    }
+                }
+
+                for (const QString &name : plannedNames) {
+                    const long long installedSize = plannedInstalledBytes.value(name, 0);
+                    const long long downloadSize = plannedDownloadBytes.value(name, 0);
+                    const bool alreadyInstalled = installedNames.contains(name);
+
+                    details.totalDownloadBytes += alreadyInstalled ? 0 : downloadSize;
+                    details.totalInstalledBytes += installedSize;
+
+                    if (name == pkgName) {
+                        // The target app itself; already captured in appSizeBytes above.
+                        continue;
+                    }
+
+                    PackageDependency pd;
+                    pd.name = name;
+                    pd.sizeBytes = installedSize;
+                    pd.installed = alreadyInstalled;
+
+                    if (alreadyInstalled) {
+                        installedDeps.push_back(pd);
+                        details.installedDepsBytes += installedSize;
+                    } else {
+                        newDeps.push_back(pd);
+                        details.newDepsBytes += installedSize;
+                    }
+                }
+
+                // Net Upgrade Size: for a fresh install (no prior version of
+                // the target on this system) this equals the total installed
+                // footprint of everything newly added to disk.
+                details.netUpgradeBytes = details.totalInstalledBytes;
+            }
         }
     }
 
-    details.downloadBytes = details.appSizeBytes + details.newDepsBytes;
+    // installed-first ordering for the dependency list shown in the UI
+    details.dependencies = installedDeps;
+    details.dependencies += newDeps;
+
+    details.downloadBytes = details.totalDownloadBytes;
     details.totalBytes = details.appSizeBytes + details.installedDepsBytes + details.newDepsBytes;
     return details;
 }
