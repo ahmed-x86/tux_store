@@ -166,14 +166,14 @@ long long PacmanManager::parseSize(const QString &sizeStr)
 PackageDetails PacmanManager::runFetchDetails(QString pkgName)
 {
     PackageDetails details;
-    
+
     QProcess proc;
     proc.start("pacman", QStringList{"-Si", pkgName});
     if (!proc.waitForFinished(5000)) {
         proc.kill();
         proc.waitForFinished(1000);
     }
-    
+
     QString out = QString::fromUtf8(proc.readAllStandardOutput());
     if (out.isEmpty()) {
         // Fallback to -Qi if not in sync db
@@ -181,10 +181,10 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
         proc.waitForFinished(5000);
         out = QString::fromUtf8(proc.readAllStandardOutput());
     }
-    
+
     QString currentKey;
     QMap<QString, QString> fields;
-    
+
     for (const QString &line : out.split('\n')) {
         if (line.isEmpty()) continue;
         if (!line.startsWith(' ') && line.contains(':')) {
@@ -194,9 +194,9 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
             fields[currentKey] += " " + line.trimmed();
         }
     }
-    
+
     details.appSizeBytes = parseSize(fields["Installed Size"]);
-    
+
     QString depsStr = fields["Depends On"];
     QStringList deps;
     if (depsStr != "None" && !depsStr.isEmpty()) {
@@ -207,7 +207,23 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
             if (!deps.contains(name)) deps << name;
         }
     }
-    
+
+    // Find out which of these deps are already installed locally, so we can
+    // separate "already on disk" from "will actually be downloaded".
+    QSet<QString> installedNames;
+    if (!deps.isEmpty()) {
+        QProcess procLocal;
+        QStringList localArgs = {"-Q"};
+        localArgs << deps;
+        procLocal.start("pacman", localArgs);
+        procLocal.waitForFinished(5000);
+        const QString localOut = QString::fromUtf8(procLocal.readAllStandardOutput());
+        for (const QString &line : localOut.split('\n', Qt::SkipEmptyParts)) {
+            const QStringList parts = line.split(' ', Qt::SkipEmptyParts);
+            if (!parts.isEmpty()) installedNames.insert(parts[0]);
+        }
+    }
+
     if (!deps.isEmpty()) {
         QProcess procDeps;
         QStringList args = {"-Si"};
@@ -215,7 +231,7 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
         procDeps.start("pacman", args);
         if (procDeps.waitForFinished(10000)) {
             QString outDeps = QString::fromUtf8(procDeps.readAllStandardOutput());
-            
+
             for (const QString &block : outDeps.split("\n\n", Qt::SkipEmptyParts)) {
                 QString cKey;
                 QMap<QString, QString> fDeps;
@@ -234,14 +250,24 @@ PackageDetails PacmanManager::runFetchDetails(QString pkgName)
                     PackageDependency pd;
                     pd.name = depName;
                     pd.sizeBytes = depSize;
+                    pd.installed = installedNames.contains(depName);
                     details.dependencies.push_back(pd);
-                    details.totalDepsBytes += depSize;
+
+                    if (pd.installed) details.installedDepsBytes += depSize;
+                    else details.newDepsBytes += depSize;
                 }
             }
+
+            // Sort so already-installed dependencies are listed first.
+            std::stable_sort(details.dependencies.begin(), details.dependencies.end(),
+                              [](const PackageDependency &a, const PackageDependency &b) {
+                                  return a.installed && !b.installed;
+                              });
         }
     }
-    
-    details.totalBytes = details.appSizeBytes + details.totalDepsBytes;
+
+    details.downloadBytes = details.appSizeBytes + details.newDepsBytes;
+    details.totalBytes = details.appSizeBytes + details.installedDepsBytes + details.newDepsBytes;
     return details;
 }
 
