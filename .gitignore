@@ -8,3 +8,5 @@ cmake_install.cmake
 Makefile
 tuxstore
 tuxstore_autogen
+slint_generated_main_1.cpp
+main.h
