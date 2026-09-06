@@ -16,10 +16,12 @@ add_executable(tuxstore
     src/pacmanmanager.cpp
     src/iconfetcher.cpp
     src/log.cpp
+    src/installmanager.cpp
     include/package.h
     include/pacmanmanager.h
     include/iconfetcher.h
     include/log.h
+    include/installmanager.h
 )
 
 target_include_directories(tuxstore PRIVATE include)
@@ -33,4 +35,3 @@ target_link_libraries(tuxstore PRIVATE
 )
 
 slint_target_sources(tuxstore ui/main.slint)
-
