@@ -28,6 +28,10 @@ export struct UiPackageDetails {
     installed_ratio: float,
     new_ratio: float,
     app_ratio: float,
+    // Mirrors pacman's own transaction summary line for line.
+    total_download_str: string,
+    total_installed_str: string,
+    net_upgrade_str: string,
     is_loading: bool,
 }
 
@@ -452,6 +456,66 @@ component DetailsView inherits Rectangle {
                                     text: "App itself: " + details.app_size_str;
                                     color: Theme.subtext0;
                                     font-size: 12px;
+                                }
+                            }
+                        }
+
+                        Rectangle { height: 1px; background: Theme.surface0; }
+
+                        // pacman-style transaction summary — the same three
+                        // figures pacman itself prints before "Proceed with
+                        // installation?", laid out as a clean stat row.
+                        HorizontalLayout {
+                            spacing: 0px;
+                            VerticalLayout {
+                                spacing: 4px;
+                                alignment: start;
+                                Text {
+                                    text: "Total Download";
+                                    color: Theme.overlay1;
+                                    font-size: 11px;
+                                }
+                                Text {
+                                    text: details.total_download_str;
+                                    color: Theme.text;
+                                    font-size: 17px;
+                                    font-weight: 700;
+                                }
+                            }
+                            Rectangle { horizontal-stretch: 1; }
+                            VerticalLayout {
+                                spacing: 4px;
+                                alignment: start;
+                                Text {
+                                    text: "Total Installed";
+                                    color: Theme.overlay1;
+                                    font-size: 11px;
+                                    horizontal-alignment: center;
+                                }
+                                Text {
+                                    text: details.total_installed_str;
+                                    color: Theme.text;
+                                    font-size: 17px;
+                                    font-weight: 700;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                            Rectangle { horizontal-stretch: 1; }
+                            VerticalLayout {
+                                spacing: 4px;
+                                alignment: end;
+                                Text {
+                                    text: "Net Upgrade";
+                                    color: Theme.overlay1;
+                                    font-size: 11px;
+                                    horizontal-alignment: right;
+                                }
+                                Text {
+                                    text: details.net_upgrade_str;
+                                    color: root.accent;
+                                    font-size: 17px;
+                                    font-weight: 700;
+                                    horizontal-alignment: right;
                                 }
                             }
                         }
