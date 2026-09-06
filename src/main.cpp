@@ -93,6 +93,14 @@ int main(int argc, char *argv[])
         sd.new_deps_size_str = slint::SharedString(formatSize(cxxDetails.newDepsBytes).toStdString());
         sd.download_size_str = slint::SharedString(formatSize(cxxDetails.downloadBytes).toStdString());
 
+        // Mirrors pacman's own "Total Download Size / Total Installed Size /
+        // Net Upgrade Size" transaction summary.
+        sd.total_download_str = slint::SharedString(formatSize(cxxDetails.totalDownloadBytes).toStdString());
+        sd.total_installed_str = slint::SharedString(formatSize(cxxDetails.totalInstalledBytes).toStdString());
+        const QString netSign = cxxDetails.netUpgradeBytes < 0 ? QStringLiteral("-") : QStringLiteral("+");
+        sd.net_upgrade_str = slint::SharedString(
+            (netSign + formatSize(qAbs(cxxDetails.netUpgradeBytes))).toStdString());
+
         // Proportions for the 3-color breakdown bar, based on the real total
         // footprint (already-installed deps + new deps + the app itself).
         const long long total = cxxDetails.totalBytes;
