@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Network Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core Network Concurrent Gui)
 find_package(Slint REQUIRED)
 
 add_executable(tuxstore
@@ -26,6 +26,7 @@ target_include_directories(tuxstore PRIVATE include)
 
 target_link_libraries(tuxstore PRIVATE
     Qt6::Core
+    Qt6::Gui
     Qt6::Network
     Qt6::Concurrent
     Slint::Slint
