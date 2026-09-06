@@ -99,7 +99,7 @@ Quick links:
 
 ## License
 
-*(Add your license here — e.g. MIT, GPL-3.0.)*
+[GPL v3](./LICENSE)
 
 ## Contributing
 
