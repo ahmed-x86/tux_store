@@ -6,12 +6,14 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
+#include <algorithm>
+#include <random>
 #include "main.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    
+
     QDir cacheDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/icons");
     auto *iconFetcher = new IconFetcher(cacheDir, &app);
     auto *pacman = new PacmanManager(&app);
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
     auto refreshGrid = [ui, iconFetcher, cacheDir, pkgModel](const QVector<Package> &pkgs) {
         // Clear and rebuild
         while (pkgModel->row_count() > 0) pkgModel->erase(0);
-        
+
         for (const auto &p : pkgs) {
             UiPackage sp;
             sp.name = slint::SharedString(p.name.toStdString());
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
             sp.version = slint::SharedString(p.version.toStdString());
             sp.description = slint::SharedString(p.description.toStdString());
             sp.installed = p.installed;
-            
+
             QString cachedPath = cacheDir.filePath(p.name + ".svg");
             if (!QFile::exists(cachedPath)) cachedPath = cacheDir.filePath(p.name + ".png");
             if (QFile::exists(cachedPath)) {
@@ -42,7 +44,7 @@ int main(int argc, char *argv[])
             } else {
                 iconFetcher->request(QString::fromStdString(std::string(sp.name)), 64);
             }
-            
+
             pkgModel->push_back(sp);
         }
     };
@@ -54,11 +56,27 @@ int main(int argc, char *argv[])
         pacman->search(QString::fromStdString(std::string(q)));
     });
 
-    ui->on_app_clicked([ui, pacman](UiPackage p) {
+    ui->on_app_clicked([ui, pacman, pkgModel](UiPackage p) {
         ui->set_current_package(p);
         UiPackageDetails pd;
         pd.is_loading = true;
         ui->set_current_details(pd);
+
+        // Build a small "You might also like" shelf: a random sample of
+        // other packages from whatever is currently loaded in the grid,
+        // excluding the package being viewed.
+        std::vector<UiPackage> pool;
+        for (size_t i = 0; i < pkgModel->row_count(); ++i) {
+            auto candidate = pkgModel->row_data(i);
+            if (candidate && candidate->name != p.name) pool.push_back(*candidate);
+        }
+        static std::mt19937 rng(std::random_device{}());
+        std::shuffle(pool.begin(), pool.end(), rng);
+        const size_t suggestionCount = std::min<size_t>(8, pool.size());
+        auto suggestionsModel = std::make_shared<slint::VectorModel<UiPackage>>(
+            std::vector<UiPackage>(pool.begin(), pool.begin() + suggestionCount));
+        ui->set_current_suggestions(suggestionsModel);
+
         ui->set_is_showing_details(true);
         pacman->fetchDetails(QString::fromStdString(std::string(p.name)));
     });
@@ -66,24 +84,26 @@ int main(int argc, char *argv[])
     ui->on_back_clicked([ui]() {
         ui->set_is_showing_details(false);
     });
-    
+
     QObject::connect(pacman, &PacmanManager::detailsReady, [ui](::PackageDetails cxxDetails) {
         UiPackageDetails sd;
         sd.is_loading = false;
         sd.app_size_str = slint::SharedString(formatSize(cxxDetails.appSizeBytes).toStdString());
-        sd.total_deps_size_str = slint::SharedString(formatSize(cxxDetails.totalDepsBytes).toStdString());
-        sd.total_size_str = slint::SharedString(formatSize(cxxDetails.totalBytes).toStdString());
-        
+        sd.installed_deps_size_str = slint::SharedString(formatSize(cxxDetails.installedDepsBytes).toStdString());
+        sd.new_deps_size_str = slint::SharedString(formatSize(cxxDetails.newDepsBytes).toStdString());
+        sd.download_size_str = slint::SharedString(formatSize(cxxDetails.downloadBytes).toStdString());
+
         std::vector<UiPackageDependency> deps;
         for (const auto &d : cxxDetails.dependencies) {
             UiPackageDependency pd;
             pd.name = slint::SharedString(d.name.toStdString());
             pd.size_str = slint::SharedString(formatSize(d.sizeBytes).toStdString());
+            pd.installed = d.installed;
             deps.push_back(pd);
         }
         auto depsModel = std::make_shared<slint::VectorModel<UiPackageDependency>>(deps);
         sd.dependencies = depsModel;
-        
+
         ui->set_current_details(sd);
     });
 
@@ -91,7 +111,7 @@ int main(int argc, char *argv[])
     QObject::connect(iconFetcher, &IconFetcher::iconReady, [ui, pkgModel](QString appName, QString diskPath) {
         auto img = slint::Image::load_from_path(slint::SharedString(diskPath.toStdString()));
         auto nameStr = slint::SharedString(appName.toStdString());
-        
+
         // Update in the flat grid model
         for (size_t i = 0; i < pkgModel->row_count(); ++i) {
             auto pkg = pkgModel->row_data(i);
@@ -102,7 +122,7 @@ int main(int argc, char *argv[])
                 break;
             }
         }
-        
+
         // Also update the current details view package if it matches
         auto current = ui->get_current_package();
         if (current.name == nameStr) {
