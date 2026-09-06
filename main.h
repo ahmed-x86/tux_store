@@ -32,6 +32,9 @@ class UiPackageDetails {
     slint::SharedString installed_deps_size_str;
     slint::SharedString new_deps_size_str;
     slint::SharedString download_size_str;
+    float installed_ratio;
+    float new_ratio;
+    float app_ratio;
     bool is_loading;
     friend auto operator== (const class UiPackageDetails &a, const class UiPackageDetails &b) -> bool = default;
 };
@@ -478,14 +481,14 @@ class Component_rectangle_51 {
     friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_51>;
 };
 
-class Component_text_68 {
+class Component_text_69 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class DetailsView_root_32 const> parent;
-    slint::cbindgen_private::SimpleText field_text_68 = {};
+    slint::cbindgen_private::SimpleText field_text_69 = {};
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class DetailsView_root_32 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -518,22 +521,22 @@ class Component_text_68 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_text_68>;
-    ~Component_text_68 ();
+    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_text_69>;
+    ~Component_text_69 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_text_68>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_text_69>;
 };
 
-class Component_text_70 {
+class Component_text_71 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class DetailsView_root_32 const> parent;
-    slint::cbindgen_private::SimpleText field_text_70 = {};
+    slint::cbindgen_private::SimpleText field_text_71 = {};
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class DetailsView_root_32 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -566,55 +569,57 @@ class Component_text_70 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_text_70>;
-    ~Component_text_70 ();
+    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_text_71>;
+    ~Component_text_71 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_text_70>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_text_71>;
 };
 
-class Component_empty_72 {
+class Component_empty_73 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class DetailsView_root_32 const> parent;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_72_empty_75_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_75_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_75_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_72_empty_78_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_78_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_78_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_72_empty_79_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_79_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_79_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_72_empty_82_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_82_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_82_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_72_empty_85_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_85_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_empty_85_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_72_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_72_layoutinfo_v;
-    slint::private_api::Property<float> field_empty_72_rectangle_73_width;
-    slint::private_api::Property<float> field_empty_72_width;
-    slint::cbindgen_private::Empty field_empty_72 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_73 = {};
-    slint::cbindgen_private::Clip field__clip_74 = {};
-    slint::cbindgen_private::Rectangle field_rectangle_76 = {};
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_73_empty_76_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_76_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_76_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_73_empty_80_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_80_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_80_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_73_empty_81_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_81_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_81_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_73_empty_84_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_84_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_84_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_73_empty_87_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_87_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_empty_87_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_73_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_73_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_73_rectangle_74_width;
+    slint::private_api::Property<float> field_empty_73_width;
+    slint::cbindgen_private::Empty field_empty_73 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_74 = {};
+    slint::cbindgen_private::Clip field__clip_75 = {};
     slint::cbindgen_private::Rectangle field_rectangle_77 = {};
-    slint::cbindgen_private::Empty field_empty_78 = {};
-    slint::cbindgen_private::Empty field_empty_79 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_80 = {};
-    slint::cbindgen_private::SimpleText field_text_81 = {};
-    slint::cbindgen_private::Empty field_empty_82 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_83 = {};
-    slint::cbindgen_private::SimpleText field_text_84 = {};
-    slint::cbindgen_private::Empty field_empty_85 = {};
+    slint::cbindgen_private::Rectangle field_rectangle_78 = {};
+    slint::cbindgen_private::Rectangle field_rectangle_79 = {};
+    slint::cbindgen_private::Empty field_empty_80 = {};
+    slint::cbindgen_private::Empty field_empty_81 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_82 = {};
+    slint::cbindgen_private::SimpleText field_text_83 = {};
+    slint::cbindgen_private::Empty field_empty_84 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_85 = {};
     slint::cbindgen_private::SimpleText field_text_86 = {};
+    slint::cbindgen_private::Empty field_empty_87 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_88 = {};
+    slint::cbindgen_private::SimpleText field_text_89 = {};
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class DetailsView_root_32 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -647,25 +652,25 @@ class Component_empty_72 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_empty_72>;
-    ~Component_empty_72 ();
+    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_empty_73>;
+    ~Component_empty_73 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_empty_72>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_empty_73>;
 };
 
-class Component_deprow_92 {
+class Component_deprow_95 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
-    vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class Component_rectangle_88 const> parent;
+    vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class Component_rectangle_91 const> parent;
     slint::private_api::Property<UiPackageDependency> field_model_data;
     slint::private_api::Property<int> field_model_index;
-    DepRow_root_14 field_deprow_92;
-    auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_rectangle_88 const *parent) -> void;
+    DepRow_root_14 field_deprow_95;
+    auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_rectangle_91 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
     auto item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect;
@@ -697,29 +702,29 @@ class Component_deprow_92 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class Component_rectangle_88 const * parent) -> slint::ComponentHandle<Component_deprow_92>;
-    ~Component_deprow_92 ();
+    static auto create (class Component_rectangle_91 const * parent) -> slint::ComponentHandle<Component_deprow_95>;
+    ~Component_deprow_95 ();
     auto update_data ([[maybe_unused]] int i, [[maybe_unused]] const UiPackageDependency &data) const -> void;
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_deprow_92>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_deprow_95>;
 };
 
-class Component_rectangle_88 {
+class Component_rectangle_91 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class DetailsView_root_32 const> parent;
-    slint::private_api::Property<slint::SharedVector<float>> field_rectangle_88_empty_89_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_88_empty_89_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_88_empty_89_layoutinfo_v;
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_88 = {};
-    slint::cbindgen_private::SimpleText field_text_90 = {};
-    slint::cbindgen_private::Empty field_rectangle_91 = {};
-    slint::private_api::Repeater<class Component_deprow_92, UiPackageDependency> repeater_0;
+    slint::private_api::Property<slint::SharedVector<float>> field_rectangle_91_empty_92_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_91_empty_92_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_91_empty_92_layoutinfo_v;
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_91 = {};
+    slint::cbindgen_private::SimpleText field_text_93 = {};
+    slint::cbindgen_private::Empty field_rectangle_94 = {};
+    slint::private_api::Repeater<class Component_deprow_95, UiPackageDependency> repeater_0;
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class DetailsView_root_32 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -755,26 +760,26 @@ class Component_rectangle_88 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_rectangle_88>;
-    ~Component_rectangle_88 ();
+    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_rectangle_91>;
+    ~Component_rectangle_91 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_88>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_91>;
 };
 
-class Component_rectangle_95 {
+class Component_rectangle_98 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class DetailsView_root_32 const> parent;
-    slint::private_api::Property<slint::SharedVector<float>> field_rectangle_95_empty_96_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_95_empty_96_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_95_empty_96_layoutinfo_v;
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_95 = {};
-    slint::cbindgen_private::SimpleText field_text_97 = {};
+    slint::private_api::Property<slint::SharedVector<float>> field_rectangle_98_empty_99_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_98_empty_99_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_rectangle_98_empty_99_layoutinfo_v;
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_98 = {};
+    slint::cbindgen_private::SimpleText field_text_100 = {};
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class DetailsView_root_32 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -807,25 +812,25 @@ class Component_rectangle_95 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_rectangle_95>;
-    ~Component_rectangle_95 ();
+    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_rectangle_98>;
+    ~Component_rectangle_98 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_95>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_98>;
 };
 
-class Component_suggestioncard_104 {
+class Component_suggestioncard_107 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
-    vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class Component_empty_99 const> parent;
+    vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class Component_empty_102 const> parent;
     slint::private_api::Property<UiPackage> field_model_data;
     slint::private_api::Property<int> field_model_index;
-    SuggestionCard_root_20 field_suggestioncard_104;
-    auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_99 const *parent) -> void;
+    SuggestionCard_root_20 field_suggestioncard_107;
+    auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_102 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
     auto item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect;
@@ -860,50 +865,50 @@ class Component_suggestioncard_104 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class Component_empty_99 const * parent) -> slint::ComponentHandle<Component_suggestioncard_104>;
-    ~Component_suggestioncard_104 ();
+    static auto create (class Component_empty_102 const * parent) -> slint::ComponentHandle<Component_suggestioncard_107>;
+    ~Component_suggestioncard_107 ();
     auto update_data ([[maybe_unused]] int i, [[maybe_unused]] const UiPackage &data) const -> void;
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_suggestioncard_104>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_suggestioncard_107>;
 };
 
-class Component_empty_99 {
+class Component_empty_102 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class DetailsView_root_32 const> parent;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_99_empty_103_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_99_empty_103_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_99_empty_103_layoutinfo_v;
-    slint::private_api::Property<float> field_empty_99_empty_103_max_width;
-    slint::private_api::Property<float> field_empty_99_empty_103_preferred_width;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_99_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_99_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_99_layoutinfo_v;
-    slint::private_api::Property<float> field_empty_99_scroll_track_106_content_width;
-    slint::private_api::Property<float> field_empty_99_scroll_track_106_height;
-    slint::private_api::Property<float> field_empty_99_scroll_track_106_max_scroll;
-    slint::private_api::Property<float> field_empty_99_scroll_track_106_max_thumb_x;
-    slint::private_api::Property<float> field_empty_99_scroll_track_106_thumb_width;
-    slint::private_api::Property<float> field_empty_99_scroll_track_106_thumb_x;
-    slint::private_api::Property<float> field_empty_99_spacing;
-    slint::private_api::Property<float> field_empty_99_suggestions_flick_101_height;
-    slint::private_api::Property<float> field_empty_99_suggestions_flick_101_width;
-    slint::private_api::Property<float> field_empty_99_thumb_ta_108_press_thumb_x;
-    slint::private_api::Property<float> field_empty_99_width;
-    slint::cbindgen_private::Empty field_empty_99 = {};
-    slint::cbindgen_private::SimpleText field_text_100 = {};
-    slint::cbindgen_private::Flickable field_suggestions_flick_101 = {};
-    slint::cbindgen_private::Empty field_suggestions_flick_viewport_102 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_scroll_track_106 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_thumb_107 = {};
-    slint::cbindgen_private::TouchArea field_thumb_ta_108 = {};
-    slint::private_api::Repeater<class Component_suggestioncard_104, UiPackage> repeater_0;
-    auto fn_empty_103_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_102_empty_106_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_102_empty_106_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_102_empty_106_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_102_empty_106_max_width;
+    slint::private_api::Property<float> field_empty_102_empty_106_preferred_width;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_102_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_102_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_102_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_102_scroll_track_109_content_width;
+    slint::private_api::Property<float> field_empty_102_scroll_track_109_height;
+    slint::private_api::Property<float> field_empty_102_scroll_track_109_max_scroll;
+    slint::private_api::Property<float> field_empty_102_scroll_track_109_max_thumb_x;
+    slint::private_api::Property<float> field_empty_102_scroll_track_109_thumb_width;
+    slint::private_api::Property<float> field_empty_102_scroll_track_109_thumb_x;
+    slint::private_api::Property<float> field_empty_102_spacing;
+    slint::private_api::Property<float> field_empty_102_suggestions_flick_104_height;
+    slint::private_api::Property<float> field_empty_102_suggestions_flick_104_width;
+    slint::private_api::Property<float> field_empty_102_thumb_ta_111_press_thumb_x;
+    slint::private_api::Property<float> field_empty_102_width;
+    slint::cbindgen_private::Empty field_empty_102 = {};
+    slint::cbindgen_private::SimpleText field_text_103 = {};
+    slint::cbindgen_private::Flickable field_suggestions_flick_104 = {};
+    slint::cbindgen_private::Empty field_suggestions_flick_viewport_105 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_scroll_track_109 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_thumb_110 = {};
+    slint::cbindgen_private::TouchArea field_thumb_ta_111 = {};
+    slint::private_api::Repeater<class Component_suggestioncard_107, UiPackage> repeater_0;
+    auto fn_empty_106_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
     auto fn_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class DetailsView_root_32 const *parent) -> void;
     auto user_init () -> void;
@@ -940,12 +945,12 @@ class Component_empty_99 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_empty_99>;
-    ~Component_empty_99 ();
+    static auto create (class DetailsView_root_32 const * parent) -> slint::ComponentHandle<Component_empty_102>;
+    ~Component_empty_102 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_empty_99>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_empty_102>;
 };
 
 class DetailsView_root_32 {
@@ -996,12 +1001,15 @@ class DetailsView_root_32 {
     slint::private_api::Property<slint::SharedVector<float>> field_root_32_empty_54_layout_cache;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_54_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_54_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_root_32_empty_65_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_65_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_65_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_root_32_empty_61_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_61_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_61_layoutinfo_v;
     slint::private_api::Property<slint::SharedVector<float>> field_root_32_empty_66_layout_cache;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_66_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_66_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_root_32_empty_67_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_67_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_empty_67_layoutinfo_v;
     slint::private_api::Property<float> field_root_32_flickable_45_max_height;
     slint::private_api::Property<float> field_root_32_flickable_45_preferred_height;
     slint::private_api::Property<float> field_root_32_height;
@@ -1018,19 +1026,18 @@ class DetailsView_root_32 {
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_42_layoutinfo_v;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_56_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_56_layoutinfo_v;
-    slint::private_api::Property<float> field_root_32_rectangle_61_height;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_61_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_61_layoutinfo_v;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_64_layoutinfo_v;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_62_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_62_layoutinfo_v;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_root_32_rectangle_65_layoutinfo_v;
     slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_32_suggestions;
     slint::private_api::Property<float> field_root_32_text_44_min_height;
     slint::private_api::Property<float> field_root_32_text_44_min_width;
     slint::private_api::Property<float> field_root_32_text_44_preferred_height;
     slint::private_api::Property<float> field_root_32_text_44_preferred_width;
-    slint::private_api::Property<float> field_root_32_text_63_min_height;
-    slint::private_api::Property<float> field_root_32_text_63_min_width;
-    slint::private_api::Property<float> field_root_32_text_63_preferred_height;
-    slint::private_api::Property<float> field_root_32_text_63_preferred_width;
+    slint::private_api::Property<float> field_root_32_text_64_min_height;
+    slint::private_api::Property<float> field_root_32_text_64_min_width;
+    slint::private_api::Property<float> field_root_32_text_64_preferred_height;
+    slint::private_api::Property<float> field_root_32_text_64_preferred_width;
     slint::private_api::Property<float> field_root_32_width;
     slint::private_api::Callback<void()> field_root_32_back_clicked;
     slint::private_api::Callback<void()> field_root_32_install_clicked;
@@ -1058,20 +1065,21 @@ class DetailsView_root_32 {
     slint::cbindgen_private::ComplexText field_text_58 = {};
     slint::cbindgen_private::SimpleText field_text_59 = {};
     slint::cbindgen_private::Empty field_rectangle_60 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_61 = {};
-    slint::cbindgen_private::TouchArea field_toucharea_62 = {};
-    slint::cbindgen_private::SimpleText field_text_63 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_64 = {};
-    slint::cbindgen_private::Empty field_empty_66 = {};
-    slint::cbindgen_private::SimpleText field_text_67 = {};
+    slint::cbindgen_private::Empty field_empty_61 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_62 = {};
+    slint::cbindgen_private::TouchArea field_toucharea_63 = {};
+    slint::cbindgen_private::SimpleText field_text_64 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_65 = {};
+    slint::cbindgen_private::Empty field_empty_67 = {};
+    slint::cbindgen_private::SimpleText field_text_68 = {};
     slint::private_api::Conditional<class Component_image_49> repeater_0;
     slint::private_api::Conditional<class Component_rectangle_51> repeater_1;
-    slint::private_api::Conditional<class Component_text_68> repeater_2;
-    slint::private_api::Conditional<class Component_text_70> repeater_3;
-    slint::private_api::Conditional<class Component_empty_72> repeater_4;
-    slint::private_api::Conditional<class Component_rectangle_88> repeater_5;
-    slint::private_api::Conditional<class Component_rectangle_95> repeater_6;
-    slint::private_api::Conditional<class Component_empty_99> repeater_7;
+    slint::private_api::Conditional<class Component_text_69> repeater_2;
+    slint::private_api::Conditional<class Component_text_71> repeater_3;
+    slint::private_api::Conditional<class Component_empty_73> repeater_4;
+    slint::private_api::Conditional<class Component_rectangle_91> repeater_5;
+    slint::private_api::Conditional<class Component_rectangle_98> repeater_6;
+    slint::private_api::Conditional<class Component_empty_102> repeater_7;
     auto fn_empty_33_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
     auto fn_empty_47_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
     auto fn_empty_48_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
@@ -1092,24 +1100,24 @@ class DetailsView_root_32 {
     auto subtree_component (uintptr_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) const -> void;
 };
 
-class Theme_133 {
+class Theme_136 {
     public:
     slint::private_api::Property<std::shared_ptr<slint::Model<slint::Color>>> field_accents;
-    Theme_133 (const class SharedGlobals *globals);
+    Theme_136 (const class SharedGlobals *globals);
     private:
     auto init () -> void;
     const class SharedGlobals* globals;
     friend class SharedGlobals;
 };
 
-class FluentPalette_135 {
+class FluentPalette_138 {
     public:
     slint::private_api::Property<slint::cbindgen_private::ColorScheme> field_color_scheme;
     slint::private_api::Property<bool> field_dark_color_scheme;
     slint::private_api::Property<slint::Brush> field_foreground;
     slint::private_api::Property<slint::Brush> field_selection_background;
     slint::private_api::Property<slint::Brush> field_selection_foreground;
-    FluentPalette_135 (const class SharedGlobals *globals);
+    FluentPalette_138 (const class SharedGlobals *globals);
     private:
     auto init () -> void;
     const class SharedGlobals* globals;
@@ -1130,14 +1138,14 @@ class SharedGlobals {
         }
         return *self->m_window;
     }
-    std::shared_ptr<Theme_133> global_Theme_133 = std::make_shared<Theme_133>(this);
-    std::shared_ptr<FluentPalette_135> global_FluentPalette_135 = std::make_shared<FluentPalette_135>(this);
+    std::shared_ptr<Theme_136> global_Theme_136 = std::make_shared<Theme_136>(this);
+    std::shared_ptr<FluentPalette_138> global_FluentPalette_138 = std::make_shared<FluentPalette_138>(this);
     SharedGlobals (){
-        global_Theme_133->init();
-        global_FluentPalette_135->init();
+        global_Theme_136->init();
+        global_FluentPalette_138->init();
     }
     private:
-    SharedGlobals (const SharedGlobals& source, const slint::private_api::WindowAdapterRc& adapter) : root_weak(source.root_weak), global_Theme_133(source.global_Theme_133), global_FluentPalette_135(source.global_FluentPalette_135){
+    SharedGlobals (const SharedGlobals& source, const slint::private_api::WindowAdapterRc& adapter) : root_weak(source.root_weak), global_Theme_136(source.global_Theme_136), global_FluentPalette_138(source.global_FluentPalette_138){
         m_window.emplace(adapter);
     }
     public:
@@ -1146,17 +1154,17 @@ class SharedGlobals {
     }
 };
 
-class Component_appcard_128 {
+class Component_appcard_131 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
-    vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class Component_empty_111 const> parent;
+    vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class Component_empty_114 const> parent;
     slint::private_api::Property<UiPackage> field_model_data;
     slint::private_api::Property<int> field_model_index;
-    AppCard_root_1 field_appcard_128;
-    auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_111 const *parent) -> void;
+    AppCard_root_1 field_appcard_131;
+    auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_114 const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
     auto item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect;
@@ -1191,68 +1199,68 @@ class Component_appcard_128 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class Component_empty_111 const * parent) -> slint::ComponentHandle<Component_appcard_128>;
-    ~Component_appcard_128 ();
+    static auto create (class Component_empty_114 const * parent) -> slint::ComponentHandle<Component_appcard_131>;
+    ~Component_appcard_131 ();
     auto update_data ([[maybe_unused]] int i, [[maybe_unused]] const UiPackage &data) const -> void;
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_appcard_128>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_appcard_131>;
 };
 
-class Component_empty_111 {
+class Component_empty_114 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class MainWindow const> parent;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_111_empty_113_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_113_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_113_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_111_empty_114_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_114_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_114_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_111_empty_116_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_116_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_116_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_111_empty_119_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_119_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_119_layoutinfo_v;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_111_empty_124_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_124_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_empty_124_layoutinfo_v;
-    slint::private_api::Property<int> field_empty_111_grid_area_126_total_rows;
-    slint::private_api::Property<slint::SharedVector<float>> field_empty_111_layout_cache;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_layoutinfo_v;
-    slint::private_api::Property<float> field_empty_111_rectangle_112_height;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_rectangle_112_layoutinfo_v;
-    slint::private_api::Property<float> field_empty_111_rectangle_112_width;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_rectangle_120_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_111_rectangle_120_layoutinfo_v;
-    slint::private_api::Property<float> field_empty_111_text_122_min_height;
-    slint::private_api::Property<float> field_empty_111_text_122_min_width;
-    slint::private_api::Property<float> field_empty_111_text_122_preferred_height;
-    slint::private_api::Property<float> field_empty_111_text_122_preferred_width;
-    slint::private_api::Property<float> field_empty_111_width;
-    slint::private_api::Callback<void(slint::SharedString)> field_empty_111_textinput_125_accessible_action_set_value;
-    slint::cbindgen_private::Empty field_empty_111 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_112 = {};
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_114_empty_116_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_116_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_116_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_114_empty_117_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_117_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_117_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_114_empty_119_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_119_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_119_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_114_empty_122_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_122_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_122_layoutinfo_v;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_114_empty_127_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_127_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_empty_127_layoutinfo_v;
+    slint::private_api::Property<int> field_empty_114_grid_area_129_total_rows;
+    slint::private_api::Property<slint::SharedVector<float>> field_empty_114_layout_cache;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_114_rectangle_115_height;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_rectangle_115_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_114_rectangle_115_width;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_rectangle_123_layoutinfo_h;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_114_rectangle_123_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_114_text_125_min_height;
+    slint::private_api::Property<float> field_empty_114_text_125_min_width;
+    slint::private_api::Property<float> field_empty_114_text_125_preferred_height;
+    slint::private_api::Property<float> field_empty_114_text_125_preferred_width;
+    slint::private_api::Property<float> field_empty_114_width;
+    slint::private_api::Callback<void(slint::SharedString)> field_empty_114_textinput_128_accessible_action_set_value;
     slint::cbindgen_private::Empty field_empty_114 = {};
-    slint::cbindgen_private::SimpleText field_text_115 = {};
-    slint::cbindgen_private::Empty field_empty_116 = {};
-    slint::cbindgen_private::SimpleText field_text_117 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_115 = {};
+    slint::cbindgen_private::Empty field_empty_117 = {};
     slint::cbindgen_private::SimpleText field_text_118 = {};
     slint::cbindgen_private::Empty field_empty_119 = {};
-    slint::cbindgen_private::BasicBorderRectangle field_rectangle_120 = {};
-    slint::cbindgen_private::TouchArea field_home_ta_121 = {};
-    slint::cbindgen_private::SimpleText field_text_122 = {};
+    slint::cbindgen_private::SimpleText field_text_120 = {};
+    slint::cbindgen_private::SimpleText field_text_121 = {};
+    slint::cbindgen_private::Empty field_empty_122 = {};
     slint::cbindgen_private::BasicBorderRectangle field_rectangle_123 = {};
-    slint::cbindgen_private::TextInput field_textinput_125 = {};
-    slint::cbindgen_private::Flickable field_grid_area_126 = {};
-    slint::cbindgen_private::Empty field_grid_area_viewport_127 = {};
-    slint::private_api::Repeater<class Component_appcard_128, UiPackage> repeater_0;
+    slint::cbindgen_private::TouchArea field_home_ta_124 = {};
+    slint::cbindgen_private::SimpleText field_text_125 = {};
+    slint::cbindgen_private::BasicBorderRectangle field_rectangle_126 = {};
+    slint::cbindgen_private::TextInput field_textinput_128 = {};
+    slint::cbindgen_private::Flickable field_grid_area_129 = {};
+    slint::cbindgen_private::Empty field_grid_area_viewport_130 = {};
+    slint::private_api::Repeater<class Component_appcard_131, UiPackage> repeater_0;
     auto fn_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void;
     auto user_init () -> void;
@@ -1289,22 +1297,22 @@ class Component_empty_111 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class MainWindow const * parent) -> slint::ComponentHandle<Component_empty_111>;
-    ~Component_empty_111 ();
+    static auto create (class MainWindow const * parent) -> slint::ComponentHandle<Component_empty_114>;
+    ~Component_empty_114 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_empty_111>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_empty_114>;
 };
 
-class Component_detailsview_131 {
+class Component_detailsview_134 {
     public:
     slint::cbindgen_private::ItemTreeWeak self_weak;
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
     vtable::VWeakMapped<slint::private_api::ItemTreeVTable, class MainWindow const> parent;
-    DetailsView_root_32 field_detailsview_131;
+    DetailsView_root_32 field_detailsview_134;
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -1340,12 +1348,12 @@ class Component_detailsview_131 {
     static auto window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void;
     public:
     static const slint::private_api::ItemTreeVTable static_vtable;
-    static auto create (class MainWindow const * parent) -> slint::ComponentHandle<Component_detailsview_131>;
-    ~Component_detailsview_131 ();
+    static auto create (class MainWindow const * parent) -> slint::ComponentHandle<Component_detailsview_134>;
+    ~Component_detailsview_134 ();
     auto init () -> void;
     auto layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo;
     auto flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo;
-    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_detailsview_131>;
+    friend class vtable::VRc<slint::private_api::ItemTreeVTable, Component_detailsview_134>;
 };
 
 class MainWindow {
@@ -1356,25 +1364,25 @@ class MainWindow {
     const class SharedGlobals* globals;
     uint32_t tree_index_of_first_child;
     uint32_t tree_index;
-    slint::private_api::Property<UiPackageDetails> field_root_110_current_details;
-    slint::private_api::Property<UiPackage> field_root_110_current_package;
-    slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_110_current_suggestions;
-    slint::private_api::Property<bool> field_root_110_is_showing_details;
-    slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_110_packages;
-    slint::private_api::Property<slint::SharedString> field_root_110_search_query;
-    slint::private_api::Callback<void(UiPackage)> field_root_110_app_clicked;
-    slint::private_api::Property<uint8_t> callback_tracker_root_110_app_clicked;
-    slint::private_api::Callback<void()> field_root_110_back_clicked;
-    slint::private_api::Property<uint8_t> callback_tracker_root_110_back_clicked;
-    slint::private_api::Callback<void(UiPackage)> field_root_110_install_clicked;
-    slint::private_api::Property<uint8_t> callback_tracker_root_110_install_clicked;
-    slint::private_api::Callback<void(UiPackage)> field_root_110_remove_clicked;
-    slint::private_api::Property<uint8_t> callback_tracker_root_110_remove_clicked;
-    slint::private_api::Callback<void(slint::SharedString)> field_root_110_search_changed;
-    slint::private_api::Property<uint8_t> callback_tracker_root_110_search_changed;
-    slint::cbindgen_private::WindowItem field_root_110 = {};
-    slint::private_api::Conditional<class Component_empty_111> repeater_0;
-    slint::private_api::Conditional<class Component_detailsview_131> repeater_1;
+    slint::private_api::Property<UiPackageDetails> field_root_113_current_details;
+    slint::private_api::Property<UiPackage> field_root_113_current_package;
+    slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_113_current_suggestions;
+    slint::private_api::Property<bool> field_root_113_is_showing_details;
+    slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_113_packages;
+    slint::private_api::Property<slint::SharedString> field_root_113_search_query;
+    slint::private_api::Callback<void(UiPackage)> field_root_113_app_clicked;
+    slint::private_api::Property<uint8_t> callback_tracker_root_113_app_clicked;
+    slint::private_api::Callback<void()> field_root_113_back_clicked;
+    slint::private_api::Property<uint8_t> callback_tracker_root_113_back_clicked;
+    slint::private_api::Callback<void(UiPackage)> field_root_113_install_clicked;
+    slint::private_api::Property<uint8_t> callback_tracker_root_113_install_clicked;
+    slint::private_api::Callback<void(UiPackage)> field_root_113_remove_clicked;
+    slint::private_api::Property<uint8_t> callback_tracker_root_113_remove_clicked;
+    slint::private_api::Callback<void(slint::SharedString)> field_root_113_search_changed;
+    slint::private_api::Property<uint8_t> callback_tracker_root_113_search_changed;
+    slint::cbindgen_private::WindowItem field_root_113 = {};
+    slint::private_api::Conditional<class Component_empty_114> repeater_0;
+    slint::private_api::Conditional<class Component_detailsview_134> repeater_1;
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -1437,49 +1445,49 @@ class MainWindow {
     auto hide () -> void;
     auto window () const -> slint::Window&;
     auto run () -> void;
-    friend class Theme_133;
-    friend class FluentPalette_135;
+    friend class Theme_136;
+    friend class FluentPalette_138;
     friend class vtable::VRc<slint::private_api::ItemTreeVTable, MainWindow>;
-    friend class Component_appcard_128;
-    friend class Component_empty_111;
-    friend class Component_detailsview_131;
+    friend class Component_appcard_131;
+    friend class Component_empty_114;
+    friend class Component_detailsview_134;
     friend class slint::private_api::WindowAdapterRc;
-    friend class Component_empty_111;
-    friend class Component_appcard_128;
-    friend class Component_detailsview_131;
+    friend class Component_empty_114;
+    friend class Component_appcard_131;
+    friend class Component_detailsview_134;
 };
 
 template<std::invocable<UiPackage> Functor> inline auto MainWindow::on_app_clicked (Functor && callback_handler) const{
     slint::private_api::assert_main_thread();
     [[maybe_unused]] auto self = this;
-    self->field_root_110_app_clicked.set_handler(std::forward<Functor>(callback_handler));
-    self->callback_tracker_root_110_app_clicked.mark_dirty();
+    self->field_root_113_app_clicked.set_handler(std::forward<Functor>(callback_handler));
+    self->callback_tracker_root_113_app_clicked.mark_dirty();
 }
 
 template<std::invocable<> Functor> inline auto MainWindow::on_back_clicked (Functor && callback_handler) const{
     slint::private_api::assert_main_thread();
     [[maybe_unused]] auto self = this;
-    self->field_root_110_back_clicked.set_handler(std::forward<Functor>(callback_handler));
-    self->callback_tracker_root_110_back_clicked.mark_dirty();
+    self->field_root_113_back_clicked.set_handler(std::forward<Functor>(callback_handler));
+    self->callback_tracker_root_113_back_clicked.mark_dirty();
 }
 
 template<std::invocable<UiPackage> Functor> inline auto MainWindow::on_install_clicked (Functor && callback_handler) const{
     slint::private_api::assert_main_thread();
     [[maybe_unused]] auto self = this;
-    self->field_root_110_install_clicked.set_handler(std::forward<Functor>(callback_handler));
-    self->callback_tracker_root_110_install_clicked.mark_dirty();
+    self->field_root_113_install_clicked.set_handler(std::forward<Functor>(callback_handler));
+    self->callback_tracker_root_113_install_clicked.mark_dirty();
 }
 
 template<std::invocable<UiPackage> Functor> inline auto MainWindow::on_remove_clicked (Functor && callback_handler) const{
     slint::private_api::assert_main_thread();
     [[maybe_unused]] auto self = this;
-    self->field_root_110_remove_clicked.set_handler(std::forward<Functor>(callback_handler));
-    self->callback_tracker_root_110_remove_clicked.mark_dirty();
+    self->field_root_113_remove_clicked.set_handler(std::forward<Functor>(callback_handler));
+    self->callback_tracker_root_113_remove_clicked.mark_dirty();
 }
 
 template<std::invocable<slint::SharedString> Functor> inline auto MainWindow::on_search_changed (Functor && callback_handler) const{
     slint::private_api::assert_main_thread();
     [[maybe_unused]] auto self = this;
-    self->field_root_110_search_changed.set_handler(std::forward<Functor>(callback_handler));
-    self->callback_tracker_root_110_search_changed.mark_dirty();
+    self->field_root_113_search_changed.set_handler(std::forward<Functor>(callback_handler));
+    self->callback_tracker_root_113_search_changed.mark_dirty();
 }
