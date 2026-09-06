@@ -93,6 +93,19 @@ int main(int argc, char *argv[])
         sd.new_deps_size_str = slint::SharedString(formatSize(cxxDetails.newDepsBytes).toStdString());
         sd.download_size_str = slint::SharedString(formatSize(cxxDetails.downloadBytes).toStdString());
 
+        // Proportions for the 3-color breakdown bar, based on the real total
+        // footprint (already-installed deps + new deps + the app itself).
+        const long long total = cxxDetails.totalBytes;
+        if (total > 0) {
+            sd.installed_ratio = static_cast<float>(cxxDetails.installedDepsBytes) / static_cast<float>(total);
+            sd.new_ratio = static_cast<float>(cxxDetails.newDepsBytes) / static_cast<float>(total);
+            sd.app_ratio = static_cast<float>(cxxDetails.appSizeBytes) / static_cast<float>(total);
+        } else {
+            sd.installed_ratio = 0.0f;
+            sd.new_ratio = 0.0f;
+            sd.app_ratio = 1.0f;
+        }
+
         std::vector<UiPackageDependency> deps;
         for (const auto &d : cxxDetails.dependencies) {
             UiPackageDependency pd;
