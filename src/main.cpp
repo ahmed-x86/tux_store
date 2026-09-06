@@ -1,11 +1,13 @@
 #include "pacmanmanager.h"
 #include "iconfetcher.h"
+#include "installmanager.h"
 #include "log.h"
 #include "package.h"
 #include <QGuiApplication>
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
+#include <QHash>
 #include <algorithm>
 #include <random>
 #include "main.h"
@@ -17,6 +19,12 @@ int main(int argc, char *argv[])
     QDir cacheDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/icons");
     auto *iconFetcher = new IconFetcher(cacheDir, &app);
     auto *pacman = new PacmanManager(&app);
+    auto *installManager = new InstallManager(&app);
+
+    // Kept around so the install click handler can compute per-package
+    // sizes (new deps + the app itself) to weight the progress bar.
+    auto lastDetails = std::make_shared<PackageDetails>();
+    auto consoleLog = std::make_shared<QString>();
 
     auto ui = MainWindow::create();
 
@@ -62,6 +70,16 @@ int main(int argc, char *argv[])
         pd.is_loading = true;
         ui->set_current_details(pd);
 
+        // Reset install state whenever a different app is opened.
+        UiInstallState ist;
+        ist.is_installing = false;
+        ist.finished = false;
+        ist.success = false;
+        ist.progress = 0.0f;
+        ist.deps_ratio = 0.0f;
+        ist.console_log = slint::SharedString("");
+        ui->set_current_install(ist);
+
         // Build a small "You might also like" shelf: a random sample of
         // other packages from whatever is currently loaded in the grid,
         // excluding the package being viewed.
@@ -85,7 +103,9 @@ int main(int argc, char *argv[])
         ui->set_is_showing_details(false);
     });
 
-    QObject::connect(pacman, &PacmanManager::detailsReady, [ui](::PackageDetails cxxDetails) {
+    QObject::connect(pacman, &PacmanManager::detailsReady, [ui, lastDetails](::PackageDetails cxxDetails) {
+        *lastDetails = cxxDetails; // remember for the install click handler
+
         UiPackageDetails sd;
         sd.is_loading = false;
         sd.app_size_str = slint::SharedString(formatSize(cxxDetails.appSizeBytes).toStdString());
@@ -149,6 +169,80 @@ int main(int argc, char *argv[])
         if (current.name == nameStr) {
             current.icon = img;
             ui->set_current_package(current);
+        }
+    });
+
+    // ------------------------------------------------------------------
+    // Install flow: pacman -S (elevated via pkexec unless already root),
+    // weighted progress bar (new deps in blue, the app itself in mauve,
+    // not-yet-downloaded in grey), and a raw console view.
+    // ------------------------------------------------------------------
+    ui->on_install_clicked([ui, installManager, lastDetails](UiPackage p) {
+        if (p.installed) return;
+
+        QHash<QString, long long> sizes;
+        for (const auto &d : lastDetails->dependencies) {
+            if (!d.installed) sizes.insert(d.name, d.sizeBytes);
+        }
+        const QString pkgName = QString::fromStdString(std::string(p.name));
+        sizes.insert(pkgName, lastDetails->appSizeBytes);
+
+        UiInstallState st = ui->get_current_install();
+        st.is_installing = true;
+        st.finished = false;
+        st.success = false;
+        st.progress = 0.0f;
+        const long long total = lastDetails->newDepsBytes + lastDetails->appSizeBytes;
+        st.deps_ratio = total > 0 ? float(double(lastDetails->newDepsBytes) / double(total)) : 0.0f;
+        st.console_log = slint::SharedString("");
+        ui->set_current_install(st);
+
+        installManager->install(pkgName, sizes);
+    });
+
+    ui->on_remove_clicked([](UiPackage) {
+        // TODO: wire up `pacman -R` the same way if/when needed.
+    });
+
+    QObject::connect(installManager, &InstallManager::started, [consoleLog]() {
+        consoleLog->clear();
+    });
+
+    QObject::connect(installManager, &InstallManager::consoleOutput, [ui, consoleLog](QString text) {
+        *consoleLog += text;
+        if (consoleLog->size() > 200000) *consoleLog = consoleLog->right(200000);
+        UiInstallState st = ui->get_current_install();
+        st.console_log = slint::SharedString(consoleLog->toStdString());
+        ui->set_current_install(st);
+    });
+
+    QObject::connect(installManager, &InstallManager::progressChanged, [ui](double frac) {
+        UiInstallState st = ui->get_current_install();
+        st.progress = float(frac);
+        ui->set_current_install(st);
+    });
+
+    QObject::connect(installManager, &InstallManager::finished, [ui, pkgModel](bool success, int) {
+        UiInstallState st = ui->get_current_install();
+        st.is_installing = false;
+        st.finished = true;
+        st.success = success;
+        if (success) st.progress = 1.0f;
+        ui->set_current_install(st);
+
+        if (success) {
+            UiPackage cur = ui->get_current_package();
+            cur.installed = true;
+            ui->set_current_package(cur);
+            for (size_t i = 0; i < pkgModel->row_count(); ++i) {
+                auto row = pkgModel->row_data(i);
+                if (row && row->name == cur.name) {
+                    auto copy = *row;
+                    copy.installed = true;
+                    pkgModel->set_row_data(i, copy);
+                    break;
+                }
+            }
         }
     });
 
