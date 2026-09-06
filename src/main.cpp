@@ -2,7 +2,7 @@
 #include "iconfetcher.h"
 #include "log.h"
 #include "package.h"
-#include <QCoreApplication>
+#include <QGuiApplication>
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
@@ -10,7 +10,7 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     
     QDir cacheDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/icons");
     auto *iconFetcher = new IconFetcher(cacheDir, &app);
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     // Pump Qt events from within Slint's event loop
     slint::Timer t;
     t.start(slint::TimerMode::Repeated, std::chrono::milliseconds(16), []() {
-        QCoreApplication::processEvents();
+        QGuiApplication::processEvents();
     });
 
     ui->run();
