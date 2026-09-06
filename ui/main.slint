@@ -13,13 +13,15 @@ export struct UiPackage {
 export struct UiPackageDependency {
     name: string,
     size_str: string,
+    installed: bool,
 }
 
 export struct UiPackageDetails {
     app_size_str: string,
     dependencies: [UiPackageDependency],
-    total_deps_size_str: string,
-    total_size_str: string,
+    installed_deps_size_str: string,
+    new_deps_size_str: string,
+    download_size_str: string,
     is_loading: bool,
 }
 
@@ -92,155 +94,379 @@ component AppCard inherits Rectangle {
     }
 }
 
+component SuggestionCard inherits Rectangle {
+    in property <UiPackage> pkg;
+    in property <int> accent_idx;
+    callback clicked();
+
+    width: 168px;
+    height: 190px;
+    background: sta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-color: sta.has-hover ? Theme.accents[mod(root.accent_idx, Theme.accents.length)] : Theme.surface1;
+    border-width: 1px;
+    border-radius: 14px;
+
+    sta := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    VerticalLayout {
+        padding: 18px;
+        spacing: 10px;
+        alignment: start;
+
+        if pkg.icon.width > 0 : Image {
+            source: pkg.icon;
+            width: 48px;
+            height: 48px;
+            horizontal-alignment: left;
+        }
+        if pkg.icon.width == 0 : Rectangle {
+            width: 48px;
+            height: 48px;
+            background: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
+            border-radius: 10px;
+        }
+
+        VerticalLayout {
+            spacing: 4px;
+            Text {
+                text: pkg.pretty_name;
+                color: Theme.text;
+                font-weight: 700;
+                font-size: 13px;
+                overflow: elide;
+            }
+            Text {
+                text: pkg.repo;
+                color: Theme.overlay1;
+                font-size: 10px;
+                overflow: elide;
+            }
+        }
+
+        Rectangle { vertical-stretch: 1; }
+
+        Text {
+            text: pkg.installed ? "Installed" : "View details";
+            color: pkg.installed ? Theme.green : Theme.accents[mod(root.accent_idx, Theme.accents.length)];
+            font-size: 11px;
+            font-weight: 700;
+        }
+    }
+}
+
+component DepRow inherits Rectangle {
+    in property <UiPackageDependency> dep;
+    in property <color> accent;
+
+    height: 34px;
+
+    HorizontalLayout {
+        spacing: 10px;
+        alignment: start;
+
+        Rectangle {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            background: dep.installed ? Theme.surface1 : root.accent.transparentize(0.82);
+            Text {
+                text: dep.installed ? "✓" : "↓";
+                color: dep.installed ? Theme.overlay1 : root.accent;
+                font-size: 11px;
+                font-weight: 700;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: dep.name;
+            color: dep.installed ? Theme.subtext0 : Theme.subtext1;
+            font-size: 13px;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+        }
+
+        Text {
+            text: dep.size_str;
+            color: dep.installed ? Theme.overlay1 : Theme.subtext0;
+            font-size: 12px;
+            font-weight: dep.installed ? 400 : 700;
+            vertical-alignment: center;
+        }
+    }
+}
+
 component DetailsView inherits Rectangle {
     in property <UiPackage> pkg;
     in property <UiPackageDetails> details;
+    in property <[UiPackage]> suggestions;
     in property <int> accent_idx;
     callback back_clicked();
     callback install_clicked();
     callback remove_clicked();
+    callback suggestion_clicked(UiPackage);
+
+    property <color> accent: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
 
     background: Theme.base;
 
     Flickable {
         VerticalLayout {
-            padding-left: 60px;
-            padding-right: 60px;
-            padding-top: 80px;
-            padding-bottom: 60px;
-            spacing: 28px;
+            padding-left: 64px;
+            padding-right: 64px;
+            padding-top: 88px;
+            padding-bottom: 64px;
+            spacing: 32px;
+            alignment: start;
 
+            // ---- Header ------------------------------------------------
             HorizontalLayout {
-                spacing: 24px;
+                spacing: 26px;
+                alignment: start;
+
                 if pkg.icon.width > 0 : Image {
                     source: pkg.icon;
-                    width: 100px;
-                    height: 100px;
+                    width: 96px;
+                    height: 96px;
                 }
                 if pkg.icon.width == 0 : Rectangle {
-                    width: 100px;
-                    height: 100px;
-                    background: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
-                    border-radius: 20px;
+                    width: 96px;
+                    height: 96px;
+                    background: root.accent;
+                    border-radius: 22px;
                 }
+
                 VerticalLayout {
                     alignment: center;
-                    spacing: 6px;
-                    Text {
-                        text: pkg.pretty_name;
-                        color: Theme.text;
-                        font-size: 32px;
-                        font-weight: 400;
-                        letter-spacing: -0.5px;
-                    }
-                    Text {
-                        text: pkg.repo + " • " + pkg.version;
-                        color: Theme.subtext0;
-                        font-size: 15px;
-                        font-weight: 600;
-                    }
+                    spacing: 8px;
+
                     HorizontalLayout {
+                        spacing: 14px;
                         alignment: start;
-                        padding-top: 10px;
+                        Text {
+                            text: pkg.pretty_name;
+                            color: Theme.text;
+                            font-size: 30px;
+                            font-weight: 700;
+                            letter-spacing: -0.5px;
+                            vertical-alignment: center;
+                        }
                         Rectangle {
-                            width: 130px;
-                            height: 38px;
-                            background: pkg.installed ? Theme.red : Theme.accents[mod(root.accent_idx, Theme.accents.length)];
-                            border-radius: 8px;
-                            TouchArea {
-                                clicked => {
-                                    if pkg.installed { root.remove_clicked(); }
-                                    else { root.install_clicked(); }
-                                }
-                            }
-                            Text {
-                                text: pkg.installed ? "Remove ✗" : "Install ✓";
-                                color: Theme.crust;
-                                font-size: 14px;
+                            width: instTxt.width + 20px;
+                            height: 24px;
+                            border-radius: 12px;
+                            background: pkg.installed ? Theme.green.transparentize(0.85) : Theme.surface1;
+                            y: 3px;
+                            instTxt := Text {
+                                text: pkg.installed ? "Installed" : pkg.repo;
+                                color: pkg.installed ? Theme.green : Theme.subtext0;
+                                font-size: 11px;
                                 font-weight: 700;
                                 horizontal-alignment: center;
                                 vertical-alignment: center;
                             }
                         }
                     }
+
+                    Text {
+                        text: pkg.description;
+                        color: Theme.subtext0;
+                        font-size: 14px;
+                        wrap: word-wrap;
+                        max-width: 560px;
+                    }
+
+                    Text {
+                        text: "Version " + pkg.version;
+                        color: Theme.overlay1;
+                        font-size: 12px;
+                    }
+                }
+
+                Rectangle { horizontal-stretch: 1; }
+
+                Rectangle {
+                    width: 152px;
+                    height: 44px;
+                    y: 26px;
+                    background: pkg.installed ? Theme.surface0 : root.accent;
+                    border-color: pkg.installed ? Theme.red : root.accent;
+                    border-width: pkg.installed ? 1px : 0px;
+                    border-radius: 10px;
+                    TouchArea {
+                        clicked => {
+                            if pkg.installed { root.remove_clicked(); }
+                            else { root.install_clicked(); }
+                        }
+                    }
+                    Text {
+                        text: pkg.installed ? "Remove" : "Install";
+                        color: pkg.installed ? Theme.red : Theme.crust;
+                        font-size: 14px;
+                        font-weight: 700;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
                 }
             }
 
-            Rectangle { height: 1px; background: Theme.surface0; }
-
-            Text {
-                text: pkg.description;
-                color: Theme.subtext1;
-                font-size: 15px;
-                wrap: word-wrap;
-            }
-
+            // ---- Download summary --------------------------------------
             Rectangle {
                 background: Theme.mantle;
                 border-color: Theme.surface0;
                 border-width: 1px;
-                border-radius: 12px;
-                
+                border-radius: 16px;
+
                 VerticalLayout {
-                    padding: 24px;
-                    spacing: 12px;
+                    padding: 26px;
+                    spacing: 18px;
+
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text {
+                            text: "What you'll download";
+                            color: Theme.text;
+                            font-size: 16px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                        if !details.is_loading : Text {
+                            text: details.download_size_str;
+                            color: root.accent;
+                            font-size: 26px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                    }
 
                     if details.is_loading : Text {
-                        text: "Fetching package details...";
+                        text: "Calculating download size…";
                         color: Theme.overlay1;
                         font-size: 13px;
                     }
 
                     if !details.is_loading : VerticalLayout {
-                        spacing: 10px;
-                        Text {
-                            text: "Dependencies";
-                            color: Theme.text;
-                            font-size: 17px;
-                            font-weight: 600;
-                        }
-                        if details.dependencies.length == 0 : Text {
-                            text: "No additional packages required.";
-                            color: Theme.subtext1;
-                            font-size: 13px;
-                        }
-                        if details.dependencies.length > 0 : VerticalLayout {
-                            spacing: 6px;
-                            for dep in details.dependencies : HorizontalLayout {
-                                Text { text: dep.name; color: Theme.subtext1; font-size: 13px; horizontal-stretch: 1; }
-                                Text { text: dep.size_str; color: Theme.subtext0; font-size: 13px; }
-                            }
-                            Rectangle { height: 6px; }
-                            Text {
-                                text: "Total Dependencies Size: " + details.total_deps_size_str;
-                                color: Theme.subtext0;
-                                font-weight: 700;
-                                font-size: 13px;
+                        spacing: 14px;
+
+                        // Breakdown bar
+                        Rectangle {
+                            height: 8px;
+                            border-radius: 4px;
+                            background: Theme.surface1;
+                            clip: true;
+                            HorizontalLayout {
+                                Rectangle { background: Theme.overlay0; horizontal-stretch: 1; }
+                                Rectangle { background: root.accent; horizontal-stretch: 2; }
                             }
                         }
-                        
-                        Rectangle { height: 8px; }
-                        Rectangle { height: 1px; background: Theme.surface0; }
-                        Rectangle { height: 8px; }
-                        
-                        Text {
-                            text: "App Size: " + details.app_size_str;
-                            color: Theme.subtext1;
-                            font-weight: 600;
-                            font-size: 15px;
+
+                        HorizontalLayout {
+                            spacing: 24px;
+                            HorizontalLayout {
+                                spacing: 6px;
+                                alignment: start;
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: Theme.overlay0; y: 2px; }
+                                Text {
+                                    text: "Already on disk: " + details.installed_deps_size_str;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                }
+                            }
+                            HorizontalLayout {
+                                spacing: 6px;
+                                alignment: start;
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: root.accent; y: 2px; }
+                                Text {
+                                    text: "New dependencies: " + details.new_deps_size_str;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                }
+                            }
+                            HorizontalLayout {
+                                spacing: 6px;
+                                alignment: start;
+                                Text {
+                                    text: "App itself: " + details.app_size_str;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                }
+                            }
                         }
-                        Text {
-                            text: "Total (App + Deps): " + details.total_size_str;
-                            color: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
-                            font-weight: 600;
-                            font-size: 15px;
+                    }
+                }
+            }
+
+            // ---- Dependencies list ---------------------------------------
+            if !details.is_loading && details.dependencies.length > 0 : Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+
+                VerticalLayout {
+                    padding: 26px;
+                    spacing: 4px;
+
+                    Text {
+                        text: "Dependencies (" + details.dependencies.length + ")";
+                        color: Theme.text;
+                        font-size: 16px;
+                        font-weight: 700;
+                    }
+                    Rectangle { height: 10px; }
+                    for dep in details.dependencies : DepRow {
+                        dep: dep;
+                        accent: root.accent;
+                    }
+                }
+            }
+
+            if !details.is_loading && details.dependencies.length == 0 : Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+                VerticalLayout {
+                    padding: 26px;
+                    Text {
+                        text: "No additional dependencies required.";
+                        color: Theme.subtext1;
+                        font-size: 13px;
+                    }
+                }
+            }
+
+            // ---- Suggestions ------------------------------------------
+            if suggestions.length > 0 : VerticalLayout {
+                spacing: 16px;
+
+                Text {
+                    text: "You might also like";
+                    color: Theme.text;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+
+                Flickable {
+                    height: 190px;
+                    viewport-width: suggestions.length * 184px;
+
+                    HorizontalLayout {
+                        spacing: 16px;
+                        for sug[sidx] in root.suggestions : SuggestionCard {
+                            pkg: sug;
+                            accent_idx: sidx + 1;
+                            clicked => { root.suggestion_clicked(sug); }
                         }
                     }
                 }
             }
         }
     }
-    
+
     Rectangle {
         x: 24px;
         y: 24px;
@@ -271,8 +497,9 @@ export component MainWindow inherits Window {
     in property <bool> is_showing_details: false;
     in property <UiPackage> current_package;
     in property <UiPackageDetails> current_details;
+    in property <[UiPackage]> current_suggestions: [];
     in-out property <string> search_query: "";
-    
+
     callback search_changed(string);
     callback app_clicked(UiPackage);
     callback back_clicked();
@@ -286,12 +513,12 @@ export component MainWindow inherits Window {
             background: Theme.mantle;
             border-color: Theme.surface0;
             border-width: 1px;
-            
+
             HorizontalLayout {
                 padding-left: 24px;
                 padding-right: 24px;
                 alignment: space-between;
-                
+
                 HorizontalLayout {
                     alignment: start;
                     spacing: 10px;
@@ -302,11 +529,11 @@ export component MainWindow inherits Window {
                         Text { text: "for Arch Linux"; color: Theme.overlay1; font-size: 11px; }
                     }
                 }
-                
+
                                 HorizontalLayout {
                     spacing: 12px;
                     y: 14px;
-                    
+
                     Rectangle {
                         width: 40px;
                         height: 36px;
@@ -350,7 +577,7 @@ export component MainWindow inherits Window {
                 }
             }
         }
-        
+
         // Responsive grid using absolute positioning
         grid-area := Flickable {
             property <length> card-w: 200px;
@@ -359,9 +586,9 @@ export component MainWindow inherits Window {
             property <length> pad: 24px;
             property <int> cols: max(1, floor((self.width - pad * 2 + gap) / (card-w + gap)));
             property <int> total-rows: packages.length > 0 ? floor((packages.length + cols - 1) / cols) : 0;
-            
+
             viewport-height: max(self.height, pad + total-rows * (card-h + gap));
-            
+
             for pkg[idx] in root.packages : AppCard {
                 x: grid-area.pad + mod(idx, grid-area.cols) * (grid-area.card-w + grid-area.gap);
                 y: grid-area.pad + floor(idx / grid-area.cols) * (grid-area.card-h + grid-area.gap);
@@ -377,9 +604,11 @@ export component MainWindow inherits Window {
     if is_showing_details : DetailsView {
         pkg: root.current_package;
         details: root.current_details;
+        suggestions: root.current_suggestions;
         accent_idx: 0;
         back_clicked => { root.back_clicked(); }
         install_clicked => { root.install_clicked(root.current_package); }
         remove_clicked => { root.remove_clicked(root.current_package); }
+        suggestion_clicked(sug) => { root.app_clicked(sug); }
     }
 }
