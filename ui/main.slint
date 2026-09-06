@@ -22,6 +22,12 @@ export struct UiPackageDetails {
     installed_deps_size_str: string,
     new_deps_size_str: string,
     download_size_str: string,
+    // Proportions of the breakdown bar, each in [0, 1], summing to ~1.
+    // Kept as pre-computed ratios (rather than raw bytes) so the UI never
+    // needs to parse the display strings to size the bar segments.
+    installed_ratio: float,
+    new_ratio: float,
+    app_ratio: float,
     is_loading: bool,
 }
 
@@ -337,27 +343,29 @@ component DetailsView inherits Rectangle {
 
                 Rectangle { horizontal-stretch: 1; }
 
-                Rectangle {
-                    width: 152px;
-                    height: 44px;
-                    y: 26px;
-                    background: pkg.installed ? Theme.surface0 : root.accent;
-                    border-color: pkg.installed ? Theme.red : root.accent;
-                    border-width: pkg.installed ? 1px : 0px;
-                    border-radius: 10px;
-                    TouchArea {
-                        clicked => {
-                            if pkg.installed { root.remove_clicked(); }
-                            else { root.install_clicked(); }
+                VerticalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 152px;
+                        height: 44px;
+                        background: pkg.installed ? Theme.surface0 : root.accent;
+                        border-color: pkg.installed ? Theme.red : root.accent;
+                        border-width: pkg.installed ? 1px : 0px;
+                        border-radius: 10px;
+                        TouchArea {
+                            clicked => {
+                                if pkg.installed { root.remove_clicked(); }
+                                else { root.install_clicked(); }
+                            }
                         }
-                    }
-                    Text {
-                        text: pkg.installed ? "Remove" : "Install";
-                        color: pkg.installed ? Theme.red : Theme.crust;
-                        font-size: 14px;
-                        font-weight: 700;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
+                        Text {
+                            text: pkg.installed ? "Remove" : "Install";
+                            color: pkg.installed ? Theme.red : Theme.crust;
+                            font-size: 14px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
                     }
                 }
             }
@@ -400,15 +408,17 @@ component DetailsView inherits Rectangle {
                     if !details.is_loading : VerticalLayout {
                         spacing: 14px;
 
-                        // Breakdown bar
+                        // Breakdown bar — segment widths are the real proportion
+                        // of each part's size relative to the total footprint.
                         Rectangle {
                             height: 8px;
                             border-radius: 4px;
                             background: Theme.surface1;
                             clip: true;
                             HorizontalLayout {
-                                Rectangle { background: Theme.overlay0; horizontal-stretch: 1; }
-                                Rectangle { background: root.accent; horizontal-stretch: 2; }
+                                Rectangle { background: #6c7086; horizontal-stretch: max(0.0001, details.installed_ratio); }
+                                Rectangle { background: #89b4fa; horizontal-stretch: max(0.0001, details.new_ratio); }
+                                Rectangle { background: Theme.mauve; horizontal-stretch: max(0.0001, details.app_ratio); }
                             }
                         }
 
@@ -417,7 +427,7 @@ component DetailsView inherits Rectangle {
                             HorizontalLayout {
                                 spacing: 6px;
                                 alignment: start;
-                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: Theme.overlay0; y: 2px; }
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: #6c7086; y: 2px; }
                                 Text {
                                     text: "Already on disk: " + details.installed_deps_size_str;
                                     color: Theme.subtext0;
@@ -427,7 +437,7 @@ component DetailsView inherits Rectangle {
                             HorizontalLayout {
                                 spacing: 6px;
                                 alignment: start;
-                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: root.accent; y: 2px; }
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: #89b4fa; y: 2px; }
                                 Text {
                                     text: "New dependencies: " + details.new_deps_size_str;
                                     color: Theme.subtext0;
@@ -437,6 +447,7 @@ component DetailsView inherits Rectangle {
                             HorizontalLayout {
                                 spacing: 6px;
                                 alignment: start;
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: Theme.mauve; y: 2px; }
                                 Text {
                                     text: "App itself: " + details.app_size_str;
                                     color: Theme.subtext0;
