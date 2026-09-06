@@ -213,11 +213,60 @@ component DetailsView inherits Rectangle {
 
     background: Theme.base;
 
-    Flickable {
+    VerticalLayout {
+        // Top bar — same chrome as the home page, with Back where search usually sits.
+        Rectangle {
+            height: 64px;
+            background: Theme.mantle;
+            border-color: Theme.surface0;
+            border-width: 1px;
+
+            HorizontalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+                alignment: space-between;
+
+                HorizontalLayout {
+                    alignment: start;
+                    spacing: 10px;
+                    Text { text: "🐧"; font-size: 22px; vertical-alignment: center; }
+                    VerticalLayout {
+                        alignment: center;
+                        Text { text: "Tux Store"; color: Theme.blue; font-size: 18px; font-weight: 700; }
+                        Text { text: "for Arch Linux"; color: Theme.overlay1; font-size: 11px; }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 12px;
+                    y: 14px;
+
+                    Rectangle {
+                        width: 90px;
+                        height: 36px;
+                        background: back-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-radius: 10px;
+                        border-color: Theme.surface1;
+                        border-width: 1px;
+                        back-ta := TouchArea { clicked => { root.back_clicked(); } }
+                        Text {
+                            text: "⟨ Back";
+                            color: Theme.text;
+                            font-size: 13px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+        }
+
+        Flickable {
         VerticalLayout {
             padding-left: 64px;
             padding-right: 64px;
-            padding-top: 88px;
+            padding-top: 40px;
             padding-bottom: 64px;
             spacing: 32px;
             alignment: start;
@@ -441,7 +490,7 @@ component DetailsView inherits Rectangle {
 
             // ---- Suggestions ------------------------------------------
             if suggestions.length > 0 : VerticalLayout {
-                spacing: 16px;
+                spacing: 14px;
 
                 Text {
                     text: "You might also like";
@@ -450,9 +499,10 @@ component DetailsView inherits Rectangle {
                     font-weight: 700;
                 }
 
-                Flickable {
+                suggestions-flick := Flickable {
                     height: 190px;
                     viewport-width: suggestions.length * 184px;
+                    interactive: true;
 
                     HorizontalLayout {
                         spacing: 16px;
@@ -463,26 +513,50 @@ component DetailsView inherits Rectangle {
                         }
                     }
                 }
+
+                // Custom horizontal scrollbar/slider for the shelf above —
+                // draggable, and its thumb width reflects how much is visible.
+                scroll-track := Rectangle {
+                    height: 8px;
+                    border-radius: 4px;
+                    background: Theme.surface0;
+
+                    property <length> content-width: max(suggestions-flick.viewport-width, suggestions-flick.width);
+                    property <length> visible-width: suggestions-flick.width;
+                    property <length> thumb-width: max(36px, self.width * (visible-width / content-width));
+                    property <length> max-thumb-x: self.width - thumb-width;
+                    property <length> max-scroll: content-width - visible-width;
+                    property <length> thumb-x: max-thumb-x > 0px
+                        ? (-suggestions-flick.viewport-x / max(1px, max-scroll)) * max-thumb-x
+                        : 0px;
+
+                    thumb := Rectangle {
+                        x: scroll-track.thumb-x;
+                        y: 0px;
+                        width: scroll-track.thumb-width;
+                        height: 8px;
+                        border-radius: 4px;
+                        background: thumb-ta.has-hover || thumb-ta.pressed ? root.accent : Theme.surface2;
+                    }
+
+                    thumb-ta := TouchArea {
+                        property <length> press-thumb-x: 0px;
+
+                        pointer-event(event) => {
+                            if event.kind == PointerEventKind.down {
+                                press-thumb-x = scroll-track.thumb-x;
+                            }
+                        }
+                        moved => {
+                            if self.pressed && scroll-track.max-thumb-x > 0px {
+                                suggestions-flick.viewport-x = -(max(0px, min(scroll-track.max-thumb-x,
+                                    press-thumb-x + (self.mouse-x - self.pressed-x))) / scroll-track.max-thumb-x) * scroll-track.max-scroll;
+                            }
+                        }
+                    }
+                }
             }
         }
-    }
-
-    Rectangle {
-        x: 24px;
-        y: 24px;
-        width: 76px;
-        height: 34px;
-        background: btn-ta.has-hover ? Theme.surface1 : Theme.surface0;
-        border-radius: 8px;
-        border-color: Theme.surface1;
-        border-width: 1px;
-        btn-ta := TouchArea { clicked => { root.back_clicked(); } }
-        Text {
-            text: "⟨ Back";
-            color: Theme.text;
-            font-size: 13px;
-            horizontal-alignment: center;
-            vertical-alignment: center;
         }
     }
 }
