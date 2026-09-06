@@ -35,6 +35,15 @@ export struct UiPackageDetails {
     is_loading: bool,
 }
 
+export struct UiInstallState {
+    is_installing: bool,
+    finished: bool,
+    success: bool,
+    progress: float,      // 0..1 overall weighted progress
+    deps_ratio: float,    // fraction of the bar that belongs to new deps
+    console_log: string,
+}
+
 component AppCard inherits Rectangle {
     in property <UiPackage> pkg;
     in property <int> accent_idx;
@@ -212,8 +221,10 @@ component DepRow inherits Rectangle {
 component DetailsView inherits Rectangle {
     in property <UiPackage> pkg;
     in property <UiPackageDetails> details;
+    in property <UiInstallState> install_state;
     in property <[UiPackage]> suggestions;
     in property <int> accent_idx;
+    property <bool> show_console: false;
     callback back_clicked();
     callback install_clicked();
     callback remove_clicked();
@@ -363,12 +374,90 @@ component DetailsView inherits Rectangle {
                             }
                         }
                         Text {
-                            text: pkg.installed ? "Remove" : "Install";
+                            text: pkg.installed ? "Remove" : (install_state.is_installing ? "Installing…" : "Install");
                             color: pkg.installed ? Theme.red : Theme.crust;
                             font-size: 14px;
                             font-weight: 700;
                             horizontal-alignment: center;
                             vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            // ---- Install progress ---------------------------------------
+            if install_state.is_installing || install_state.finished : Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+
+                VerticalLayout {
+                    padding: 22px;
+                    spacing: 14px;
+
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text {
+                            text: !install_state.finished
+                                ? (install_state.progress >= 0.98 ? "Finishing up…" : "Installing…")
+                                : (install_state.success ? "Installed successfully" : "Installation failed");
+                            color: install_state.finished && !install_state.success ? Theme.red : Theme.text;
+                            font-size: 15px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                        Text {
+                            text: round(install_state.progress * 100) + "%";
+                            color: Theme.overlay1;
+                            font-size: 13px;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 12px;
+
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: 10px;
+                            border-radius: 5px;
+                            background: Theme.surface1;
+                            clip: true;
+                            HorizontalLayout {
+                                Rectangle {
+                                    background: #89b4fa;
+                                    horizontal-stretch: max(0.0001, min(install_state.progress, install_state.deps_ratio));
+                                }
+                                Rectangle {
+                                    background: #cba6f7;
+                                    horizontal-stretch: max(0.0001, max(0.0, install_state.progress - install_state.deps_ratio));
+                                }
+                                Rectangle {
+                                    background: #6c7086;
+                                    horizontal-stretch: max(0.0001,
+                                        1.0 - min(install_state.progress, install_state.deps_ratio)
+                                            - max(0.0, install_state.progress - install_state.deps_ratio));
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: 100px;
+                            height: 34px;
+                            background: console-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                            border-color: Theme.surface2;
+                            border-width: 1px;
+                            border-radius: 8px;
+                            console-ta := TouchArea { clicked => { root.show_console = !root.show_console; } }
+                            Text {
+                                text: "Console";
+                                color: Theme.text;
+                                font-size: 12px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
                         }
                     }
                 }
@@ -634,6 +723,74 @@ component DetailsView inherits Rectangle {
         }
         }
     }
+
+    // ---- Console overlay: raw pacman output ---------------------------
+    if root.show_console : Rectangle {
+        background: Theme.crust.transparentize(0.15);
+        TouchArea {} // swallows clicks behind the dialog
+
+        Rectangle {
+            x: 60px;
+            y: 60px;
+            width: parent.width - 120px;
+            height: parent.height - 120px;
+            background: Theme.mantle;
+            border-color: Theme.surface1;
+            border-width: 1px;
+            border-radius: 14px;
+
+            VerticalLayout {
+                padding: 20px;
+                spacing: 12px;
+
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text {
+                        text: "pacman output";
+                        color: Theme.text;
+                        font-size: 15px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                    }
+                    Rectangle {
+                        width: 80px;
+                        height: 30px;
+                        background: close-ta.has-hover ? Theme.surface2 : Theme.surface1;
+                        border-radius: 8px;
+                        close-ta := TouchArea { clicked => { root.show_console = false; } }
+                        Text {
+                            text: "Close";
+                            color: Theme.text;
+                            font-size: 12px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                Rectangle {
+                    vertical-stretch: 1;
+                    background: Theme.crust;
+                    border-radius: 8px;
+                    clip: true;
+                    Flickable {
+                        viewport-height: max(self.height, log-text.height + 20px);
+                        log-text := Text {
+                            x: 10px;
+                            y: 10px;
+                            width: parent.width - 20px;
+                            text: install_state.console_log;
+                            color: #a6e3a1;
+                            font-size: 11px;
+                            font-family: "monospace";
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 export component MainWindow inherits Window {
@@ -646,6 +803,7 @@ export component MainWindow inherits Window {
     in property <bool> is_showing_details: false;
     in property <UiPackage> current_package;
     in property <UiPackageDetails> current_details;
+    in property <UiInstallState> current_install;
     in property <[UiPackage]> current_suggestions: [];
     in-out property <string> search_query: "";
 
@@ -753,6 +911,7 @@ export component MainWindow inherits Window {
     if is_showing_details : DetailsView {
         pkg: root.current_package;
         details: root.current_details;
+        install_state: root.current_install;
         suggestions: root.current_suggestions;
         accent_idx: 0;
         back_clicked => { root.back_clicked(); }
