@@ -176,6 +176,82 @@ component SuggestionCard inherits Rectangle {
     }
 }
 
+component AppRow inherits Rectangle {
+    in property <string> title;
+    in property <[UiPackage]> pkgs;
+    in property <int> row_idx;
+    callback clicked(UiPackage);
+
+    height: pkgs.length > 0 ? 260px : 0px;
+    clip: true;
+
+    if pkgs.length > 0 : VerticalLayout {
+        spacing: 12px;
+        padding-left: 24px;
+        padding-right: 24px;
+        
+        Text {
+            text: root.title;
+            font-size: 20px;
+            font-weight: 800;
+            color: Theme.text;
+        }
+
+        Rectangle {
+            height: 190px;
+            flick := Flickable {
+                viewport-width: max(self.width, pkgs.length * (200px + 16px));
+                
+                HorizontalLayout {
+                    spacing: 16px;
+                    for pkg[idx] in root.pkgs : AppCard {
+                        width: 200px;
+                        height: 180px;
+                        pkg: pkg;
+                        accent_idx: root.row_idx * 10 + idx;
+                        clicked => { root.clicked(pkg); }
+                    }
+                }
+            }
+        }
+
+        // Custom horizontal scrollbar
+        scroll-track := Rectangle {
+            height: 6px;
+            border-radius: 3px;
+            background: Theme.surface0;
+            
+            property <length> content-width: max(flick.viewport-width, flick.width);
+            property <length> visible-width: flick.width;
+            property <length> thumb-width: max(36px, self.width * (visible-width / content-width));
+            property <length> max-thumb-x: self.width - thumb-width;
+            property <length> max-scroll: content-width - visible-width;
+            property <length> thumb-x: max-thumb-x > 0px ? (-flick.viewport-x / max(1px, max-scroll)) * max-thumb-x : 0px;
+
+            thumb := Rectangle {
+                x: scroll-track.thumb-x;
+                y: 0px;
+                width: scroll-track.thumb-width;
+                height: 6px;
+                border-radius: 3px;
+                background: thumb-ta.has-hover || thumb-ta.pressed ? Theme.blue : Theme.surface2;
+            }
+
+            thumb-ta := TouchArea {
+                property <length> press-thumb-x: 0px;
+                pointer-event(event) => {
+                    if event.kind == PointerEventKind.down { press-thumb-x = scroll-track.thumb-x; }
+                }
+                moved => {
+                    if self.pressed && scroll-track.max-thumb-x > 0px {
+                        flick.viewport-x = -(max(0px, min(scroll-track.max-thumb-x, press-thumb-x + (self.mouse-x - self.pressed-x))) / scroll-track.max-thumb-x) * scroll-track.max-scroll;
+                    }
+                }
+            }
+        }
+    }
+}
+
 component DepRow inherits Rectangle {
     in property <UiPackageDependency> dep;
     in property <color> accent;
@@ -928,6 +1004,13 @@ export component MainWindow inherits Window {
     background: Theme.base;
 
     in property <[UiPackage]> packages: [];
+    in property <[UiPackage]> for_you: [];
+    in property <[UiPackage]> browsers: [];
+    in property <[UiPackage]> design: [];
+    in property <[UiPackage]> utilities: [];
+    in property <[UiPackage]> dev: [];
+    in property <[UiPackage]> office: [];
+    in property <[UiPackage]> communication: [];
     in property <bool> is_showing_details: false;
     in property <UiPackage> current_package;
     in property <UiPackageDetails> current_details;
@@ -1101,25 +1184,41 @@ export component MainWindow inherits Window {
             }
         }
 
-        // Responsive grid using absolute positioning (Home Tab)
-        if root.active_tab == 0 : grid-area := Flickable {
-            property <length> card-w: 200px;
-            property <length> card-h: 180px;
-            property <length> gap: 16px;
-            property <length> pad: 24px;
-            property <int> cols: max(1, floor((self.width - pad * 2 + gap) / (card-w + gap)));
-            property <int> total-rows: packages.length > 0 ? floor((packages.length + cols - 1) / cols) : 0;
+        // Home Tab
+        if root.active_tab == 0 : Rectangle {
+            if root.search_query != "" : grid-area := Flickable {
+                property <length> card-w: 200px;
+                property <length> card-h: 180px;
+                property <length> gap: 16px;
+                property <length> pad: 24px;
+                property <int> cols: max(1, floor((self.width - pad * 2 + gap) / (card-w + gap)));
+                property <int> total-rows: packages.length > 0 ? floor((packages.length + cols - 1) / cols) : 0;
+                viewport-height: max(self.height, pad + total-rows * (card-h + gap));
 
-            viewport-height: max(self.height, pad + total-rows * (card-h + gap));
-
-            for pkg[idx] in root.packages : AppCard {
-                x: grid-area.pad + mod(idx, grid-area.cols) * (grid-area.card-w + grid-area.gap);
-                y: grid-area.pad + floor(idx / grid-area.cols) * (grid-area.card-h + grid-area.gap);
-                width: grid-area.card-w;
-                height: grid-area.card-h;
-                pkg: pkg;
-                accent_idx: idx;
-                clicked => { root.app_clicked(pkg); }
+                for pkg[idx] in root.packages : AppCard {
+                    x: grid-area.pad + mod(idx, grid-area.cols) * (grid-area.card-w + grid-area.gap);
+                    y: grid-area.pad + floor(idx / grid-area.cols) * (grid-area.card-h + grid-area.gap);
+                    width: grid-area.card-w;
+                    height: grid-area.card-h;
+                    pkg: pkg;
+                    accent_idx: idx;
+                    clicked => { root.app_clicked(pkg); }
+                }
+            }
+            if root.search_query == "" : home-feed := Flickable {
+                viewport-height: feed-layout.preferred-height + 48px;
+                feed-layout := VerticalLayout {
+                    y: 24px;
+                    spacing: 32px;
+                    alignment: start;
+                    AppRow { title: "For You"; pkgs: root.for_you; row_idx: 0; clicked(pkg) => { root.app_clicked(pkg); } }
+                    AppRow { title: "Browsers"; pkgs: root.browsers; row_idx: 1; clicked(pkg) => { root.app_clicked(pkg); } }
+                    AppRow { title: "Communication"; pkgs: root.communication; row_idx: 2; clicked(pkg) => { root.app_clicked(pkg); } }
+                    AppRow { title: "Design & Multimedia"; pkgs: root.design; row_idx: 3; clicked(pkg) => { root.app_clicked(pkg); } }
+                    AppRow { title: "Office & Productivity"; pkgs: root.office; row_idx: 4; clicked(pkg) => { root.app_clicked(pkg); } }
+                    AppRow { title: "Development"; pkgs: root.dev; row_idx: 5; clicked(pkg) => { root.app_clicked(pkg); } }
+                    AppRow { title: "Utilities"; pkgs: root.utilities; row_idx: 6; clicked(pkg) => { root.app_clicked(pkg); } }
+                }
             }
         }
 
