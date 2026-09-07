@@ -28,13 +28,37 @@ int main(int argc, char *argv[])
 
     auto ui = MainWindow::create();
 
-    // Flat model (no more row grouping — Slint handles layout)
     auto pkgModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto forYouModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto browsersModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto designModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto utilitiesModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto devModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto officeModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto communicationModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    
     ui->set_packages(pkgModel);
+    ui->set_for_you(forYouModel);
+    ui->set_browsers(browsersModel);
+    ui->set_design(designModel);
+    ui->set_utilities(utilitiesModel);
+    ui->set_dev(devModel);
+    ui->set_office(officeModel);
+    ui->set_communication(communicationModel);
 
-    auto refreshGrid = [ui, iconFetcher, cacheDir, pkgModel](const QVector<Package> &pkgs) {
-        // Clear and rebuild
+    auto refreshGrid = [ui, iconFetcher, cacheDir, pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel](const QVector<Package> &pkgs) {
         while (pkgModel->row_count() > 0) pkgModel->erase(0);
+        
+        bool isDefault = ui->get_search_query().empty();
+        if (isDefault) {
+            while (forYouModel->row_count() > 0) forYouModel->erase(0);
+            while (browsersModel->row_count() > 0) browsersModel->erase(0);
+            while (designModel->row_count() > 0) designModel->erase(0);
+            while (utilitiesModel->row_count() > 0) utilitiesModel->erase(0);
+            while (devModel->row_count() > 0) devModel->erase(0);
+            while (officeModel->row_count() > 0) officeModel->erase(0);
+            while (communicationModel->row_count() > 0) communicationModel->erase(0);
+        }
 
         for (const auto &p : pkgs) {
             UiPackage sp;
@@ -54,6 +78,25 @@ int main(int argc, char *argv[])
             }
 
             pkgModel->push_back(sp);
+            
+            if (isDefault) {
+                QString n = p.name.toLower();
+                if (n == "firefox" || n == "chromium" || n == "epiphany" || n == "falkon" || n == "qutebrowser" || n == "midori" || n == "brave-browser" || n == "torbrowser-launcher" || n == "vivaldi" || n == "opera") {
+                    browsersModel->push_back(sp);
+                } else if (n == "blender" || n == "gimp" || n == "kdenlive" || n == "audacity" || n == "inkscape" || n == "krita" || n == "obs-studio" || n == "vlc" || n == "shotcut" || n == "pitivi" || n == "flowblade" || n == "openshot") {
+                    designModel->push_back(sp);
+                } else if (n == "htop" || n == "neovim" || n == "kitty" || n == "timeshift" || n == "alacritty" || n == "bleachbit" || n == "gparted" || n == "flameshot") {
+                    utilitiesModel->push_back(sp);
+                } else if (n == "python" || n == "gcc" || n == "base-devel" || n == "rust" || n == "code" || n == "vscodium" || n == "nodejs" || n == "go" || n == "docker" || n == "git") {
+                    devModel->push_back(sp);
+                } else if (n == "libreoffice-fresh" || n == "libreoffice-still" || n == "onlyoffice-desktopeditors" || n == "abiword" || n == "gnumeric" || n == "calligra" || n == "wps-office") {
+                    officeModel->push_back(sp);
+                } else if (n == "telegram-desktop" || n == "discord" || n == "session-desktop" || n == "session-desktop-bin" || n == "signal-desktop" || n == "element-desktop" || n == "skypeforlinux" || n == "slack-desktop") {
+                    communicationModel->push_back(sp);
+                } else {
+                    forYouModel->push_back(sp);
+                }
+            }
         }
     };
 
