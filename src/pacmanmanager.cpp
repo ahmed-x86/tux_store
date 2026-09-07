@@ -11,9 +11,20 @@ PacmanManager::PacmanManager(QObject *parent) : QObject(parent) {}
 const QStringList &PacmanManager::defaultApps()
 {
     static const QStringList apps = {
-        "firefox", "chromium", "vlc", "gimp", "mpv", "discord", "telegram-desktop", "blender",
-        "inkscape", "audacity", "steam", "thunar", "neovim", "kitty", "htop", "fastfetch",
-        "qbittorrent", "libreoffice-fresh", "timeshift", "galculator",
+        // Browsers
+        "firefox", "chromium", "epiphany", "falkon", "qutebrowser", "midori", "brave-browser", "torbrowser-launcher", "vivaldi", "opera",
+        // Design & Multimedia
+        "blender", "gimp", "kdenlive", "audacity", "inkscape", "krita", "obs-studio", "vlc", "shotcut", "pitivi", "flowblade", "openshot",
+        // Office & Productivity
+        "libreoffice-fresh", "libreoffice-still", "onlyoffice-desktopeditors", "abiword", "gnumeric", "calligra", "wps-office",
+        // Communication
+        "telegram-desktop", "discord", "session-desktop", "session-desktop-bin", "signal-desktop", "element-desktop", "skypeforlinux", "slack-desktop",
+        // Utilities
+        "htop", "neovim", "kitty", "timeshift", "alacritty", "bleachbit", "gparted", "flameshot",
+        // Development
+        "python", "gcc", "base-devel", "rust", "code", "vscodium", "nodejs", "go", "docker", "git",
+        // For You (General/Misc)
+        "steam", "qbittorrent", "mpv", "thunar", "fastfetch"
     };
     return apps;
 }
