@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
         // Reset install state whenever a different app is opened.
         UiInstallState ist;
         ist.is_installing = false;
+        ist.is_uninstalling = false;
         ist.finished = false;
         ist.success = false;
         ist.progress = 0.0f;
@@ -189,6 +190,7 @@ int main(int argc, char *argv[])
 
         UiInstallState st = ui->get_current_install();
         st.is_installing = true;
+        st.is_uninstalling = false;
         st.finished = false;
         st.success = false;
         st.progress = 0.0f;
@@ -200,8 +202,23 @@ int main(int argc, char *argv[])
         installManager->install(pkgName, sizes);
     });
 
-    ui->on_remove_clicked([](UiPackage) {
-        // TODO: wire up `pacman -R` the same way if/when needed.
+    ui->on_remove_clicked([ui, installManager](UiPackage p, slint::SharedString mode) {
+        if (!p.installed) return;
+        
+        const QString pkgName = QString::fromStdString(std::string(p.name));
+        const QString modeStr = QString::fromStdString(std::string(mode));
+
+        UiInstallState st = ui->get_current_install();
+        st.is_installing = false;
+        st.is_uninstalling = true;
+        st.finished = false;
+        st.success = false;
+        st.progress = 0.0f;
+        st.deps_ratio = 0.0f;
+        st.console_log = slint::SharedString("");
+        ui->set_current_install(st);
+
+        installManager->uninstall(pkgName, modeStr);
     });
 
     QObject::connect(installManager, &InstallManager::started, [consoleLog]() {
@@ -224,6 +241,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(installManager, &InstallManager::finished, [ui, pkgModel](bool success, int) {
         UiInstallState st = ui->get_current_install();
+        bool was_uninstalling = st.is_uninstalling;
         st.is_installing = false;
         st.finished = true;
         st.success = success;
@@ -232,13 +250,13 @@ int main(int argc, char *argv[])
 
         if (success) {
             UiPackage cur = ui->get_current_package();
-            cur.installed = true;
+            cur.installed = !was_uninstalling;
             ui->set_current_package(cur);
             for (size_t i = 0; i < pkgModel->row_count(); ++i) {
                 auto row = pkgModel->row_data(i);
                 if (row && row->name == cur.name) {
                     auto copy = *row;
-                    copy.installed = true;
+                    copy.installed = !was_uninstalling;
                     pkgModel->set_row_data(i, copy);
                     break;
                 }
