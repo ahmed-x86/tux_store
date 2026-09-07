@@ -934,6 +934,7 @@ export component MainWindow inherits Window {
     in property <UiInstallState> current_install;
     in property <[UiPackage]> current_suggestions: [];
     in-out property <string> search_query: "";
+    property <int> active_tab: 0;
 
     callback search_changed(string);
     callback app_clicked(UiPackage);
@@ -978,6 +979,7 @@ export component MainWindow inherits Window {
                         border-width: 1px;
                         home-ta := TouchArea {
                             clicked => {
+                                root.active_tab = 0;
                                 root.search_query = "";
                                 root.search_changed("");
                             }
@@ -1013,8 +1015,94 @@ export component MainWindow inherits Window {
             }
         }
 
-        // Responsive grid using absolute positioning
-        grid-area := Flickable {
+        // Tabs Bar (Glowing Gradient Segmented Control)
+        Rectangle {
+            height: 64px;
+            background: Theme.base;
+
+            Rectangle {
+                x: 24px;
+                width: parent.width - 48px;
+                height: 44px;
+                y: 10px;
+                border-radius: 12px;
+                background: Theme.crust;
+                
+                HorizontalLayout {
+                    padding: 4px;
+                    spacing: 4px;
+
+                    // 1. Home
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        border-radius: 8px;
+                        background: root.active_tab == 0 ? @linear-gradient(90deg, #cba6f7, #74c7ec) : (home-tab-ta.has-hover ? Theme.surface0 : transparent);
+                        drop-shadow-blur: root.active_tab == 0 ? 12px : 0px;
+                        drop-shadow-color: root.active_tab == 0 ? #cba6f7.transparentize(0.3) : transparent;
+                        drop-shadow-offset-y: root.active_tab == 0 ? 3px : 0px;
+                        animate background { duration: 200ms; easing: ease-in-out; }
+                        animate drop-shadow-blur { duration: 200ms; }
+                        
+                        home-tab-ta := TouchArea { clicked => { root.active_tab = 0; } }
+                        Text { 
+                            text: "Home"; 
+                            color: root.active_tab == 0 ? Theme.crust : Theme.overlay1; 
+                            font-weight: root.active_tab == 0 ? 800 : 600; 
+                            font-size: 14px; 
+                            horizontal-alignment: center; vertical-alignment: center; 
+                            animate color { duration: 200ms; }
+                        }
+                    }
+
+                    // 2. Update System
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        border-radius: 8px;
+                        background: root.active_tab == 1 ? @linear-gradient(90deg, #89b4fa, #b4befe) : (update-tab-ta.has-hover ? Theme.surface0 : transparent);
+                        drop-shadow-blur: root.active_tab == 1 ? 12px : 0px;
+                        drop-shadow-color: root.active_tab == 1 ? #89b4fa.transparentize(0.3) : transparent;
+                        drop-shadow-offset-y: root.active_tab == 1 ? 3px : 0px;
+                        animate background { duration: 200ms; easing: ease-in-out; }
+                        animate drop-shadow-blur { duration: 200ms; }
+                        
+                        update-tab-ta := TouchArea { clicked => { root.active_tab = 1; } }
+                        Text { 
+                            text: "Update System"; 
+                            color: root.active_tab == 1 ? Theme.crust : Theme.overlay1; 
+                            font-weight: root.active_tab == 1 ? 800 : 600; 
+                            font-size: 14px; 
+                            horizontal-alignment: center; vertical-alignment: center; 
+                            animate color { duration: 200ms; }
+                        }
+                    }
+
+                    // 3. Installed Apps
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        border-radius: 8px;
+                        background: root.active_tab == 2 ? @linear-gradient(90deg, #74c7ec, #89dceb) : (installed-tab-ta.has-hover ? Theme.surface0 : transparent);
+                        drop-shadow-blur: root.active_tab == 2 ? 12px : 0px;
+                        drop-shadow-color: root.active_tab == 2 ? #74c7ec.transparentize(0.3) : transparent;
+                        drop-shadow-offset-y: root.active_tab == 2 ? 3px : 0px;
+                        animate background { duration: 200ms; easing: ease-in-out; }
+                        animate drop-shadow-blur { duration: 200ms; }
+                        
+                        installed-tab-ta := TouchArea { clicked => { root.active_tab = 2; } }
+                        Text { 
+                            text: "Installed Apps"; 
+                            color: root.active_tab == 2 ? Theme.crust : Theme.overlay1; 
+                            font-weight: root.active_tab == 2 ? 800 : 600; 
+                            font-size: 14px; 
+                            horizontal-alignment: center; vertical-alignment: center; 
+                            animate color { duration: 200ms; }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Responsive grid using absolute positioning (Home Tab)
+        if root.active_tab == 0 : grid-area := Flickable {
             property <length> card-w: 200px;
             property <length> card-h: 180px;
             property <length> gap: 16px;
@@ -1032,6 +1120,16 @@ export component MainWindow inherits Window {
                 pkg: pkg;
                 accent_idx: idx;
                 clicked => { root.app_clicked(pkg); }
+            }
+        }
+
+        // Placeholder for other tabs
+        if root.active_tab != 0 : Rectangle {
+            vertical-stretch: 1;
+            VerticalLayout {
+                alignment: center;
+                spacing: 12px;
+                Text { text: "This feature is not implemented yet"; color: Theme.overlay1; font-size: 20px; font-weight: 700; horizontal-alignment: center; }
             }
         }
     }
