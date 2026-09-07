@@ -81,6 +81,52 @@ void InstallManager::install(const QString &pkgName, const QHash<QString, long l
     m_proc->start(program, args);
 }
 
+void InstallManager::uninstall(const QString &pkgName, const QString &mode)
+{
+    m_sizes.clear();
+    m_progressBytes.clear();
+    m_currentDownloading.clear();
+    m_lineBuffer.clear();
+    m_totalBytes = 0;
+
+    if (m_proc) {
+        m_proc->disconnect();
+        m_proc->deleteLater();
+        m_proc = nullptr;
+    }
+
+    m_proc = new QProcess(this);
+    m_proc->setProcessChannelMode(QProcess::MergedChannels);
+
+    QString program;
+    QStringList args;
+    if (isRunningAsRoot()) {
+        program = QStringLiteral("pacman");
+        args = {mode, "--noconfirm", pkgName};
+    } else {
+        program = QStringLiteral("pkexec");
+        args = {"pacman", mode, "--noconfirm", pkgName};
+    }
+
+    connect(m_proc, &QProcess::readyReadStandardOutput, this, [this]() {
+        feed(m_proc->readAllStandardOutput());
+    });
+    connect(m_proc, &QProcess::errorOccurred, this, [this](QProcess::ProcessError) {
+        emit consoleOutput(QStringLiteral("\n[process error] %1\n").arg(m_proc->errorString()));
+    });
+    connect(m_proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [this](int code, QProcess::ExitStatus status) {
+        const bool ok = status == QProcess::NormalExit && code == 0;
+        qCInfo(logApp) << "uninstall finished, success:" << ok << "exitCode:" << code;
+        if (ok) emit progressChanged(1.0);
+        emit finished(ok, code);
+    });
+
+    qCInfo(logApp) << "starting uninstall:" << program << args;
+    emit started();
+    m_proc->start(program, args);
+}
+
 void InstallManager::feed(const QByteArray &chunk)
 {
     emit consoleOutput(QString::fromUtf8(chunk));
