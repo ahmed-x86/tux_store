@@ -37,6 +37,7 @@ export struct UiPackageDetails {
 
 export struct UiInstallState {
     is_installing: bool,
+    is_uninstalling: bool,
     finished: bool,
     success: bool,
     progress: float,      // 0..1 overall weighted progress
@@ -225,9 +226,10 @@ component DetailsView inherits Rectangle {
     in property <[UiPackage]> suggestions;
     in property <int> accent_idx;
     property <bool> show_console: false;
+    property <bool> show_uninstall_modal: false;
     callback back_clicked();
     callback install_clicked();
-    callback remove_clicked();
+    callback remove_clicked(string);
     callback suggestion_clicked(UiPackage);
 
     property <color> accent: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
@@ -295,7 +297,6 @@ component DetailsView inherits Rectangle {
             // ---- Header ------------------------------------------------
             HorizontalLayout {
                 spacing: 26px;
-                alignment: start;
 
                 if pkg.icon.width > 0 : Image {
                     source: pkg.icon;
@@ -369,12 +370,12 @@ component DetailsView inherits Rectangle {
                         border-radius: 10px;
                         TouchArea {
                             clicked => {
-                                if pkg.installed { root.remove_clicked(); }
+                                if pkg.installed { root.show_uninstall_modal = true; }
                                 else { root.install_clicked(); }
                             }
                         }
                         Text {
-                            text: pkg.installed ? "Remove" : (install_state.is_installing ? "Installing…" : "Install");
+                            text: pkg.installed ? (install_state.is_uninstalling ? "Uninstalling…" : "Remove") : (install_state.is_installing ? "Installing…" : "Install");
                             color: pkg.installed ? Theme.red : Theme.crust;
                             font-size: 14px;
                             font-weight: 700;
@@ -386,7 +387,7 @@ component DetailsView inherits Rectangle {
             }
 
             // ---- Install progress ---------------------------------------
-            if install_state.is_installing || install_state.finished : Rectangle {
+            if install_state.is_installing || install_state.is_uninstalling || install_state.finished : Rectangle {
                 background: Theme.mantle;
                 border-color: Theme.surface0;
                 border-width: 1px;
@@ -400,8 +401,8 @@ component DetailsView inherits Rectangle {
                         alignment: space-between;
                         Text {
                             text: !install_state.finished
-                                ? (install_state.progress >= 0.98 ? "Finishing up…" : "Installing…")
-                                : (install_state.success ? "Installed successfully" : "Installation failed");
+                                ? (install_state.is_uninstalling ? "Uninstalling…" : (install_state.progress >= 0.98 ? "Finishing up…" : "Installing…"))
+                                : (install_state.success ? (install_state.is_uninstalling ? "Uninstalled successfully" : "Installed successfully") : (install_state.is_uninstalling ? "Uninstallation failed" : "Installation failed"));
                             color: install_state.finished && !install_state.success ? Theme.red : Theme.text;
                             font-size: 15px;
                             font-weight: 700;
@@ -791,6 +792,133 @@ component DetailsView inherits Rectangle {
             }
         }
     }
+
+    // ---- Uninstall overlay ---------------------------------------------
+    if root.show_uninstall_modal : Rectangle {
+        background: Theme.crust.transparentize(0.15);
+        TouchArea {} // swallows clicks behind the dialog
+
+        VerticalLayout {
+            alignment: center;
+            HorizontalLayout {
+                alignment: center;
+
+                Rectangle {
+                    width: min(700px, root.width - 40px);
+                    background: Theme.mantle;
+            border-color: Theme.surface1;
+            border-width: 1px;
+            border-radius: 14px;
+
+            VerticalLayout {
+                padding: 30px;
+                spacing: 20px;
+
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text {
+                        text: "Uninstall " + pkg.pretty_name;
+                        color: Theme.text;
+                        font-size: 20px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                    }
+                    Rectangle {
+                        width: 80px;
+                        height: 30px;
+                        background: close-uninstall-ta.has-hover ? Theme.surface2 : Theme.surface1;
+                        border-radius: 8px;
+                        close-uninstall-ta := TouchArea { clicked => { root.show_uninstall_modal = false; } }
+                        Text {
+                            text: "Cancel";
+                            color: Theme.text;
+                            font-size: 13px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Please select how you want to uninstall this package:";
+                    color: Theme.subtext0;
+                    font-size: 14px;
+                }
+
+                VerticalLayout {
+                    spacing: 12px;
+                    alignment: start;
+
+                    // 1. -R
+                    Rectangle {
+                        background: r-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-radius: 10px;
+                        r-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-R"); } }
+                        VerticalLayout {
+                            padding: 16px; alignment: center; spacing: 4px;
+                            Text { text: "Basic Uninstall"; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                            Text { text: "Removes the app but keeps its settings and shared files."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                        }
+                    }
+
+                    // 2. -Rn
+                    Rectangle {
+                        background: rn-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-radius: 10px;
+                        rn-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rn"); } }
+                        VerticalLayout {
+                            padding: 16px; alignment: center; spacing: 4px;
+                            Text { text: "Uninstall and Reset"; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                            Text { text: "Removes the app and deletes all its settings."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                        }
+                    }
+
+                    // 3. -Rs
+                    Rectangle {
+                        background: rs-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-radius: 10px;
+                        rs-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rs"); } }
+                        VerticalLayout {
+                            padding: 16px; alignment: center; spacing: 4px;
+                            Text { text: "Uninstall and Clean Shared Files"; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                            Text { text: "Removes the app and shared files that are no longer needed. Keeps your settings."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                        }
+                    }
+
+                    // 4. -Rdd
+                    Rectangle {
+                        background: rdd-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-radius: 10px;
+                        border-color: Theme.red;
+                        border-width: 1px;
+                        rdd-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rdd"); } }
+                        VerticalLayout {
+                            padding: 16px; alignment: center; spacing: 4px;
+                            Text { text: "Force Uninstall (Advanced)"; color: Theme.red; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                            Text { text: "Removes the app even if other apps rely on it. May break things!"; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                        }
+                    }
+
+                    // 5. -Rns
+                    Rectangle {
+                        background: rns-ta.has-hover ? Theme.surface2 : Theme.surface1;
+                        border-radius: 10px;
+                        border-color: Theme.green;
+                        border-width: 1px;
+                        rns-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rns"); } }
+                        VerticalLayout {
+                            padding: 16px; alignment: center; spacing: 4px;
+                            Text { text: "Complete Uninstall (Recommended)"; color: Theme.green; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                            Text { text: "Safely removes the app, deletes its settings, and cleans up all unneeded files."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                        }
+                    }
+                }
+            }
+        }
+        }
+        }
+    }
 }
 
 export component MainWindow inherits Window {
@@ -811,7 +939,7 @@ export component MainWindow inherits Window {
     callback app_clicked(UiPackage);
     callback back_clicked();
     callback install_clicked(UiPackage);
-    callback remove_clicked(UiPackage);
+    callback remove_clicked(UiPackage, string);
 
     if !is_showing_details : VerticalLayout {
         // Header bar
@@ -916,7 +1044,7 @@ export component MainWindow inherits Window {
         accent_idx: 0;
         back_clicked => { root.back_clicked(); }
         install_clicked => { root.install_clicked(root.current_package); }
-        remove_clicked => { root.remove_clicked(root.current_package); }
+        remove_clicked(mode) => { root.remove_clicked(root.current_package, mode); }
         suggestion_clicked(sug) => { root.app_clicked(sug); }
     }
 }
