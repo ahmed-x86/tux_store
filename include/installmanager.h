@@ -18,6 +18,7 @@ public:
     // will be installed in this transaction (new deps + the target package).
     // Used only to weight the progress bar; not for correctness.
     void install(const QString &pkgName, const QHash<QString, long long> &sizes);
+    void uninstall(const QString &pkgName, const QString &mode);
 
     bool isRunningAsRoot() const;
 
