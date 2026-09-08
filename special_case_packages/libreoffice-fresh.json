@@ -1,0 +1,23 @@
+{
+  "package": "libreoffice-fresh",
+  "language_packs": {
+    "Arabic": "libreoffice-fresh-ar",
+    "French": "libreoffice-fresh-fr",
+    "German": "libreoffice-fresh-de",
+    "Spanish": "libreoffice-fresh-es",
+    "Russian": "libreoffice-fresh-ru",
+    "English (GB)": "libreoffice-fresh-en-gb",
+    "Italian": "libreoffice-fresh-it",
+    "Japanese": "libreoffice-fresh-ja",
+    "Korean": "libreoffice-fresh-ko",
+    "Chinese (Simplified)": "libreoffice-fresh-zh-cn",
+    "Chinese (Traditional)": "libreoffice-fresh-zh-tw",
+    "Turkish": "libreoffice-fresh-tr",
+    "Dutch": "libreoffice-fresh-nl",
+    "Portuguese": "libreoffice-fresh-pt",
+    "Portuguese (Brazil)": "libreoffice-fresh-pt-br",
+    "Polish": "libreoffice-fresh-pl",
+    "Indonesian": "libreoffice-fresh-id",
+    "Hindi": "libreoffice-fresh-hi"
+  }
+}
