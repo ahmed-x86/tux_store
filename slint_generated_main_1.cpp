@@ -10145,7 +10145,7 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
     self->field_rectangle_227.border_radius.set(12);
     self->field__shadow_229.blur.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? 12 : 0);
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? 12 : (self->field_home_tab_ta_231.has_hover.get() ? 8 : 0));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10159,15 +10159,15 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
     self->field__shadow_229.border_top_right_radius.set(8);
     self->field__shadow_229.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? slint::Brush(slint::Color::from_argb_encoded(+4.291536631e9)).transparentize(0.3) : slint::Brush(slint::Color::from_argb_encoded(0))).color();
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? slint::Brush(slint::Color::from_argb_encoded(+4.291536631e9)).transparentize(0.3) : (self->field_home_tab_ta_231.has_hover.get() ? slint::Brush(slint::Color::from_argb_encoded(+4.291536631e9)).transparentize(0.5) : slint::Brush(slint::Color::from_argb_encoded(0)))).color();
                         });
     self->field__shadow_229.offset_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? 3 : 0);
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? 3 : (self->field_home_tab_ta_231.has_hover.get() ? 2 : 0));
                         });
     self->field_rectangle_230.background.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.291536631e9), float(0), }, slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.285843436e9), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : slint::Brush((self->field_home_tab_ta_231.has_hover.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(0))));
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.291536631e9), float(0), }, slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.285843436e9), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : (self->field_home_tab_ta_231.has_hover.get() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Brush(slint::Color::from_argb_encoded(+4.291536631e9)).transparentize(0.85).color(), float(0), }, slint::private_api::GradientStop{ slint::Brush(slint::Color::from_argb_encoded(+4.285843436e9)).transparentize(0.85).color(), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : slint::Brush(slint::Color::from_argb_encoded(0))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10184,7 +10184,7 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
     self->field_home_tab_ta_231.enabled.set(true);
     self->field_text_232.color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.2865471e9)));
+                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? slint::Color::from_argb_encoded(+4.279308571e9) : (self->field_home_tab_ta_231.has_hover.get() ? slint::Color::from_argb_encoded(+4.291536631e9) : slint::Color::from_argb_encoded(+4.2865471e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10210,7 +10210,7 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field__shadow_233.blur.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? 12 : 0);
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? 12 : (self->field_update_tab_ta_235.has_hover.get() ? 8 : 0));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10224,15 +10224,15 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
     self->field__shadow_233.border_top_right_radius.set(8);
     self->field__shadow_233.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? slint::Brush(slint::Color::from_argb_encoded(+4.287214842e9)).transparentize(0.3) : slint::Brush(slint::Color::from_argb_encoded(0))).color();
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? slint::Brush(slint::Color::from_argb_encoded(+4.287214842e9)).transparentize(0.3) : (self->field_update_tab_ta_235.has_hover.get() ? slint::Brush(slint::Color::from_argb_encoded(+4.287214842e9)).transparentize(0.5) : slint::Brush(slint::Color::from_argb_encoded(0)))).color();
                         });
     self->field__shadow_233.offset_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? 3 : 0);
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? 3 : (self->field_update_tab_ta_235.has_hover.get() ? 2 : 0));
                         });
     self->field_rectangle_234.background.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.287214842e9), float(0), }, slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.290035454e9), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : slint::Brush((self->field_update_tab_ta_235.has_hover.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(0))));
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.287214842e9), float(0), }, slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.290035454e9), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : (self->field_update_tab_ta_235.has_hover.get() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Brush(slint::Color::from_argb_encoded(+4.287214842e9)).transparentize(0.85).color(), float(0), }, slint::private_api::GradientStop{ slint::Brush(slint::Color::from_argb_encoded(+4.290035454e9)).transparentize(0.85).color(), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : slint::Brush(slint::Color::from_argb_encoded(0))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10249,7 +10249,7 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
     self->field_update_tab_ta_235.enabled.set(true);
     self->field_text_236.color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.2865471e9)));
+                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? slint::Color::from_argb_encoded(+4.279308571e9) : (self->field_update_tab_ta_235.has_hover.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.2865471e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10275,7 +10275,7 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field__shadow_237.blur.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? 12 : 0);
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? 12 : (self->field_installed_tab_ta_239.has_hover.get() ? 8 : 0));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10289,15 +10289,15 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
     self->field__shadow_237.border_top_right_radius.set(8);
     self->field__shadow_237.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? slint::Brush(slint::Color::from_argb_encoded(+4.285843436e9)).transparentize(0.3) : slint::Brush(slint::Color::from_argb_encoded(0))).color();
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? slint::Brush(slint::Color::from_argb_encoded(+4.285843436e9)).transparentize(0.3) : (self->field_installed_tab_ta_239.has_hover.get() ? slint::Brush(slint::Color::from_argb_encoded(+4.285843436e9)).transparentize(0.5) : slint::Brush(slint::Color::from_argb_encoded(0)))).color();
                         });
     self->field__shadow_237.offset_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? 3 : 0);
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? 3 : (self->field_installed_tab_ta_239.has_hover.get() ? 2 : 0));
                         });
     self->field_rectangle_238.background.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.285843436e9), float(0), }, slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.287225067e9), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : slint::Brush((self->field_installed_tab_ta_239.has_hover.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(0))));
+                            return (std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.285843436e9), float(0), }, slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+4.287225067e9), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : (self->field_installed_tab_ta_239.has_hover.get() ? [&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Brush(slint::Color::from_argb_encoded(+4.285843436e9)).transparentize(0.85).color(), float(0), }, slint::private_api::GradientStop{ slint::Brush(slint::Color::from_argb_encoded(+4.287225067e9)).transparentize(0.85).color(), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(90, stops, 2)); }() : slint::Brush(slint::Color::from_argb_encoded(0))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10314,7 +10314,7 @@ auto Component_empty_211::init (const class SharedGlobals* globals,slint::cbindg
     self->field_installed_tab_ta_239.enabled.set(true);
     self->field_text_240.color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.2865471e9)));
+                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_210_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? slint::Color::from_argb_encoded(+4.279308571e9) : (self->field_installed_tab_ta_239.has_hover.get() ? slint::Color::from_argb_encoded(+4.285843436e9) : slint::Color::from_argb_encoded(+4.2865471e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
