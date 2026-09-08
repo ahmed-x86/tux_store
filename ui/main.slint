@@ -1017,6 +1017,7 @@ export component MainWindow inherits Window {
     in property <UiInstallState> current_install;
     in property <[UiPackage]> current_suggestions: [];
     in-out property <string> search_query: "";
+    property <string> submitted_search: "";
     property <int> active_tab: 0;
 
     callback search_changed(string);
@@ -1064,14 +1065,16 @@ export component MainWindow inherits Window {
                             clicked => {
                                 root.active_tab = 0;
                                 root.search_query = "";
+                                root.submitted_search = "";
                                 root.search_changed("");
                             }
                         }
-                        Text {
-                            text: "🏠";
-                            font-size: 16px;
-                            horizontal-alignment: center;
-                            vertical-alignment: center;
+                        Image {
+                            source: @image-url("home.svg");
+                            width: 18px;
+                            height: 18px;
+                            colorize: home-ta.has-hover ? Theme.blue : Theme.text;
+                            animate colorize { duration: 150ms; }
                         }
                     }
 
@@ -1090,7 +1093,16 @@ export component MainWindow inherits Window {
                                 color: Theme.text;
                                 font-size: 13px;
                                 vertical-alignment: center;
-                                accepted => { root.search_changed(self.text); }
+                                accepted => { 
+                                    root.submitted_search = self.text;
+                                    root.search_changed(self.text); 
+                                }
+                                edited => {
+                                    if (self.text == "") {
+                                        root.submitted_search = "";
+                                        root.search_changed("");
+                                    }
+                                }
                             }
                         }
                     }
@@ -1117,7 +1129,10 @@ export component MainWindow inherits Window {
 
                     // 1. Home
                     Rectangle {
-                        horizontal-stretch: 1;
+                        min-width: 0px;
+                        property <float> stretch: root.active_tab == 0 ? 1.5 : 1.0;
+                        animate stretch { duration: 300ms; easing: ease-in-out; }
+                        horizontal-stretch: stretch;
                         border-radius: 8px;
                         background: root.active_tab == 0 ? @linear-gradient(90deg, #cba6f7, #74c7ec) : (home-tab-ta.has-hover ? @linear-gradient(90deg, #cba6f7.transparentize(0.85), #74c7ec.transparentize(0.85)) : transparent);
                         drop-shadow-blur: root.active_tab == 0 ? 12px : (home-tab-ta.has-hover ? 8px : 0px);
@@ -1139,7 +1154,10 @@ export component MainWindow inherits Window {
 
                     // 2. Update System
                     Rectangle {
-                        horizontal-stretch: 1;
+                        min-width: 0px;
+                        property <float> stretch: root.active_tab == 1 ? 1.5 : 1.0;
+                        animate stretch { duration: 300ms; easing: ease-in-out; }
+                        horizontal-stretch: stretch;
                         border-radius: 8px;
                         background: root.active_tab == 1 ? @linear-gradient(90deg, #89b4fa, #b4befe) : (update-tab-ta.has-hover ? @linear-gradient(90deg, #89b4fa.transparentize(0.85), #b4befe.transparentize(0.85)) : transparent);
                         drop-shadow-blur: root.active_tab == 1 ? 12px : (update-tab-ta.has-hover ? 8px : 0px);
@@ -1161,7 +1179,10 @@ export component MainWindow inherits Window {
 
                     // 3. Installed Apps
                     Rectangle {
-                        horizontal-stretch: 1;
+                        min-width: 0px;
+                        property <float> stretch: root.active_tab == 2 ? 1.5 : 1.0;
+                        animate stretch { duration: 300ms; easing: ease-in-out; }
+                        horizontal-stretch: stretch;
                         border-radius: 8px;
                         background: root.active_tab == 2 ? @linear-gradient(90deg, #74c7ec, #89dceb) : (installed-tab-ta.has-hover ? @linear-gradient(90deg, #74c7ec.transparentize(0.85), #89dceb.transparentize(0.85)) : transparent);
                         drop-shadow-blur: root.active_tab == 2 ? 12px : (installed-tab-ta.has-hover ? 8px : 0px);
@@ -1186,7 +1207,7 @@ export component MainWindow inherits Window {
 
         // Home Tab
         if root.active_tab == 0 : Rectangle {
-            if root.search_query != "" : grid-area := Flickable {
+            if root.submitted_search != "" : grid-area := Flickable {
                 property <length> card-w: 200px;
                 property <length> card-h: 180px;
                 property <length> gap: 16px;
@@ -1205,7 +1226,7 @@ export component MainWindow inherits Window {
                     clicked => { root.app_clicked(pkg); }
                 }
             }
-            if root.search_query == "" : home-feed := Flickable {
+            if root.submitted_search == "" : home-feed := Flickable {
                 viewport-height: feed-layout.preferred-height + 48px;
                 feed-layout := VerticalLayout {
                     y: 24px;
