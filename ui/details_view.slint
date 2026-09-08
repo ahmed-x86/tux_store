@@ -1,5 +1,5 @@
 import { Theme } from "theme.slint";
-import { UiPackage, UiPackageDetails, UiInstallState, UiPackageDependency } from "types.slint";
+import { UiPackage, UiPackageDetails, UiInstallState, UiPackageDependency, UiSpecialCase, UiAddon } from "types.slint";
 import { SuggestionCard, DepRow } from "components.slint";
 
 export component DetailsView inherits Rectangle {
@@ -7,6 +7,7 @@ export component DetailsView inherits Rectangle {
     in property <UiPackageDetails> details;
     in property <UiInstallState> install_state;
     in property <[UiPackage]> suggestions;
+    in property <UiSpecialCase> special_case;
     in property <int> accent_idx;
     property <bool> show_console: false;
     property <bool> show_uninstall_modal: false;
@@ -15,6 +16,7 @@ export component DetailsView inherits Rectangle {
     callback remove_clicked(string);
     callback suggestion_clicked(UiPackage);
     callback open_url(string, string);
+    callback addon_clicked(string);
 
     property <color> accent: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
 
@@ -187,6 +189,35 @@ export component DetailsView inherits Rectangle {
                         text: "Version " + pkg.version;
                         color: Theme.overlay1;
                         font-size: 12px;
+                    }
+                    
+                    if special_case.is_addon_for != "" : Rectangle {
+                        background: Theme.surface0;
+                        border-radius: 8px;
+                        height: 32px;
+                        HorizontalLayout {
+                            padding-left: 12px;
+                            padding-right: 12px;
+                            spacing: 12px;
+                            alignment: start;
+                            Text {
+                                text: "ℹ️ This package is an addon for";
+                                color: Theme.subtext0;
+                                font-size: 13px;
+                                vertical-alignment: center;
+                            }
+                            TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { root.addon_clicked(special_case.is_addon_for); }
+                                Text {
+                                    text: special_case.is_addon_for;
+                                    color: root.accent;
+                                    font-size: 13px;
+                                    font-weight: 700;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -438,6 +469,53 @@ export component DetailsView inherits Rectangle {
                                     font-weight: 700;
                                     horizontal-alignment: right;
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---- Special Cases (Addons / Language Packs) -----------------
+            if special_case.is_special : Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+                
+                VerticalLayout {
+                    padding: 26px;
+                    spacing: 12px;
+
+                    Text {
+                        text: special_case.type_name;
+                        color: Theme.text;
+                        font-size: 16px;
+                        font-weight: 700;
+                    }
+                    
+                    for item in special_case.items : Rectangle {
+                        height: 38px;
+                        background: ta-addon.has-hover ? Theme.surface0 : transparent;
+                        border-radius: 8px;
+                        ta-addon := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => { root.addon_clicked(item.pkg_name); }
+                        }
+                        HorizontalLayout {
+                            padding-left: 12px;
+                            padding-right: 12px;
+                            alignment: space-between;
+                            Text {
+                                text: item.name;
+                                color: Theme.text;
+                                font-size: 14px;
+                                vertical-alignment: center;
+                            }
+                            Text {
+                                text: item.pkg_name;
+                                color: Theme.subtext0;
+                                font-size: 12px;
+                                vertical-alignment: center;
                             }
                         }
                     }
