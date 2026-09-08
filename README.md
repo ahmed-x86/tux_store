@@ -1,6 +1,8 @@
+[🇸🇦 العربية](README_AR.md)
+
 # Tux Store
 
-A lightweight, native GUI package manager for **Arch Linux**, built with **Qt6** (backend/logic) and **Slint** (UI). Tux Store wraps `pacman` in a friendly app-store-like experience: browse curated apps, search the repositories, inspect real dependency/size breakdowns before installing, and watch a live weighted progress bar while `pacman` does the work.
+A lightweight, native GUI package manager for **Arch Linux**. The entire graphical interface is completely built with **Slint**, while **Qt6** handles the heavy lifting in the backend logic. Tux Store wraps `pacman` in a friendly app-store-like experience: browse curated apps, search the repositories, inspect real dependency/size breakdowns before installing, and watch a live weighted progress bar while `pacman` does the work.
 
 ![platform](https://img.shields.io/badge/platform-Arch%20Linux-1793d1)
 ![language](https://img.shields.io/badge/language-C%2B%2B20-blue)
@@ -24,10 +26,16 @@ A lightweight, native GUI package manager for **Arch Linux**, built with **Qt6**
   - on-disk caching so icons only need to be fetched once.
 - **"You might also like"** — a randomized suggestion shelf on the details page to encourage discovery.
 - **Root-aware installs** — uses `pkexec` for the native Polkit auth prompt, or runs directly if already root.
+- **Addons & Language Packs** — driven by a local JSON config system (in `special_case_packages/`) to link packages with their add-ons seamlessly (e.g., LibreOffice language packs). Clicking an addon automatically detects its parent and links back!
 
 ## Screenshots
 
-*(Add screenshots of the home grid and the details/install view here.)*
+![image1](image1.png)
+![image2](image2.png)
+![image3](image3.png)
+![image4](image4.png)
+![image5](image5.png)
+![image6](image6.png)
 
 ## Requirements
 
@@ -48,12 +56,10 @@ Slint is not currently in the official Arch repos as a prebuilt package for this
 ## Building
 
 ```bash
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
+cmake . && make -j$(nproc)
 ```
 
-This produces a `tuxstore` executable in the `build/` directory.
+This produces a `tuxstore` executable in the root directory.
 
 Run it with:
 
@@ -66,10 +72,11 @@ Run it with:
 ## Project Layout
 
 ```
-├── include/            # Public headers for all backend classes
-├── src/                # Backend implementation (Qt/C++) + main.cpp
-├── ui/                 # Slint UI: main.slint (views/components), theme.slint (design tokens)
-├── DOCS/               # In-depth developer documentation (see below)
+├── include/                # Public headers for all backend classes
+├── src/                    # Backend implementation (Qt/C++) + main.cpp
+├── ui/                     # Slint GUI (views, components, themes)
+├── special_case_packages/  # JSON configurations for Addons and Language Packs
+├── DOCS/                   # Expanded developer documentation
 ├── CMakeLists.txt
 └── README.md
 ```
