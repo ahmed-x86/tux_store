@@ -130,6 +130,69 @@ QVector<Package> PacmanManager::runDefaults()
     return pkgs;
 }
 
+Package PacmanManager::getPackageExact(const QString &pkgName)
+{
+    Package currentPkg;
+    currentPkg.name = pkgName;
+
+    // Check if installed
+    {
+        QProcess proc;
+        proc.start("pacman", {"-Q", pkgName});
+        proc.waitForFinished();
+        if (proc.exitCode() == 0) {
+            currentPkg.installed = true;
+        } else {
+            currentPkg.installed = false;
+        }
+    }
+
+    // Get info
+    {
+        QProcess proc;
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("LC_ALL", "C");
+        proc.setProcessEnvironment(env);
+        
+        proc.start("pacman", {"-Si", pkgName});
+        if (!proc.waitForFinished(10000)) {
+            proc.kill();
+            proc.waitForFinished();
+        }
+        
+        if (proc.exitCode() != 0) {
+            // Might be an AUR package, we just return a stub
+            currentPkg.repo = "aur";
+            currentPkg.version = "unknown";
+            currentPkg.description = "AUR Package or unknown repo";
+
+            return currentPkg;
+        }
+
+        const QString out = QString::fromUtf8(proc.readAllStandardOutput());
+        QString currentKey;
+        for (const QString &line : out.split('\n')) {
+            if (line.isEmpty()) continue;
+            
+            if (!line.startsWith(' ') && line.contains(':')) {
+                currentKey = line.section(':', 0, 0).trimmed();
+                QString val = line.section(':', 1).trimmed();
+                if (currentKey == "Repository") {
+                    currentPkg.repo = val;
+                } else if (currentKey == "Version") {
+                    currentPkg.version = val;
+                } else if (currentKey == "Description") {
+                    currentPkg.description = val;
+                }
+            } else if (line.startsWith("  ") && currentKey == "Description") {
+                currentPkg.description += " " + line.trimmed();
+            }
+        }
+    }
+    
+    return currentPkg;
+}
+
 QVector<Package> PacmanManager::runSearch(QString query)
 {
     qCDebug(logPacman) << "runSearch:" << query;
