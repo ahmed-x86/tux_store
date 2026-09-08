@@ -42,3 +42,15 @@ export struct UiInstallState {
     deps_ratio: float,    // fraction of the bar that belongs to new deps
     console_log: string,
 }
+
+export struct UiAddon {
+    name: string,
+    pkg_name: string,
+}
+
+export struct UiSpecialCase {
+    is_special: bool,
+    type_name: string, // e.g. "Language Packs" or "Addons"
+    items: [UiAddon],
+    is_addon_for: string, // e.g. "libreoffice-fresh"
+}
