@@ -10,6 +10,8 @@
 #include <QHash>
 #include <algorithm>
 #include <random>
+#include <QDesktopServices>
+#include <QUrl>
 #include "main.h"
 
 int main(int argc, char *argv[])
@@ -150,6 +152,49 @@ int main(int argc, char *argv[])
 
     ui->on_back_clicked([ui]() {
         ui->set_is_showing_details(false);
+    });
+
+    ui->on_open_url([](slint::SharedString repo_slint, slint::SharedString name_slint) {
+        QString repo = QString::fromStdString(std::string(repo_slint));
+        QString name = QString::fromStdString(std::string(name_slint));
+        
+        QString url;
+        QStringList officialRepos = {"core", "extra", "multilib", "testing", "core-testing", "extra-testing", "multilib-testing"};
+        
+        if (officialRepos.contains(repo)) {
+            url = QString("https://archlinux.org/packages/%1/x86_64/%2/").arg(repo, name);
+        } else if (repo.contains("aur") || repo == "chaotic-aur") {
+            url = QString("https://aur.archlinux.org/packages/%1").arg(name);
+        } else {
+            bool foundServer = false;
+            QFile file("/etc/pacman.conf");
+            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                QTextStream in(&file);
+                bool inRepo = false;
+                while (!in.atEnd()) {
+                    QString line = in.readLine().trimmed();
+                    if (line.startsWith("#")) continue;
+                    
+                    if (line.startsWith("[" + repo + "]")) {
+                        inRepo = true;
+                    } else if (line.startsWith("[")) {
+                        inRepo = false;
+                    } else if (inRepo && line.startsWith("Server")) {
+                        QString server = line.section('=', 1).trimmed();
+                        server.replace("$repo", repo);
+                        server.replace("$arch", "x86_64");
+                        url = server;
+                        foundServer = true;
+                        break;
+                    }
+                }
+            }
+            if (!foundServer) {
+                url = QString("https://archlinux.org/packages/?q=%1").arg(name);
+            }
+        }
+        
+        QDesktopServices::openUrl(QUrl(url));
     });
 
     QObject::connect(pacman, &PacmanManager::detailsReady, [ui, lastDetails](::PackageDetails cxxDetails) {
