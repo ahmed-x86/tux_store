@@ -103,8 +103,13 @@ int main(int argc, char *argv[])
     QObject::connect(pacman, &PacmanManager::resultsReady, refreshGrid);
     pacman->fetchDefaults();
 
-    ui->on_search_changed([pacman](slint::SharedString q) {
-        pacman->search(QString::fromStdString(std::string(q)));
+    ui->on_search_changed([ui, pacman, pkgModel](slint::SharedString q) {
+        while (pkgModel->row_count() > 0) pkgModel->erase(0);
+        if (q.empty()) {
+            pacman->fetchDefaults();
+        } else {
+            pacman->search(QString::fromStdString(std::string(q)));
+        }
     });
 
     ui->on_app_clicked([ui, pacman, pkgModel](UiPackage p) {
