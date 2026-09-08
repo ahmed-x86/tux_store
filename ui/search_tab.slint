@@ -1,0 +1,25 @@
+import { UiPackage } from "types.slint";
+import { AppCard } from "components.slint";
+
+export component SearchTab inherits Flickable {
+    in property <[UiPackage]> packages;
+    callback app_clicked(UiPackage);
+
+    property <length> card-w: 200px;
+    property <length> card-h: 180px;
+    property <length> gap: 16px;
+    property <length> pad: 24px;
+    property <int> cols: max(1, floor((self.width - pad * 2 + gap) / (card-w + gap)));
+    property <int> total-rows: packages.length > 0 ? floor((packages.length + cols - 1) / cols) : 0;
+    viewport-height: max(self.height, pad + total-rows * (card-h + gap));
+
+    for pkg[idx] in root.packages : AppCard {
+        x: root.pad + mod(idx, root.cols) * (root.card-w + root.gap);
+        y: root.pad + floor(idx / root.cols) * (root.card-h + root.gap);
+        width: root.card-w;
+        height: root.card-h;
+        pkg: pkg;
+        accent_idx: idx;
+        clicked => { root.app_clicked(pkg); }
+    }
+}
