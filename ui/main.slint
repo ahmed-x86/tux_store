@@ -1,5 +1,6 @@
 import { Theme } from "theme.slint";
 import { UiPackage, UiPackageDependency, UiPackageDetails, UiInstallState } from "types.slint";
+import { SettingsView } from "settings_view.slint";
 import { DetailsView } from "details_view.slint";
 import { HomeTab } from "home_tab.slint";
 import { SearchTab } from "search_tab.slint";
@@ -23,6 +24,7 @@ export component MainWindow inherits Window {
     in property <[UiPackage]> office: [];
     in property <[UiPackage]> communication: [];
     in property <bool> is_showing_details: false;
+    property <bool> is_showing_settings: false;
     in property <UiPackage> current_package;
     in property <UiPackageDetails> current_details;
     in property <UiInstallState> current_install;
@@ -37,7 +39,7 @@ export component MainWindow inherits Window {
     callback install_clicked(UiPackage);
     callback remove_clicked(UiPackage, string);
 
-    if !is_showing_details : VerticalLayout {
+    if !is_showing_details && !is_showing_settings : VerticalLayout {
         // Header bar
         Rectangle {
             height: 64px;
@@ -53,7 +55,25 @@ export component MainWindow inherits Window {
                 HorizontalLayout {
                     alignment: start;
                     spacing: 10px;
-                    Text { text: "🐧"; font-size: 22px; vertical-alignment: center; }
+                    VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 32px;
+                            height: 32px;
+                            settings_ta := TouchArea {
+                                clicked => {
+                                    root.is_showing_settings = true;
+                                }
+                            }
+                            Image {
+                                source: @image-url("settings.svg");
+                                width: 22px;
+                                height: 22px;
+                                colorize: settings_ta.has-hover ? Theme.blue : Theme.text;
+                                animate colorize { duration: 150ms; }
+                            }
+                        }
+                    }
                     VerticalLayout {
                         alignment: center;
                         Text { text: "Tux Store"; color: Theme.blue; font-size: 18px; font-weight: 700; }
@@ -249,5 +269,9 @@ export component MainWindow inherits Window {
         install_clicked => { root.install_clicked(root.current_package); }
         remove_clicked(flags) => { root.remove_clicked(root.current_package, flags); }
         suggestion_clicked(sug) => { root.app_clicked(sug); }
+    }
+
+    if is_showing_settings : SettingsView {
+        back_clicked => { root.is_showing_settings = false; }
     }
 }
