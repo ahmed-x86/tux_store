@@ -1,26 +1,40 @@
 export global Theme {
-    out property <color> base: #1e1e2e;
-    out property <color> mantle: #181825;
-    out property <color> crust: #11111b;
+    in-out property <bool> is-dark: true;
+
+    out property <color> base: is-dark ? #1e1e2e : #eff1f5;
+    out property <color> mantle: is-dark ? #181825 : #e6e9ef;
+    out property <color> crust: is-dark ? #11111b : #dce0e8;
     
-    out property <color> text: #cdd6f4;
-    out property <color> subtext1: #bac2de;
-    out property <color> subtext0: #a6adc8;
-    out property <color> overlay1: #7f849c;
-    out property <color> overlay0: #6c7086;
+    out property <color> text: is-dark ? #cdd6f4 : #4c4f69;
+    out property <color> subtext1: is-dark ? #bac2de : #5c5f77;
+    out property <color> subtext0: is-dark ? #a6adc8 : #6c6f85;
+    out property <color> overlay1: is-dark ? #7f849c : #8c8fa1;
+    out property <color> overlay0: is-dark ? #6c7086 : #9ca0b0;
     
-    out property <color> surface2: #585b70;
-    out property <color> surface1: #45475a;
-    out property <color> surface0: #313244;
+    out property <color> surface2: is-dark ? #585b70 : #acb0be;
+    out property <color> surface1: is-dark ? #45475a : #bcc0cc;
+    out property <color> surface0: is-dark ? #313244 : #ccd0da;
     
-    out property <color> red: #f38ba8;
-    out property <color> green: #a6e3a1;
-    out property <color> mauve: #cba6f7;
-    out property <color> pink: #f5c2e7;
-    out property <color> blue: #89b4fa;
+    out property <color> red: is-dark ? #f38ba8 : #d20f39;
+    out property <color> green: is-dark ? #a6e3a1 : #40a02b;
+    out property <color> mauve: is-dark ? #cba6f7 : #8839ef;
+    out property <color> pink: is-dark ? #f5c2e7 : #ea76cb;
+    out property <color> blue: is-dark ? #89b4fa : #1e66f5;
     
     out property <[color]> accents: [
-        #89b4fa, #cba6f7, #74c7ec, #b4befe, #94e2d5, #a6e3a1, #f9e2af, #fab387,
-        #eba0ac, #f38ba8, #f2cdcd, #f5c2e7, #89dceb, #f5e0dc
+        is-dark ? #89b4fa : #1e66f5,
+        is-dark ? #cba6f7 : #8839ef,
+        is-dark ? #74c7ec : #04a5e5,
+        is-dark ? #b4befe : #7287fd,
+        is-dark ? #94e2d5 : #179299,
+        is-dark ? #a6e3a1 : #40a02b,
+        is-dark ? #f9e2af : #df8e1d,
+        is-dark ? #fab387 : #fe640b,
+        is-dark ? #eba0ac : #e64553,
+        is-dark ? #f38ba8 : #d20f39,
+        is-dark ? #f2cdcd : #dd7878,
+        is-dark ? #f5c2e7 : #ea76cb,
+        is-dark ? #89dceb : #209fb5,
+        is-dark ? #f5e0dc : #dc8a78
     ];
 }
