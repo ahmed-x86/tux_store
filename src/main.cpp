@@ -12,11 +12,61 @@
 #include <random>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDir>
+#include <map>
 #include "main.h"
+
+struct SpecialCaseInfo {
+    bool has_addons = false;
+    QString type_name;
+    std::vector<std::pair<QString, QString>> items;
+};
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+    std::map<QString, SpecialCaseInfo> packageAddons;
+    std::map<QString, QString> addonToPackage;
+
+    QDir dir("special_case_packages");
+    if (dir.exists()) {
+        for (const QFileInfo &fi : dir.entryInfoList({"*.json"}, QDir::Files)) {
+            QFile file(fi.absoluteFilePath());
+            if (file.open(QIODevice::ReadOnly)) {
+                QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+                if (doc.isObject()) {
+                    QJsonObject obj = doc.object();
+                    QString pkgName = obj.value("package").toString();
+                    if (pkgName.isEmpty()) pkgName = fi.baseName();
+                    
+                    SpecialCaseInfo info;
+                    info.has_addons = true;
+                    if (obj.contains("language_packs")) {
+                        info.type_name = "Language Packs";
+                        QJsonObject packs = obj.value("language_packs").toObject();
+                        for (auto it = packs.begin(); it != packs.end(); ++it) {
+                            info.items.push_back({it.key(), it.value().toString()});
+                            addonToPackage[it.value().toString()] = pkgName;
+                        }
+                    } else if (obj.contains("addons")) {
+                        info.type_name = "Addons";
+                        QJsonObject addons = obj.value("addons").toObject();
+                        for (auto it = addons.begin(); it != addons.end(); ++it) {
+                            info.items.push_back({it.key(), it.value().toString()});
+                            addonToPackage[it.value().toString()] = pkgName;
+                        }
+                    }
+                    packageAddons[pkgName] = info;
+                }
+            }
+        }
+    }
 
     QDir cacheDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/icons");
     auto *iconFetcher = new IconFetcher(cacheDir, &app);
@@ -114,13 +164,12 @@ int main(int argc, char *argv[])
         }
     });
 
-    ui->on_app_clicked([ui, pacman, pkgModel](UiPackage p) {
+    ui->on_app_clicked([ui, pacman, pkgModel, packageAddons, addonToPackage](UiPackage p) {
         ui->set_current_package(p);
         UiPackageDetails pd;
         pd.is_loading = true;
         ui->set_current_details(pd);
 
-        // Reset install state whenever a different app is opened.
         UiInstallState ist;
         ist.is_installing = false;
         ist.is_uninstalling = false;
@@ -130,6 +179,32 @@ int main(int argc, char *argv[])
         ist.deps_ratio = 0.0f;
         ist.console_log = slint::SharedString("");
         ui->set_current_install(ist);
+
+        QString pName = QString::fromStdString(std::string(p.name));
+        UiSpecialCase sc;
+        sc.is_special = false;
+        sc.type_name = slint::SharedString("");
+        sc.is_addon_for = slint::SharedString("");
+
+        if (packageAddons.count(pName)) {
+            const auto &info = packageAddons.at(pName);
+            sc.is_special = true;
+            sc.type_name = slint::SharedString(info.type_name.toStdString());
+            std::vector<UiAddon> items;
+            for (const auto &item : info.items) {
+                UiAddon addon;
+                addon.name = slint::SharedString(item.first.toStdString());
+                addon.pkg_name = slint::SharedString(item.second.toStdString());
+                items.push_back(addon);
+            }
+            sc.items = std::make_shared<slint::VectorModel<UiAddon>>(items);
+        }
+
+        if (addonToPackage.count(pName)) {
+            sc.is_addon_for = slint::SharedString(addonToPackage.at(pName).toStdString());
+        }
+
+        ui->set_current_special_case(sc);
 
         // Build a small "You might also like" shelf: a random sample of
         // other packages from whatever is currently loaded in the grid,
@@ -152,6 +227,28 @@ int main(int argc, char *argv[])
 
     ui->on_back_clicked([ui]() {
         ui->set_is_showing_details(false);
+    });
+
+    ui->on_addon_clicked([ui, iconFetcher](slint::SharedString pkgNameStr) {
+        QString pkgName = QString::fromStdString(std::string(pkgNameStr));
+        QFutureWatcher<Package> *watcher = new QFutureWatcher<Package>();
+        QObject::connect(watcher, &QFutureWatcher<Package>::finished, [ui, watcher, iconFetcher]() {
+            Package p = watcher->result();
+            UiPackage uip;
+            uip.name = slint::SharedString(p.name.toStdString());
+            uip.pretty_name = slint::SharedString(prettifyName(p.name).toStdString());
+            uip.repo = slint::SharedString(p.repo.toStdString());
+            uip.version = slint::SharedString(p.version.toStdString());
+            uip.description = slint::SharedString(p.description.toStdString());
+            uip.installed = p.installed;
+            
+            ui->invoke_app_clicked(uip);
+            iconFetcher->request(p.name, 64);
+            watcher->deleteLater();
+        });
+        watcher->setFuture(QtConcurrent::run([pkgName]() {
+            return PacmanManager::getPackageExact(pkgName);
+        }));
     });
 
     ui->on_open_url([](slint::SharedString repo_slint, slint::SharedString name_slint) {
@@ -356,6 +453,11 @@ int main(int argc, char *argv[])
             }
         }
     });
+
+    QStringList args = app.arguments();
+    if (args.size() == 3 && args[1] == "openpackage") {
+        ui->invoke_addon_clicked(slint::SharedString(args[2].toStdString()));
+    }
 
     // Pump Qt events from within Slint's event loop
     slint::Timer t;
