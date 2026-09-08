@@ -23,6 +23,9 @@ public:
     // Async: fetches package details including size and dependencies
     void fetchDetails(const QString &pkgName);
 
+    // Sync: fetches exact package info
+    static Package getPackageExact(const QString &pkgName);
+
 signals:
     void resultsReady(QVector<Package> packages);
     void detailsReady(PackageDetails details);
