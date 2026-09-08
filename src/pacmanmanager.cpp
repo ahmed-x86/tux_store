@@ -65,14 +65,64 @@ QVector<Package> PacmanManager::runDefaults()
                             << "installed found:" << installed.size();
     }
 
+    QMap<QString, Package> parsedPkgs;
+    {
+        QProcess proc;
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("LC_ALL", "C");
+        proc.setProcessEnvironment(env);
+        
+        QStringList args = {"-Si"};
+        args << defaultApps();
+        proc.start("pacman", args);
+        if (!proc.waitForFinished(10000)) {
+            proc.kill();
+            proc.waitForFinished(1000);
+        }
+        
+        const QString out = QString::fromUtf8(proc.readAllStandardOutput());
+        Package currentPkg;
+        QString currentKey;
+        for (const QString &line : out.split('\n')) {
+            if (line.isEmpty()) continue;
+            
+            if (!line.startsWith(' ') && line.contains(':')) {
+                currentKey = line.section(':', 0, 0).trimmed();
+                QString val = line.section(':', 1).trimmed();
+                if (currentKey == "Name") {
+                    if (!currentPkg.name.isEmpty()) {
+                        parsedPkgs[currentPkg.name] = currentPkg;
+                    }
+                    currentPkg = Package{};
+                    currentPkg.name = val;
+                } else if (currentKey == "Repository") {
+                    currentPkg.repo = val;
+                } else if (currentKey == "Version") {
+                    currentPkg.version = val;
+                } else if (currentKey == "Description") {
+                    currentPkg.description = val;
+                }
+            } else if (line.startsWith("  ") && currentKey == "Description") {
+                currentPkg.description += " " + line.trimmed();
+            }
+        }
+        if (!currentPkg.name.isEmpty()) {
+            parsedPkgs[currentPkg.name] = currentPkg;
+        }
+    }
+
     QVector<Package> pkgs;
     pkgs.reserve(defaultApps().size());
     for (const QString &name : defaultApps()) {
         Package p;
-        p.repo = "extra";
-        p.name = name;
-        p.version = "latest";
-        p.description = "A popular package available in the Arch Linux repositories. Click to manage.";
+        if (parsedPkgs.contains(name)) {
+            p = parsedPkgs[name];
+        } else {
+            p.repo = "extra";
+            p.name = name;
+            p.version = "latest";
+            p.description = "A popular package available in the Arch Linux repositories. Click to manage.";
+        }
         p.installed = installed.contains(name);
         pkgs.push_back(p);
     }
