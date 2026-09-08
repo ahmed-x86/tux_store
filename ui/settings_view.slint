@@ -1,0 +1,189 @@
+import { Theme } from "theme.slint";
+
+export component SettingsView inherits Rectangle {
+    callback back_clicked();
+
+    background: Theme.base;
+
+    VerticalLayout {
+        // Top bar
+        Rectangle {
+            height: 64px;
+            background: Theme.mantle;
+            border-color: Theme.surface0;
+            border-width: 1px;
+
+            HorizontalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+                alignment: space-between;
+
+                HorizontalLayout {
+                    alignment: start;
+                    spacing: 10px;
+                    VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 32px;
+                            height: 32px;
+                            Image {
+                                source: @image-url("settings.svg");
+                                width: 22px;
+                                height: 22px;
+                                colorize: Theme.text;
+                            }
+                        }
+                    }
+                    VerticalLayout {
+                        alignment: center;
+                        Text { text: "Tux Store"; color: Theme.blue; font-size: 18px; font-weight: 700; }
+                        Text { text: "for Arch Linux"; color: Theme.overlay1; font-size: 11px; }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 12px;
+                    y: 14px;
+
+                    Rectangle {
+                        width: 90px;
+                        height: 36px;
+                        background: back-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-radius: 10px;
+                        border-color: Theme.surface1;
+                        border-width: 1px;
+                        back-ta := TouchArea { clicked => { root.back_clicked(); } }
+                        Text {
+                            text: "⟨ Back";
+                            color: Theme.text;
+                            font-size: 13px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+        }
+
+        Flickable {
+            viewport-height: main_layout.preferred-height;
+            
+            main_layout := VerticalLayout {
+                padding-left: max(32px, (parent.width - 800px) / 2);
+                padding-right: max(32px, (parent.width - 800px) / 2);
+                padding-top: 40px;
+                padding-bottom: 64px;
+                spacing: 32px;
+                alignment: start;
+
+                Text {
+                    text: "Settings";
+                    color: Theme.text;
+                    font-size: 28px;
+                    font-weight: 800;
+                }
+
+                VerticalLayout {
+                    spacing: 12px;
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        Text {
+                            text: "APPEARANCE";
+                            color: Theme.overlay1;
+                            font-size: 12px;
+                            font-weight: 800;
+                            letter-spacing: 1px;
+                        }
+                    }
+
+                    Rectangle {
+                        background: Theme.surface0;
+                        border-radius: 12px;
+                        border-width: 1px;
+                        border-color: Theme.surface1;
+                        
+                        VerticalLayout {
+                            padding: 20px;
+                            spacing: 16px;
+
+                            HorizontalLayout {
+                                alignment: space-between;
+                                VerticalLayout {
+                                    alignment: center;
+                                    spacing: 4px;
+                                    Text {
+                                        text: "App Theme";
+                                        color: Theme.text;
+                                        font-size: 16px;
+                                        font-weight: 600;
+                                    }
+                                    Text {
+                                        text: "Select your preferred color scheme";
+                                        color: Theme.overlay0;
+                                        font-size: 13px;
+                                    }
+                                }
+
+                                HorizontalLayout {
+                                    spacing: 12px;
+                                    alignment: center;
+                                    
+                                    // Light Theme Button
+                                    Rectangle {
+                                        width: 110px;
+                                        border-radius: 8px;
+                                        border-width: 1px;
+                                        border-color: !Theme.is-dark ? Theme.blue : Theme.surface2;
+                                        background: !Theme.is-dark ? Theme.blue.transparentize(0.85) : Theme.surface1;
+                                        animate border-color { duration: 150ms; }
+                                        animate background { duration: 150ms; }
+                                        
+                                        light_ta := TouchArea { clicked => { Theme.is-dark = false; } }
+                                        
+                                        HorizontalLayout {
+                                            padding-top: 8px; padding-bottom: 8px;
+                                            alignment: center;
+                                            Text {
+                                                text: "Light";
+                                                color: !Theme.is-dark ? Theme.blue : Theme.text;
+                                                font-weight: !Theme.is-dark ? 700 : 500;
+                                                font-size: 14px;
+                                                vertical-alignment: center;
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Dark Theme Button
+                                    Rectangle {
+                                        width: 110px;
+                                        border-radius: 8px;
+                                        border-width: 1px;
+                                        border-color: Theme.is-dark ? Theme.blue : Theme.surface2;
+                                        background: Theme.is-dark ? Theme.blue.transparentize(0.85) : Theme.surface1;
+                                        animate border-color { duration: 150ms; }
+                                        animate background { duration: 150ms; }
+                                        
+                                        dark_ta := TouchArea { clicked => { Theme.is-dark = true; } }
+                                        
+                                        HorizontalLayout {
+                                            padding-top: 8px; padding-bottom: 8px;
+                                            alignment: center;
+                                            Text {
+                                                text: "Dark";
+                                                color: Theme.is-dark ? Theme.blue : Theme.text;
+                                                font-weight: Theme.is-dark ? 700 : 500;
+                                                font-size: 14px;
+                                                vertical-alignment: center;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
