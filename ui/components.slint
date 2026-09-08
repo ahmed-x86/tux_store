@@ -1,0 +1,252 @@
+import { Theme } from "theme.slint";
+import { UiPackage, UiPackageDependency } from "types.slint";
+
+export component AppCard inherits Rectangle {
+    in property <UiPackage> pkg;
+    in property <int> accent_idx;
+    callback clicked();
+
+    background: ta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-color: ta.has-hover ? Theme.surface2 : Theme.surface1;
+    border-width: 1px;
+    border-radius: 12px;
+
+    ta := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    VerticalLayout {
+        padding: 20px;
+        spacing: 12px;
+        alignment: center;
+
+        HorizontalLayout {
+            alignment: center;
+            if pkg.icon.width > 0 : Image {
+                source: pkg.icon;
+                width: 64px;
+                height: 64px;
+            }
+            if pkg.icon.width == 0 : Rectangle {
+                width: 64px;
+                height: 64px;
+                background: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
+                border-radius: 12px;
+                Text {
+                    text: "↻";
+                    color: Theme.crust;
+                    font-size: 24px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        VerticalLayout {
+            spacing: 3px;
+            Text {
+                text: pkg.pretty_name;
+                color: Theme.text;
+                font-weight: 700;
+                font-size: 14px;
+                horizontal-alignment: center;
+                overflow: elide;
+            }
+            Text {
+                text: pkg.repo + " • " + pkg.version;
+                color: Theme.overlay1;
+                font-size: 11px;
+                horizontal-alignment: center;
+                overflow: elide;
+            }
+            Text {
+                text: pkg.installed ? "Installed" : "Not Installed";
+                color: pkg.installed ? Theme.green : Theme.overlay0;
+                font-size: 11px;
+                font-weight: 700;
+                horizontal-alignment: center;
+            }
+        }
+    }
+}
+
+export component SuggestionCard inherits Rectangle {
+    in property <UiPackage> pkg;
+    in property <int> accent_idx;
+    callback clicked();
+
+    width: 168px;
+    height: 190px;
+    background: sta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-color: sta.has-hover ? Theme.accents[mod(root.accent_idx, Theme.accents.length)] : Theme.surface1;
+    border-width: 1px;
+    border-radius: 14px;
+
+    sta := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    VerticalLayout {
+        padding: 18px;
+        spacing: 10px;
+        alignment: start;
+
+        if pkg.icon.width > 0 : Image {
+            source: pkg.icon;
+            width: 48px;
+            height: 48px;
+            horizontal-alignment: left;
+        }
+        if pkg.icon.width == 0 : Rectangle {
+            width: 48px;
+            height: 48px;
+            background: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
+            border-radius: 10px;
+        }
+
+        VerticalLayout {
+            spacing: 4px;
+            Text {
+                text: pkg.pretty_name;
+                color: Theme.text;
+                font-weight: 700;
+                font-size: 13px;
+                overflow: elide;
+            }
+            Text {
+                text: pkg.repo;
+                color: Theme.overlay1;
+                font-size: 10px;
+                overflow: elide;
+            }
+        }
+
+        Rectangle { vertical-stretch: 1; }
+
+        Text {
+            text: pkg.installed ? "Installed" : "View details";
+            color: pkg.installed ? Theme.green : Theme.accents[mod(root.accent_idx, Theme.accents.length)];
+            font-size: 11px;
+            font-weight: 700;
+        }
+    }
+}
+
+export component AppRow inherits Rectangle {
+    in property <string> title;
+    in property <[UiPackage]> pkgs;
+    in property <int> row_idx;
+    callback clicked(UiPackage);
+
+    height: pkgs.length > 0 ? 260px : 0px;
+    clip: true;
+
+    if pkgs.length > 0 : VerticalLayout {
+        spacing: 12px;
+        padding-left: 24px;
+        padding-right: 24px;
+        
+        Text {
+            text: root.title;
+            font-size: 20px;
+            font-weight: 800;
+            color: Theme.text;
+        }
+
+        Rectangle {
+            height: 190px;
+            flick := Flickable {
+                viewport-width: max(self.width, pkgs.length * (200px + 16px));
+                
+                HorizontalLayout {
+                    spacing: 16px;
+                    for pkg[idx] in root.pkgs : AppCard {
+                        width: 200px;
+                        height: 180px;
+                        pkg: pkg;
+                        accent_idx: root.row_idx * 10 + idx;
+                        clicked => { root.clicked(pkg); }
+                    }
+                }
+            }
+        }
+
+        // Custom horizontal scrollbar
+        scroll-track := Rectangle {
+            height: 6px;
+            border-radius: 3px;
+            background: Theme.surface0;
+            
+            property <length> content-width: max(flick.viewport-width, flick.width);
+            property <length> visible-width: flick.width;
+            property <length> thumb-width: max(36px, self.width * (visible-width / content-width));
+            property <length> max-thumb-x: self.width - thumb-width;
+            property <length> max-scroll: content-width - visible-width;
+            property <length> thumb-x: max-thumb-x > 0px ? (-flick.viewport-x / max(1px, max-scroll)) * max-thumb-x : 0px;
+
+            thumb := Rectangle {
+                x: scroll-track.thumb-x;
+                y: 0px;
+                width: scroll-track.thumb-width;
+                height: 6px;
+                border-radius: 3px;
+                background: thumb-ta.has-hover || thumb-ta.pressed ? Theme.blue : Theme.surface2;
+            }
+
+            thumb-ta := TouchArea {
+                property <length> press-thumb-x: 0px;
+                pointer-event(event) => {
+                    if event.kind == PointerEventKind.down { press-thumb-x = scroll-track.thumb-x; }
+                }
+                moved => {
+                    if self.pressed && scroll-track.max-thumb-x > 0px {
+                        flick.viewport-x = -(max(0px, min(scroll-track.max-thumb-x, press-thumb-x + (self.mouse-x - self.pressed-x))) / scroll-track.max-thumb-x) * scroll-track.max-scroll;
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component DepRow inherits Rectangle {
+    in property <UiPackageDependency> dep;
+    in property <color> accent;
+
+    height: 34px;
+
+    HorizontalLayout {
+        spacing: 10px;
+        alignment: start;
+
+        Rectangle {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            background: dep.installed ? Theme.surface1 : root.accent.transparentize(0.82);
+            Text {
+                text: dep.installed ? "✓" : "↓";
+                color: dep.installed ? Theme.overlay1 : root.accent;
+                font-size: 11px;
+                font-weight: 700;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: dep.name;
+            color: dep.installed ? Theme.subtext0 : Theme.subtext1;
+            font-size: 13px;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+        }
+
+        Text {
+            text: dep.size_str;
+            color: dep.installed ? Theme.overlay1 : Theme.subtext0;
+            font-size: 12px;
+            font-weight: dep.installed ? 400 : 700;
+            vertical-alignment: center;
+        }
+    }
+}
