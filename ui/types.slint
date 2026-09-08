@@ -1,0 +1,44 @@
+export struct UiPackage {
+    name: string,
+    pretty_name: string,
+    repo: string,
+    version: string,
+    description: string,
+    installed: bool,
+    icon: image,
+}
+
+export struct UiPackageDependency {
+    name: string,
+    size_str: string,
+    installed: bool,
+}
+
+export struct UiPackageDetails {
+    app_size_str: string,
+    dependencies: [UiPackageDependency],
+    installed_deps_size_str: string,
+    new_deps_size_str: string,
+    download_size_str: string,
+    // Proportions of the breakdown bar, each in [0, 1], summing to ~1.
+    // Kept as pre-computed ratios (rather than raw bytes) so the UI never
+    // needs to parse the display strings to size the bar segments.
+    installed_ratio: float,
+    new_ratio: float,
+    app_ratio: float,
+    // Mirrors pacman's own transaction summary line for line.
+    total_download_str: string,
+    total_installed_str: string,
+    net_upgrade_str: string,
+    is_loading: bool,
+}
+
+export struct UiInstallState {
+    is_installing: bool,
+    is_uninstalling: bool,
+    finished: bool,
+    success: bool,
+    progress: float,      // 0..1 overall weighted progress
+    deps_ratio: float,    // fraction of the bar that belongs to new deps
+    console_log: string,
+}
