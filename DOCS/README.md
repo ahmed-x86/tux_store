@@ -8,8 +8,9 @@ This directory contains in-depth documentation for contributors. If you're new t
 4. **[INSTALL_MANAGER.md](INSTALL_MANAGER.md)** — how installs are launched, elevated, streamed, parsed, and turned into a progress bar.
 5. **[ICON_FETCHER.md](ICON_FETCHER.md)** — the icon resolution pipeline: system theme, disk cache, and the networked icon-theme repo fallback with its concurrency controls.
 6. **[UI_LAYER.md](UI_LAYER.md)** — the Slint side: components, structs shared with C++, and the theming system.
-7. **[LOGGING.md](LOGGING.md)** — logging categories and conventions used across the backend.
-8. **[CONTRIBUTING.md](CONTRIBUTING.md)** — coding conventions, PR expectations, and good first areas to work on.
+7. **[ADDONS_SYSTEM.md](ADDONS_SYSTEM.md)** — how the JSON-driven Addons and Language Packs system works, including reverse lookups and direct navigation.
+8. **[LOGGING.md](LOGGING.md)** — logging categories and conventions used across the backend.
+9. **[CONTRIBUTING.md](CONTRIBUTING.md)** — coding conventions, PR expectations, and good first areas to work on.
 
 ## Module Map
 
@@ -19,9 +20,10 @@ This directory contains in-depth documentation for contributors. If you're new t
 | Pacman queries | `include/pacmanmanager.h` | `src/pacmanmanager.cpp` | Async `pacman` queries: defaults, search, details |
 | Install flow | `include/installmanager.h` | `src/installmanager.cpp` | Runs & parses `pacman -S`, weighted progress |
 | Icon fetching | `include/iconfetcher.h` | `src/iconfetcher.cpp` | Resolves & caches app icons from multiple sources |
+| Special Cases | JSON Config | `src/main.cpp` | Parsing `special_case_packages/` for Addons and Language Packs |
 | Logging | `include/log.h` | `src/log.cpp` | Central `QLoggingCategory` setup + formatter |
 | Entry point / glue | — | `src/main.cpp` | Wires backend signals to the Slint UI, owns UI-facing state |
-| UI | — | `ui/main.slint`, `ui/theme.slint` | All visual layout, components, and the Catppuccin-based theme |
+| UI | — | `ui/main.slint`, `ui/theme.slint`, etc. | All visual layout, components, and the Catppuccin-based theme |
 
 ## Design Principles Used Throughout
 
