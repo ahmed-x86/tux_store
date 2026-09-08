@@ -14,6 +14,7 @@ export component DetailsView inherits Rectangle {
     callback install_clicked();
     callback remove_clicked(string);
     callback suggestion_clicked(UiPackage);
+    callback open_url(string, string);
 
     property <color> accent: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
 
@@ -112,27 +113,64 @@ export component DetailsView inherits Rectangle {
                     HorizontalLayout {
                         spacing: 14px;
                         alignment: start;
-                        Text {
-                            text: pkg.pretty_name;
-                            color: Theme.text;
-                            font-size: 30px;
-                            font-weight: 700;
-                            letter-spacing: -0.5px;
-                            vertical-alignment: center;
-                        }
-                        Rectangle {
-                            width: instTxt.width + 20px;
-                            height: 24px;
-                            border-radius: 12px;
-                            background: pkg.installed ? Theme.green.transparentize(0.85) : Theme.surface1;
-                            y: 3px;
-                            instTxt := Text {
-                                text: pkg.installed ? "Installed" : pkg.repo;
-                                color: pkg.installed ? Theme.green : Theme.subtext0;
-                                font-size: 11px;
+                        
+                        HorizontalLayout {
+                            spacing: 8px;
+                            Text {
+                                text: pkg.pretty_name;
+                                color: Theme.text;
+                                font-size: 30px;
                                 font-weight: 700;
-                                horizontal-alignment: center;
-                                vertical-alignment: center;
+                                letter-spacing: -0.5px;
+                                vertical-alignment: bottom;
+                            }
+                            Text {
+                                text: pkg.name;
+                                color: Theme.overlay0;
+                                font-size: 16px;
+                                font-weight: 500;
+                                vertical-alignment: bottom;
+                            }
+                        }
+
+                        HorizontalLayout {
+                            spacing: 8px;
+                            y: 8px; // align visually
+                            if pkg.installed : Rectangle {
+                                width: instTxt.width + 20px;
+                                height: 24px;
+                                border-radius: 12px;
+                                background: Theme.green.transparentize(0.85);
+                                instTxt := Text {
+                                    text: "Installed";
+                                    color: Theme.green;
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+
+                            Rectangle {
+                                width: repoTxt.width + 20px;
+                                height: 24px;
+                                border-radius: 12px;
+                                background: repo_ta.has-hover ? Theme.surface2 : Theme.surface1;
+                                animate background { duration: 150ms; }
+                                repo_ta := TouchArea {
+                                    mouse-cursor: pointer;
+                                    clicked => {
+                                        root.open_url(pkg.repo, pkg.name);
+                                    }
+                                }
+                                repoTxt := Text {
+                                    text: pkg.repo;
+                                    color: Theme.subtext0;
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
                             }
                         }
                     }
