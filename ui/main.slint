@@ -38,6 +38,7 @@ export component MainWindow inherits Window {
     callback back_clicked();
     callback install_clicked(UiPackage);
     callback remove_clicked(UiPackage, string);
+    callback open_url(string, string);
 
     if !is_showing_details && !is_showing_settings : VerticalLayout {
         // Header bar
@@ -269,6 +270,7 @@ export component MainWindow inherits Window {
         install_clicked => { root.install_clicked(root.current_package); }
         remove_clicked(flags) => { root.remove_clicked(root.current_package, flags); }
         suggestion_clicked(sug) => { root.app_clicked(sug); }
+        open_url(repo, name) => { root.open_url(repo, name); }
     }
 
     if is_showing_settings : SettingsView {
