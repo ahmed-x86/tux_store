@@ -1,5 +1,5 @@
 import { Theme } from "theme.slint";
-import { UiPackage, UiPackageDependency, UiPackageDetails, UiInstallState } from "types.slint";
+import { UiPackage, UiPackageDependency, UiPackageDetails, UiInstallState, UiSpecialCase, UiAddon } from "types.slint";
 import { SettingsView } from "settings_view.slint";
 import { DetailsView } from "details_view.slint";
 import { HomeTab } from "home_tab.slint";
@@ -7,7 +7,7 @@ import { SearchTab } from "search_tab.slint";
 import { UpdateTab } from "update_tab.slint";
 import { InstalledTab } from "installed_tab.slint";
 
-export { UiPackage, UiPackageDependency, UiPackageDetails, UiInstallState }
+export { UiPackage, UiPackageDependency, UiPackageDetails, UiInstallState, UiSpecialCase, UiAddon }
 
 export component MainWindow inherits Window {
     title: "Tux Store";
@@ -23,12 +23,13 @@ export component MainWindow inherits Window {
     in property <[UiPackage]> dev: [];
     in property <[UiPackage]> office: [];
     in property <[UiPackage]> communication: [];
-    in property <bool> is_showing_details: false;
+    in-out property <bool> is_showing_details: false;
     property <bool> is_showing_settings: false;
     in property <UiPackage> current_package;
-    in property <UiPackageDetails> current_details;
-    in property <UiInstallState> current_install;
-    in property <[UiPackage]> current_suggestions: [];
+    in-out property <UiPackageDetails> current_details;
+    in-out property <UiInstallState> current_install;
+    in-out property <[UiPackage]> current_suggestions: [];
+    in-out property <UiSpecialCase> current_special_case: { is_special: false, type_name: "", items: [], is_addon_for: "" };
     in-out property <string> search_query: "";
     property <string> submitted_search: "";
     property <int> active_tab: 0;
@@ -39,6 +40,7 @@ export component MainWindow inherits Window {
     callback install_clicked(UiPackage);
     callback remove_clicked(UiPackage, string);
     callback open_url(string, string);
+    callback addon_clicked(string);
 
     if !is_showing_details && !is_showing_settings : VerticalLayout {
         // Header bar
@@ -264,13 +266,16 @@ export component MainWindow inherits Window {
         details: root.current_details;
         install_state: root.current_install;
         suggestions: root.current_suggestions;
-        // Fallback accent index
+        special_case: root.current_special_case;
         accent_idx: 4;
         back_clicked => { root.back_clicked(); }
         install_clicked => { root.install_clicked(root.current_package); }
         remove_clicked(flags) => { root.remove_clicked(root.current_package, flags); }
-        suggestion_clicked(sug) => { root.app_clicked(sug); }
+        suggestion_clicked(pkg) => { root.app_clicked(pkg); }
         open_url(repo, name) => { root.open_url(repo, name); }
+        addon_clicked(pkg_name) => {
+            root.addon_clicked(pkg_name);
+        }
     }
 
     if is_showing_settings : SettingsView {
