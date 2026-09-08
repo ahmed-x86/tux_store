@@ -1,0 +1,701 @@
+import { Theme } from "theme.slint";
+import { UiPackage, UiPackageDetails, UiInstallState, UiPackageDependency } from "types.slint";
+import { SuggestionCard, DepRow } from "components.slint";
+
+export component DetailsView inherits Rectangle {
+    in property <UiPackage> pkg;
+    in property <UiPackageDetails> details;
+    in property <UiInstallState> install_state;
+    in property <[UiPackage]> suggestions;
+    in property <int> accent_idx;
+    property <bool> show_console: false;
+    property <bool> show_uninstall_modal: false;
+    callback back_clicked();
+    callback install_clicked();
+    callback remove_clicked(string);
+    callback suggestion_clicked(UiPackage);
+
+    property <color> accent: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
+
+    background: Theme.base;
+
+    VerticalLayout {
+        // Top bar — same chrome as the home page, with Back where search usually sits.
+        Rectangle {
+            height: 64px;
+            background: Theme.mantle;
+            border-color: Theme.surface0;
+            border-width: 1px;
+
+            HorizontalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+                alignment: space-between;
+
+                HorizontalLayout {
+                    alignment: start;
+                    spacing: 10px;
+                    Text { text: "🐧"; font-size: 22px; vertical-alignment: center; }
+                    VerticalLayout {
+                        alignment: center;
+                        Text { text: "Tux Store"; color: Theme.blue; font-size: 18px; font-weight: 700; }
+                        Text { text: "for Arch Linux"; color: Theme.overlay1; font-size: 11px; }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 12px;
+                    y: 14px;
+
+                    Rectangle {
+                        width: 90px;
+                        height: 36px;
+                        background: back-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-radius: 10px;
+                        border-color: Theme.surface1;
+                        border-width: 1px;
+                        back-ta := TouchArea { clicked => { root.back_clicked(); } }
+                        Text {
+                            text: "⟨ Back";
+                            color: Theme.text;
+                            font-size: 13px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+        }
+
+        Flickable {
+        VerticalLayout {
+            padding-left: 64px;
+            padding-right: 64px;
+            padding-top: 40px;
+            padding-bottom: 64px;
+            spacing: 32px;
+            alignment: start;
+
+            // ---- Header ------------------------------------------------
+            HorizontalLayout {
+                spacing: 26px;
+
+                if pkg.icon.width > 0 : Image {
+                    source: pkg.icon;
+                    width: 96px;
+                    height: 96px;
+                }
+                if pkg.icon.width == 0 : Rectangle {
+                    width: 96px;
+                    height: 96px;
+                    background: root.accent;
+                    border-radius: 22px;
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 8px;
+
+                    HorizontalLayout {
+                        spacing: 14px;
+                        alignment: start;
+                        Text {
+                            text: pkg.pretty_name;
+                            color: Theme.text;
+                            font-size: 30px;
+                            font-weight: 700;
+                            letter-spacing: -0.5px;
+                            vertical-alignment: center;
+                        }
+                        Rectangle {
+                            width: instTxt.width + 20px;
+                            height: 24px;
+                            border-radius: 12px;
+                            background: pkg.installed ? Theme.green.transparentize(0.85) : Theme.surface1;
+                            y: 3px;
+                            instTxt := Text {
+                                text: pkg.installed ? "Installed" : pkg.repo;
+                                color: pkg.installed ? Theme.green : Theme.subtext0;
+                                font-size: 11px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: pkg.description;
+                        color: Theme.subtext0;
+                        font-size: 14px;
+                        wrap: word-wrap;
+                        max-width: 560px;
+                    }
+
+                    Text {
+                        text: "Version " + pkg.version;
+                        color: Theme.overlay1;
+                        font-size: 12px;
+                    }
+                }
+
+                Rectangle { horizontal-stretch: 1; }
+
+                VerticalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 152px;
+                        height: 44px;
+                        background: pkg.installed ? Theme.surface0 : root.accent;
+                        border-color: pkg.installed ? Theme.red : root.accent;
+                        border-width: pkg.installed ? 1px : 0px;
+                        border-radius: 10px;
+                        TouchArea {
+                            clicked => {
+                                if pkg.installed { root.show_uninstall_modal = true; }
+                                else { root.install_clicked(); }
+                            }
+                        }
+                        Text {
+                            text: pkg.installed ? (install_state.is_uninstalling ? "Uninstalling…" : "Remove") : (install_state.is_installing ? "Installing…" : "Install");
+                            color: pkg.installed ? Theme.red : Theme.crust;
+                            font-size: 14px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            // ---- Install progress ---------------------------------------
+            if install_state.is_installing || install_state.is_uninstalling || install_state.finished : Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+
+                VerticalLayout {
+                    padding: 22px;
+                    spacing: 14px;
+
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text {
+                            text: !install_state.finished
+                                ? (install_state.is_uninstalling ? "Uninstalling…" : (install_state.progress >= 0.98 ? "Finishing up…" : "Installing…"))
+                                : (install_state.success ? (install_state.is_uninstalling ? "Uninstalled successfully" : "Installed successfully") : (install_state.is_uninstalling ? "Uninstallation failed" : "Installation failed"));
+                            color: install_state.finished && !install_state.success ? Theme.red : Theme.text;
+                            font-size: 15px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                        Text {
+                            text: round(install_state.progress * 100) + "%";
+                            color: Theme.overlay1;
+                            font-size: 13px;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 12px;
+
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            height: 10px;
+                            border-radius: 5px;
+                            background: Theme.surface1;
+                            clip: true;
+                            HorizontalLayout {
+                                Rectangle {
+                                    background: #89b4fa;
+                                    horizontal-stretch: max(0.0001, min(install_state.progress, install_state.deps_ratio));
+                                }
+                                Rectangle {
+                                    background: #cba6f7;
+                                    horizontal-stretch: max(0.0001, max(0.0, install_state.progress - install_state.deps_ratio));
+                                }
+                                Rectangle {
+                                    background: #6c7086;
+                                    horizontal-stretch: max(0.0001,
+                                        1.0 - min(install_state.progress, install_state.deps_ratio)
+                                            - max(0.0, install_state.progress - install_state.deps_ratio));
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: 100px;
+                            height: 34px;
+                            background: console-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                            border-color: Theme.surface2;
+                            border-width: 1px;
+                            border-radius: 8px;
+                            console-ta := TouchArea { clicked => { root.show_console = !root.show_console; } }
+                            Text {
+                                text: "Console";
+                                color: Theme.text;
+                                font-size: 12px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---- Download summary --------------------------------------
+            Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+
+                VerticalLayout {
+                    padding: 26px;
+                    spacing: 18px;
+
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text {
+                            text: "What you'll download";
+                            color: Theme.text;
+                            font-size: 16px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                        if !details.is_loading : Text {
+                            text: details.download_size_str;
+                            color: root.accent;
+                            font-size: 26px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    if details.is_loading : Text {
+                        text: "Calculating download size…";
+                        color: Theme.overlay1;
+                        font-size: 13px;
+                    }
+
+                    if !details.is_loading : VerticalLayout {
+                        spacing: 14px;
+
+                        // Breakdown bar — segment widths are the real proportion
+                        // of each part's size relative to the total footprint.
+                        Rectangle {
+                            height: 8px;
+                            border-radius: 4px;
+                            background: Theme.surface1;
+                            clip: true;
+                            HorizontalLayout {
+                                Rectangle { background: #6c7086; horizontal-stretch: max(0.0001, details.installed_ratio); }
+                                Rectangle { background: #89b4fa; horizontal-stretch: max(0.0001, details.new_ratio); }
+                                Rectangle { background: Theme.mauve; horizontal-stretch: max(0.0001, details.app_ratio); }
+                            }
+                        }
+
+                        HorizontalLayout {
+                            spacing: 24px;
+                            HorizontalLayout {
+                                spacing: 6px;
+                                alignment: start;
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: #6c7086; y: 2px; }
+                                Text {
+                                    text: "Already on disk: " + details.installed_deps_size_str;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                }
+                            }
+                            HorizontalLayout {
+                                spacing: 6px;
+                                alignment: start;
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: #89b4fa; y: 2px; }
+                                Text {
+                                    text: "New dependencies: " + details.new_deps_size_str;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                }
+                            }
+                            HorizontalLayout {
+                                spacing: 6px;
+                                alignment: start;
+                                Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: Theme.mauve; y: 2px; }
+                                Text {
+                                    text: "App itself: " + details.app_size_str;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                }
+                            }
+                        }
+
+                        Rectangle { height: 1px; background: Theme.surface0; }
+
+                        // pacman-style transaction summary
+                        HorizontalLayout {
+                            spacing: 0px;
+                            VerticalLayout {
+                                spacing: 4px;
+                                alignment: start;
+                                Text {
+                                    text: "Total Download";
+                                    color: Theme.overlay1;
+                                    font-size: 11px;
+                                }
+                                Text {
+                                    text: details.total_download_str;
+                                    color: Theme.text;
+                                    font-size: 17px;
+                                    font-weight: 700;
+                                }
+                            }
+                            Rectangle { horizontal-stretch: 1; }
+                            VerticalLayout {
+                                spacing: 4px;
+                                alignment: start;
+                                Text {
+                                    text: "Total Installed";
+                                    color: Theme.overlay1;
+                                    font-size: 11px;
+                                    horizontal-alignment: center;
+                                }
+                                Text {
+                                    text: details.total_installed_str;
+                                    color: Theme.text;
+                                    font-size: 17px;
+                                    font-weight: 700;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                            Rectangle { horizontal-stretch: 1; }
+                            VerticalLayout {
+                                spacing: 4px;
+                                alignment: end;
+                                Text {
+                                    text: "Net Upgrade";
+                                    color: Theme.overlay1;
+                                    font-size: 11px;
+                                    horizontal-alignment: right;
+                                }
+                                Text {
+                                    text: details.net_upgrade_str;
+                                    color: root.accent;
+                                    font-size: 17px;
+                                    font-weight: 700;
+                                    horizontal-alignment: right;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---- Dependencies list ---------------------------------------
+            if !details.is_loading && details.dependencies.length > 0 : Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+
+                VerticalLayout {
+                    padding: 26px;
+                    spacing: 4px;
+
+                    Text {
+                        text: "Dependencies (" + details.dependencies.length + ")";
+                        color: Theme.text;
+                        font-size: 16px;
+                        font-weight: 700;
+                    }
+                    Rectangle { height: 10px; }
+                    for dep in details.dependencies : DepRow {
+                        dep: dep;
+                        accent: root.accent;
+                    }
+                }
+            }
+
+            if !details.is_loading && details.dependencies.length == 0 : Rectangle {
+                background: Theme.mantle;
+                border-color: Theme.surface0;
+                border-width: 1px;
+                border-radius: 16px;
+                VerticalLayout {
+                    padding: 26px;
+                    Text {
+                        text: "No additional dependencies required.";
+                        color: Theme.subtext1;
+                        font-size: 13px;
+                    }
+                }
+            }
+
+            // ---- Suggestions ------------------------------------------
+            if suggestions.length > 0 : VerticalLayout {
+                spacing: 14px;
+
+                Text {
+                    text: "You might also like";
+                    color: Theme.text;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+
+                suggestions-flick := Flickable {
+                    height: 190px;
+                    viewport-width: suggestions.length * 184px;
+                    interactive: true;
+
+                    HorizontalLayout {
+                        spacing: 16px;
+                        for sug[sidx] in root.suggestions : SuggestionCard {
+                            pkg: sug;
+                            accent_idx: sidx + 1;
+                            clicked => { root.suggestion_clicked(sug); }
+                        }
+                    }
+                }
+
+                scroll-track := Rectangle {
+                    height: 8px;
+                    border-radius: 4px;
+                    background: Theme.surface0;
+
+                    property <length> content-width: max(suggestions-flick.viewport-width, suggestions-flick.width);
+                    property <length> visible-width: suggestions-flick.width;
+                    property <length> thumb-width: max(36px, self.width * (visible-width / content-width));
+                    property <length> max-thumb-x: self.width - thumb-width;
+                    property <length> max-scroll: content-width - visible-width;
+                    property <length> thumb-x: max-thumb-x > 0px
+                        ? (-suggestions-flick.viewport-x / max(1px, max-scroll)) * max-thumb-x
+                        : 0px;
+
+                    thumb := Rectangle {
+                        x: scroll-track.thumb-x;
+                        y: 0px;
+                        width: scroll-track.thumb-width;
+                        height: 8px;
+                        border-radius: 4px;
+                        background: thumb-ta.has-hover || thumb-ta.pressed ? root.accent : Theme.surface2;
+                    }
+
+                    thumb-ta := TouchArea {
+                        property <length> press-thumb-x: 0px;
+
+                        pointer-event(event) => {
+                            if event.kind == PointerEventKind.down {
+                                press-thumb-x = scroll-track.thumb-x;
+                            }
+                        }
+                        moved => {
+                            if self.pressed && scroll-track.max-thumb-x > 0px {
+                                suggestions-flick.viewport-x = -(max(0px, min(scroll-track.max-thumb-x,
+                                    press-thumb-x + (self.mouse-x - self.pressed-x))) / scroll-track.max-thumb-x) * scroll-track.max-scroll;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        }
+    }
+
+    // ---- Console overlay: raw pacman output ---------------------------
+    if root.show_console : Rectangle {
+        background: Theme.crust.transparentize(0.15);
+        TouchArea {} // swallows clicks behind the dialog
+
+        Rectangle {
+            x: 60px;
+            y: 60px;
+            width: parent.width - 120px;
+            height: parent.height - 120px;
+            background: Theme.mantle;
+            border-color: Theme.surface1;
+            border-width: 1px;
+            border-radius: 14px;
+
+            VerticalLayout {
+                padding: 20px;
+                spacing: 12px;
+
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text {
+                        text: "pacman output";
+                        color: Theme.text;
+                        font-size: 15px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                    }
+                    Rectangle {
+                        width: 80px;
+                        height: 30px;
+                        background: close-ta.has-hover ? Theme.surface2 : Theme.surface1;
+                        border-radius: 8px;
+                        close-ta := TouchArea { clicked => { root.show_console = false; } }
+                        Text {
+                            text: "Close";
+                            color: Theme.text;
+                            font-size: 12px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                Rectangle {
+                    vertical-stretch: 1;
+                    background: Theme.crust;
+                    border-radius: 8px;
+                    clip: true;
+                    Flickable {
+                        viewport-height: max(self.height, log-text.height + 20px);
+                        log-text := Text {
+                            x: 10px;
+                            y: 10px;
+                            width: parent.width - 20px;
+                            text: install_state.console_log;
+                            color: #a6e3a1;
+                            font-size: 11px;
+                            font-family: "monospace";
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ---- Uninstall overlay ---------------------------------------------
+    if root.show_uninstall_modal : Rectangle {
+        background: Theme.crust.transparentize(0.15);
+        TouchArea {} // swallows clicks behind the dialog
+
+        VerticalLayout {
+            alignment: center;
+            HorizontalLayout {
+                alignment: center;
+
+                Rectangle {
+                    width: min(700px, root.width - 40px);
+                    background: Theme.mantle;
+                    border-color: Theme.surface1;
+                    border-width: 1px;
+                    border-radius: 14px;
+
+                    VerticalLayout {
+                        padding: 30px;
+                        spacing: 20px;
+
+                        HorizontalLayout {
+                            alignment: space-between;
+                            Text {
+                                text: "Uninstall " + pkg.pretty_name;
+                                color: Theme.text;
+                                font-size: 20px;
+                                font-weight: 700;
+                                vertical-alignment: center;
+                            }
+                            Rectangle {
+                                width: 80px;
+                                height: 30px;
+                                background: close-uninstall-ta.has-hover ? Theme.surface2 : Theme.surface1;
+                                border-radius: 8px;
+                                close-uninstall-ta := TouchArea { clicked => { root.show_uninstall_modal = false; } }
+                                Text {
+                                    text: "Cancel";
+                                    color: Theme.text;
+                                    font-size: 13px;
+                                    font-weight: 700;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: "Please select how you want to uninstall this package:";
+                            color: Theme.subtext0;
+                            font-size: 14px;
+                        }
+
+                        VerticalLayout {
+                            spacing: 12px;
+                            alignment: start;
+
+                            // 1. -R
+                            Rectangle {
+                                background: r-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                                border-radius: 10px;
+                                r-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-R"); } }
+                                VerticalLayout {
+                                    padding: 16px; alignment: center; spacing: 4px;
+                                    Text { text: "Basic Uninstall"; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                                    Text { text: "Removes the app but keeps its settings and shared files."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                                }
+                            }
+
+                            // 2. -Rn
+                            Rectangle {
+                                background: rn-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                                border-radius: 10px;
+                                rn-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rn"); } }
+                                VerticalLayout {
+                                    padding: 16px; alignment: center; spacing: 4px;
+                                    Text { text: "Uninstall and Reset"; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                                    Text { text: "Removes the app and deletes all its settings."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                                }
+                            }
+
+                            // 3. -Rs
+                            Rectangle {
+                                background: rs-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                                border-radius: 10px;
+                                rs-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rs"); } }
+                                VerticalLayout {
+                                    padding: 16px; alignment: center; spacing: 4px;
+                                    Text { text: "Uninstall and Clean Shared Files"; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                                    Text { text: "Removes the app and shared files that are no longer needed. Keeps your settings."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                                }
+                            }
+
+                            // 4. -Rdd
+                            Rectangle {
+                                background: rdd-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                                border-radius: 10px;
+                                border-color: Theme.red;
+                                border-width: 1px;
+                                rdd-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rdd"); } }
+                                VerticalLayout {
+                                    padding: 16px; alignment: center; spacing: 4px;
+                                    Text { text: "Force Uninstall (Advanced)"; color: Theme.red; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                                    Text { text: "Removes the app even if other apps rely on it. May break things!"; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                                }
+                            }
+
+                            // 5. -Rns
+                            Rectangle {
+                                background: rns-ta.has-hover ? Theme.surface2 : Theme.surface1;
+                                border-radius: 10px;
+                                border-color: Theme.green;
+                                border-width: 1px;
+                                rns-ta := TouchArea { clicked => { root.show_uninstall_modal = false; root.remove_clicked("-Rns"); } }
+                                VerticalLayout {
+                                    padding: 16px; alignment: center; spacing: 4px;
+                                    Text { text: "Complete Uninstall (Recommended)"; color: Theme.green; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+                                    Text { text: "Safely removes the app, deletes its settings, and cleans up all unneeded files."; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
