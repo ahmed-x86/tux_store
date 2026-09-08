@@ -1986,26 +1986,27 @@ class Component_empty_211 {
     slint::private_api::Property<slint::SharedVector<float>> field_empty_211_empty_228_layout_cache;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_empty_228_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_empty_228_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_211_image_222_preferred_height;
+    slint::private_api::Property<float> field_empty_211_image_222_preferred_width;
     slint::private_api::Property<slint::SharedVector<float>> field_empty_211_layout_cache;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_layoutinfo_v;
     slint::private_api::Property<float> field_empty_211_rectangle_212_height;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_212_layoutinfo_v;
     slint::private_api::Property<float> field_empty_211_rectangle_212_width;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_220_layoutinfo_h;
-    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_220_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_211_rectangle_220_height;
+    slint::private_api::Property<float> field_empty_211_rectangle_223_height;
+    slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_223_layoutinfo_v;
     slint::private_api::Property<float> field_empty_211_rectangle_226_height;
     slint::private_api::Property<float> field_empty_211_rectangle_227_width;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_230_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_230_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_211_rectangle_230_stretch;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_234_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_234_layoutinfo_v;
+    slint::private_api::Property<float> field_empty_211_rectangle_234_stretch;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_238_layoutinfo_h;
     slint::private_api::Property<slint::cbindgen_private::LayoutInfo> field_empty_211_rectangle_238_layoutinfo_v;
-    slint::private_api::Property<float> field_empty_211_text_222_min_height;
-    slint::private_api::Property<float> field_empty_211_text_222_min_width;
-    slint::private_api::Property<float> field_empty_211_text_222_preferred_height;
-    slint::private_api::Property<float> field_empty_211_text_222_preferred_width;
+    slint::private_api::Property<float> field_empty_211_rectangle_238_stretch;
     slint::private_api::Property<float> field_empty_211_text_232_min_height;
     slint::private_api::Property<float> field_empty_211_text_232_min_width;
     slint::private_api::Property<float> field_empty_211_text_232_preferred_height;
@@ -2033,7 +2034,7 @@ class Component_empty_211 {
     slint::cbindgen_private::Empty field_empty_219 = {};
     slint::cbindgen_private::BasicBorderRectangle field_rectangle_220 = {};
     slint::cbindgen_private::TouchArea field_home_ta_221 = {};
-    slint::cbindgen_private::SimpleText field_text_222 = {};
+    slint::cbindgen_private::ImageItem field_image_222 = {};
     slint::cbindgen_private::BasicBorderRectangle field_rectangle_223 = {};
     slint::cbindgen_private::TextInput field_textinput_225 = {};
     slint::cbindgen_private::Rectangle field_rectangle_226 = {};
@@ -2052,7 +2053,11 @@ class Component_empty_211 {
     slint::cbindgen_private::SimpleText field_text_240 = {};
     slint::private_api::Conditional<class Component_rectangle_241> repeater_0;
     slint::private_api::Conditional<class Component_rectangle_259> repeater_1;
+    auto fn_empty_213_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
+    auto fn_empty_219_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
     auto fn_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
+    auto fn_rectangle_212_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
+    auto fn_rectangle_220_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo;
     auto init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void;
     auto user_init () -> void;
     auto layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo;
@@ -2169,6 +2174,7 @@ class MainWindow {
     slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_210_office;
     slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_210_packages;
     slint::private_api::Property<slint::SharedString> field_root_210_search_query;
+    slint::private_api::Property<slint::SharedString> field_root_210_submitted_search;
     slint::private_api::Property<std::shared_ptr<slint::Model<UiPackage>>> field_root_210_utilities;
     slint::private_api::Callback<void(UiPackage)> field_root_210_app_clicked;
     slint::private_api::Property<uint8_t> callback_tracker_root_210_app_clicked;
@@ -2260,6 +2266,8 @@ class MainWindow {
     private:
     auto get_active_tab () const = SLINT_DELETED_FUNCTION("the property 'active-tab' is declared as private. Declare it as 'in', 'out', or 'in-out' to make it public");
     auto set_active_tab (const auto &) const = SLINT_DELETED_FUNCTION("property 'active-tab' is declared as private. Declare it as 'in' or 'in-out' to make it public");
+    auto get_submitted_search () const = SLINT_DELETED_FUNCTION("the property 'submitted-search' is declared as private. Declare it as 'in', 'out', or 'in-out' to make it public");
+    auto set_submitted_search (const auto &) const = SLINT_DELETED_FUNCTION("property 'submitted-search' is declared as private. Declare it as 'in' or 'in-out' to make it public");
     public:
     auto show () -> void;
     auto hide () -> void;
