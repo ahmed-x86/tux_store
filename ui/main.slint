@@ -1119,17 +1119,17 @@ export component MainWindow inherits Window {
                     Rectangle {
                         horizontal-stretch: 1;
                         border-radius: 8px;
-                        background: root.active_tab == 0 ? @linear-gradient(90deg, #cba6f7, #74c7ec) : (home-tab-ta.has-hover ? Theme.surface0 : transparent);
-                        drop-shadow-blur: root.active_tab == 0 ? 12px : 0px;
-                        drop-shadow-color: root.active_tab == 0 ? #cba6f7.transparentize(0.3) : transparent;
-                        drop-shadow-offset-y: root.active_tab == 0 ? 3px : 0px;
+                        background: root.active_tab == 0 ? @linear-gradient(90deg, #cba6f7, #74c7ec) : (home-tab-ta.has-hover ? @linear-gradient(90deg, #cba6f7.transparentize(0.85), #74c7ec.transparentize(0.85)) : transparent);
+                        drop-shadow-blur: root.active_tab == 0 ? 12px : (home-tab-ta.has-hover ? 8px : 0px);
+                        drop-shadow-color: root.active_tab == 0 ? #cba6f7.transparentize(0.3) : (home-tab-ta.has-hover ? #cba6f7.transparentize(0.5) : transparent);
+                        drop-shadow-offset-y: root.active_tab == 0 ? 3px : (home-tab-ta.has-hover ? 2px : 0px);
                         animate background { duration: 200ms; easing: ease-in-out; }
                         animate drop-shadow-blur { duration: 200ms; }
                         
                         home-tab-ta := TouchArea { clicked => { root.active_tab = 0; } }
                         Text { 
                             text: "Home"; 
-                            color: root.active_tab == 0 ? Theme.crust : Theme.overlay1; 
+                            color: root.active_tab == 0 ? Theme.crust : (home-tab-ta.has-hover ? #cba6f7 : Theme.overlay1); 
                             font-weight: root.active_tab == 0 ? 800 : 600; 
                             font-size: 14px; 
                             horizontal-alignment: center; vertical-alignment: center; 
@@ -1141,17 +1141,17 @@ export component MainWindow inherits Window {
                     Rectangle {
                         horizontal-stretch: 1;
                         border-radius: 8px;
-                        background: root.active_tab == 1 ? @linear-gradient(90deg, #89b4fa, #b4befe) : (update-tab-ta.has-hover ? Theme.surface0 : transparent);
-                        drop-shadow-blur: root.active_tab == 1 ? 12px : 0px;
-                        drop-shadow-color: root.active_tab == 1 ? #89b4fa.transparentize(0.3) : transparent;
-                        drop-shadow-offset-y: root.active_tab == 1 ? 3px : 0px;
+                        background: root.active_tab == 1 ? @linear-gradient(90deg, #89b4fa, #b4befe) : (update-tab-ta.has-hover ? @linear-gradient(90deg, #89b4fa.transparentize(0.85), #b4befe.transparentize(0.85)) : transparent);
+                        drop-shadow-blur: root.active_tab == 1 ? 12px : (update-tab-ta.has-hover ? 8px : 0px);
+                        drop-shadow-color: root.active_tab == 1 ? #89b4fa.transparentize(0.3) : (update-tab-ta.has-hover ? #89b4fa.transparentize(0.5) : transparent);
+                        drop-shadow-offset-y: root.active_tab == 1 ? 3px : (update-tab-ta.has-hover ? 2px : 0px);
                         animate background { duration: 200ms; easing: ease-in-out; }
                         animate drop-shadow-blur { duration: 200ms; }
                         
                         update-tab-ta := TouchArea { clicked => { root.active_tab = 1; } }
                         Text { 
                             text: "Update System"; 
-                            color: root.active_tab == 1 ? Theme.crust : Theme.overlay1; 
+                            color: root.active_tab == 1 ? Theme.crust : (update-tab-ta.has-hover ? #89b4fa : Theme.overlay1); 
                             font-weight: root.active_tab == 1 ? 800 : 600; 
                             font-size: 14px; 
                             horizontal-alignment: center; vertical-alignment: center; 
@@ -1163,17 +1163,17 @@ export component MainWindow inherits Window {
                     Rectangle {
                         horizontal-stretch: 1;
                         border-radius: 8px;
-                        background: root.active_tab == 2 ? @linear-gradient(90deg, #74c7ec, #89dceb) : (installed-tab-ta.has-hover ? Theme.surface0 : transparent);
-                        drop-shadow-blur: root.active_tab == 2 ? 12px : 0px;
-                        drop-shadow-color: root.active_tab == 2 ? #74c7ec.transparentize(0.3) : transparent;
-                        drop-shadow-offset-y: root.active_tab == 2 ? 3px : 0px;
+                        background: root.active_tab == 2 ? @linear-gradient(90deg, #74c7ec, #89dceb) : (installed-tab-ta.has-hover ? @linear-gradient(90deg, #74c7ec.transparentize(0.85), #89dceb.transparentize(0.85)) : transparent);
+                        drop-shadow-blur: root.active_tab == 2 ? 12px : (installed-tab-ta.has-hover ? 8px : 0px);
+                        drop-shadow-color: root.active_tab == 2 ? #74c7ec.transparentize(0.3) : (installed-tab-ta.has-hover ? #74c7ec.transparentize(0.5) : transparent);
+                        drop-shadow-offset-y: root.active_tab == 2 ? 3px : (installed-tab-ta.has-hover ? 2px : 0px);
                         animate background { duration: 200ms; easing: ease-in-out; }
                         animate drop-shadow-blur { duration: 200ms; }
                         
                         installed-tab-ta := TouchArea { clicked => { root.active_tab = 2; } }
                         Text { 
                             text: "Installed Apps"; 
-                            color: root.active_tab == 2 ? Theme.crust : Theme.overlay1; 
+                            color: root.active_tab == 2 ? Theme.crust : (installed-tab-ta.has-hover ? #74c7ec : Theme.overlay1); 
                             font-weight: root.active_tab == 2 ? 800 : 600; 
                             font-size: 14px; 
                             horizontal-alignment: center; vertical-alignment: center; 
