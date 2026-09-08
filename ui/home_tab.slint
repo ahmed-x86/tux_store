@@ -1,0 +1,27 @@
+import { UiPackage } from "types.slint";
+import { AppRow } from "components.slint";
+
+export component HomeTab inherits Flickable {
+    in property <[UiPackage]> for_you;
+    in property <[UiPackage]> browsers;
+    in property <[UiPackage]> communication;
+    in property <[UiPackage]> design;
+    in property <[UiPackage]> office;
+    in property <[UiPackage]> dev;
+    in property <[UiPackage]> utilities;
+    callback app_clicked(UiPackage);
+
+    viewport-height: feed-layout.preferred-height + 48px;
+    feed-layout := VerticalLayout {
+        y: 24px;
+        spacing: 32px;
+        alignment: start;
+        AppRow { title: "For You"; pkgs: root.for_you; row_idx: 0; clicked(pkg) => { root.app_clicked(pkg); } }
+        AppRow { title: "Browsers"; pkgs: root.browsers; row_idx: 1; clicked(pkg) => { root.app_clicked(pkg); } }
+        AppRow { title: "Communication"; pkgs: root.communication; row_idx: 2; clicked(pkg) => { root.app_clicked(pkg); } }
+        AppRow { title: "Design & Multimedia"; pkgs: root.design; row_idx: 3; clicked(pkg) => { root.app_clicked(pkg); } }
+        AppRow { title: "Office & Productivity"; pkgs: root.office; row_idx: 4; clicked(pkg) => { root.app_clicked(pkg); } }
+        AppRow { title: "Development"; pkgs: root.dev; row_idx: 5; clicked(pkg) => { root.app_clicked(pkg); } }
+        AppRow { title: "Utilities"; pkgs: root.utilities; row_idx: 6; clicked(pkg) => { root.app_clicked(pkg); } }
+    }
+}
