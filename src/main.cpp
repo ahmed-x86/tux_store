@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
                     utilitiesModel->push_back(sp);
                 } else if (n == "python" || n == "gcc" || n == "base-devel" || n == "rust" || n == "code" || n == "vscodium" || n == "nodejs" || n == "go" || n == "docker" || n == "git") {
                     devModel->push_back(sp);
-                } else if (n == "libreoffice-fresh" || n == "libreoffice-still" || n == "onlyoffice-desktopeditors" || n == "abiword" || n == "gnumeric" || n == "calligra" || n == "wps-office") {
+                } else if (n == "libreoffice-fresh" || n == "libreoffice-still" || n == "onlyoffice-bin" || n == "abiword" || n == "gnumeric" || n == "calligra" || n == "wps-office") {
                     officeModel->push_back(sp);
                 } else if (n == "telegram-desktop" || n == "discord" || n == "session-desktop" || n == "session-desktop-bin" || n == "signal-desktop" || n == "element-desktop" || n == "skypeforlinux" || n == "slack-desktop") {
                     communicationModel->push_back(sp);
