@@ -1,0 +1,23 @@
+{
+  "package": "aspell",
+  "language_packs": {
+    "Ca": "aspell-ca",
+    "Cs": "aspell-cs",
+    "Da": "aspell-da",
+    "De": "aspell-de",
+    "El": "aspell-el",
+    "En": "aspell-en",
+    "Es": "aspell-es",
+    "Fr": "aspell-fr",
+    "Hu": "aspell-hu",
+    "It": "aspell-it",
+    "Nb": "aspell-nb",
+    "Nl": "aspell-nl",
+    "Nn": "aspell-nn",
+    "Pl": "aspell-pl",
+    "Pt": "aspell-pt",
+    "Ru": "aspell-ru",
+    "Sv": "aspell-sv",
+    "Uk": "aspell-uk"
+  }
+}
