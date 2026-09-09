@@ -7,6 +7,7 @@
 #include <QIcon>
 #include <QPixmap>
 
+
 IconFetcher::IconFetcher(QDir cacheDir, QObject *parent)
     : QObject(parent), m_cacheDir(std::move(cacheDir))
 {
@@ -167,9 +168,30 @@ void IconFetcher::tryStartNext()
         if (!job || job->done) continue; // may have been cancelled/coalesced away
         if (job->started) continue;
         
-        // NEW: Check system icon theme before hitting the network
+        // NEW: Check local custom icons first, then system icon theme before hitting the network
         bool foundSystemIcon = false;
         for (const QString &c : job->candidates) {
+            // Check local custom icons directly for performance
+            QString localPath;
+            if (c.startsWith("libreoffice-fresh")) {
+                QString p = "images/icons/libreoffice-fresh/" + c;
+                if (QFile::exists(p + ".svg")) {
+                    localPath = p + ".svg";
+                } else if (QFile::exists(p + ".png")) {
+                    localPath = p + ".png";
+                }
+            }
+
+            if (!localPath.isEmpty()) {
+                qCInfo(logIcon) << "local custom icon hit:" << appName << "via candidate:" << c << "at" << localPath;
+                job->done = true;
+                m_jobs.remove(appName);
+                emit iconReady(appName, localPath);
+                delete job;
+                foundSystemIcon = true;
+                break;
+            }
+
             if (QIcon::hasThemeIcon(c)) {
                 QIcon sysIcon = QIcon::fromTheme(c);
                 if (!sysIcon.isNull()) {
