@@ -1,0 +1,25 @@
+{
+  "package": "kodi",
+  "addons": {
+    "Audioencoder Flac": "kodi-addon-audioencoder-flac",
+    "Audioencoder Lame": "kodi-addon-audioencoder-lame",
+    "Audioencoder Vorbis": "kodi-addon-audioencoder-vorbis",
+    "Audioencoder Wav": "kodi-addon-audioencoder-wav",
+    "Imagedecoder Heif": "kodi-addon-imagedecoder-heif",
+    "Imagedecoder Raw": "kodi-addon-imagedecoder-raw",
+    "Inputstream Adaptive": "kodi-addon-inputstream-adaptive",
+    "Inputstream Rtmp": "kodi-addon-inputstream-rtmp",
+    "Peripheral Joystick": "kodi-addon-peripheral-joystick",
+    "Screensaver Asteroids": "kodi-addon-screensaver-asteroids",
+    "Screensaver Biogenesis": "kodi-addon-screensaver-biogenesis",
+    "Screensaver Greynetic": "kodi-addon-screensaver-greynetic",
+    "Screensaver Matrixtrails": "kodi-addon-screensaver-matrixtrails",
+    "Screensaver Pingpong": "kodi-addon-screensaver-pingpong",
+    "Screensaver Pyro": "kodi-addon-screensaver-pyro",
+    "Screensaver Stars": "kodi-addon-screensaver-stars",
+    "Visualization Projectm": "kodi-addon-visualization-projectm",
+    "Visualization Shadertoy": "kodi-addon-visualization-shadertoy",
+    "Visualization Spectrum": "kodi-addon-visualization-spectrum",
+    "Visualization Waveform": "kodi-addon-visualization-waveform"
+  }
+}
