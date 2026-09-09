@@ -16,7 +16,7 @@ const QStringList &PacmanManager::defaultApps()
         // Design & Multimedia
         "blender", "gimp", "kdenlive", "audacity", "inkscape", "krita", "obs-studio", "vlc", "shotcut", "pitivi", "flowblade", "openshot",
         // Office & Productivity
-        "libreoffice-fresh", "libreoffice-still", "onlyoffice-desktopeditors", "abiword", "gnumeric", "calligra", "wps-office",
+        "libreoffice-fresh", "libreoffice-still", "onlyoffice-bin", "abiword", "gnumeric", "calligra", "wps-office",
         // Communication
         "telegram-desktop", "discord", "session-desktop", "session-desktop-bin", "signal-desktop", "element-desktop", "skypeforlinux", "slack-desktop",
         // Utilities
