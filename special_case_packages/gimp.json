@@ -1,0 +1,9 @@
+{
+  "package": "gimp",
+  "addons": {
+    "Gmic": "gimp-plugin-gmic",
+    "Resynthesizer": "gimp-plugin-resynthesizer",
+    "Bimp": "gimp-plugin-bimp",
+    "Fblur": "gimp-plugin-fblur"
+  }
+}
