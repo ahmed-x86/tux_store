@@ -1,0 +1,10 @@
+{
+  "package": "obs-studio",
+  "addons": {
+    "Backgroundremoval": "obs-backgroundremoval",
+    "Gstreamer": "obs-gstreamer",
+    "Pipewire Audio Capture": "obs-pipewire-audio-capture",
+    "Rtspserver": "obs-rtspserver",
+    "Vaapi": "obs-vaapi"
+  }
+}
