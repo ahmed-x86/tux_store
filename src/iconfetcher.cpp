@@ -9,6 +9,8 @@
 #include <QTimer>
 #include <QIcon>
 #include <QPixmap>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 
 IconFetcher::IconFetcher(QDir cacheDir, QObject *parent)
@@ -180,26 +182,47 @@ static QString localIconsRoot()
 // Resolved synchronously and unconditionally in request() — never queued
 // behind, or rate-limited alongside, network jobs.
 // ---------------------------------------------------------------------------
+static QJsonObject loadCustomIconsMap() {
+    static QJsonObject map;
+    static bool loaded = false;
+    if (!loaded) {
+        loaded = true;
+        QString jsonPath = localIconsRoot() + "/custom_icons.json";
+        QFile file(jsonPath);
+        if (file.open(QIODevice::ReadOnly)) {
+            QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+            if (doc.isObject()) {
+                map = doc.object();
+            }
+            file.close();
+        }
+    }
+    return map;
+}
+
 bool IconFetcher::tryLocalOrThemeIcon(const QString &appName, int pixelSize)
 {
     const QStringList candidates = generateCandidates(appName);
 
     for (const QString &c : candidates) {
-        // Bundled custom icons (currently: LibreOffice Fresh language packs).
-        if (c.startsWith("libreoffice-fresh")) {
-            const QString base = localIconsRoot() + "/libreoffice-fresh/" + c;
-            QString localPath;
-            if (QFile::exists(base + ".svg")) localPath = base + ".svg";
-            else if (QFile::exists(base + ".png")) localPath = base + ".png";
+        // Bundled custom icons (configured in custom_icons.json)
+        QJsonObject customMap = loadCustomIconsMap();
+        for (auto it = customMap.begin(); it != customMap.end(); ++it) {
+            if (c.startsWith(it.key())) {
+                const QString base = localIconsRoot() + "/" + it.value().toString() + "/" + c;
+                QString localPath;
+                if (QFile::exists(base + ".svg")) localPath = base + ".svg";
+                else if (QFile::exists(base + ".png")) localPath = base + ".png";
 
-            if (!localPath.isEmpty()) {
-                // Always hand back an absolute path — this is what the UI
-                // actually needs to render it.
-                localPath = QFileInfo(localPath).absoluteFilePath();
-                qCInfo(logIcon) << "local custom icon hit:" << appName
-                                 << "via candidate:" << c << "at" << localPath;
-                emit iconReady(appName, localPath);
-                return true;
+                if (!localPath.isEmpty()) {
+                    // Always hand back an absolute path — this is what the UI
+                    // actually needs to render it.
+                    localPath = QFileInfo(localPath).absoluteFilePath();
+                    qCInfo(logIcon) << "local custom icon hit:" << appName
+                                     << "via candidate:" << c << "at" << localPath;
+                    emit iconReady(appName, localPath);
+                    return true;
+                }
             }
         }
 
