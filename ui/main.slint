@@ -131,12 +131,6 @@ export component MainWindow inherits Window {
                                     root.submitted_search = self.text;
                                     root.search_changed(self.text); 
                                 }
-                                edited => {
-                                    if (self.text == "") {
-                                        root.submitted_search = "";
-                                        root.search_changed("");
-                                    }
-                                }
                             }
                         }
                     }
