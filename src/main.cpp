@@ -120,6 +120,7 @@ int main(int argc, char *argv[])
             sp.version = slint::SharedString(p.version.toStdString());
             sp.description = slint::SharedString(p.description.toStdString());
             sp.installed = p.installed;
+            sp.is_same_name = (QString::fromStdString(std::string(sp.pretty_name)).toLower() == p.name.toLower());
 
             QString cachedPath = cacheDir.filePath(p.name + ".svg");
             if (!QFile::exists(cachedPath)) cachedPath = cacheDir.filePath(p.name + ".png");
@@ -253,6 +254,7 @@ int main(int argc, char *argv[])
             uip.version = slint::SharedString(p.version.toStdString());
             uip.description = slint::SharedString(p.description.toStdString());
             uip.installed = p.installed;
+            uip.is_same_name = (QString::fromStdString(std::string(uip.pretty_name)).toLower() == p.name.toLower());
             
             ui->invoke_app_clicked(uip);
             iconFetcher->request(p.name, 64);
