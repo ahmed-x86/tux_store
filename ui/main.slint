@@ -41,6 +41,7 @@ export component MainWindow inherits Window {
     callback remove_clicked(UiPackage, string);
     callback open_url(string, string);
     callback addon_clicked(string);
+    callback copy_to_clipboard(string);
 
     if !is_showing_details && !is_showing_settings : VerticalLayout {
         // Header bar
@@ -269,6 +270,9 @@ export component MainWindow inherits Window {
         open_url(repo, name) => { root.open_url(repo, name); }
         addon_clicked(pkg_name) => {
             root.addon_clicked(pkg_name);
+        }
+        copy_to_clipboard(text) => {
+            root.copy_to_clipboard(text);
         }
     }
 
