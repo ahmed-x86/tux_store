@@ -17,6 +17,7 @@ export component DetailsView inherits Rectangle {
     callback suggestion_clicked(UiPackage);
     callback open_url(string, string);
     callback addon_clicked(string);
+    callback copy_to_clipboard(string);
 
     property <color> accent: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
 
@@ -118,19 +119,28 @@ export component DetailsView inherits Rectangle {
                         
                         HorizontalLayout {
                             spacing: 8px;
-                            Text {
-                                text: pkg.pretty_name;
-                                color: Theme.text;
-                                font-size: 30px;
-                                font-weight: 700;
-                                letter-spacing: -0.5px;
-                                vertical-alignment: bottom;
+                            TouchArea {
+                                width: pretty_name_txt.width;
+                                height: pretty_name_txt.height;
+                                mouse-cursor: pointer;
+                                clicked => { root.copy_to_clipboard(pkg.pretty_name); }
+                                pretty_name_txt := Text {
+                                    text: pkg.pretty_name;
+                                    color: Theme.text;
+                                    font-size: 30px;
+                                    font-weight: 700;
+                                    letter-spacing: -0.5px;
+                                    vertical-alignment: bottom;
+                                }
                             }
                             if !pkg.is_same_name : Rectangle {
                                 width: 16px;
                                 height: 16px;
                                 y: 14px;
-                                info_ta := TouchArea {}
+                                info_ta := TouchArea {
+                                    mouse-cursor: pointer;
+                                    clicked => { root.copy_to_clipboard(pkg.name); }
+                                }
                                 Image {
                                     source: @image-url("info.svg");
                                     width: 16px;
