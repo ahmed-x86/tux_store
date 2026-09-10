@@ -126,12 +126,42 @@ export component DetailsView inherits Rectangle {
                                 letter-spacing: -0.5px;
                                 vertical-alignment: bottom;
                             }
-                            Text {
-                                text: pkg.name;
-                                color: Theme.overlay0;
-                                font-size: 16px;
-                                font-weight: 500;
-                                vertical-alignment: bottom;
+                            if !pkg.is_same_name : Rectangle {
+                                width: 16px;
+                                height: 16px;
+                                y: 14px;
+                                info_ta := TouchArea {}
+                                Image {
+                                    source: @image-url("info.svg");
+                                    width: 16px;
+                                    height: 16px;
+                                    colorize: info_ta.has-hover ? Theme.text : Theme.overlay0;
+                                    animate colorize { duration: 150ms; }
+                                }
+                                
+                                Rectangle {
+                                    x: (16px - (tooltip_txt.width + 16px)) / 2; // Center horizontally above the icon
+                                    y: -30px; // Place above
+                                    z: 100;
+                                    background: Theme.crust;
+                                    border-color: Theme.surface2;
+                                    border-width: 1px;
+                                    border-radius: 6px;
+                                    width: tooltip_txt.width + 16px;
+                                    height: 26px;
+                                    opacity: info_ta.has-hover ? 1.0 : 0.0;
+                                    visible: self.opacity > 0.01;
+                                    animate opacity { duration: 150ms; delay: info_ta.has-hover ? 2000ms : 0ms; }
+                                    
+                                    tooltip_txt := Text {
+                                        x: 8px;
+                                        y: 5px;
+                                        text: pkg.name;
+                                        color: Theme.text;
+                                        font-size: 13px;
+                                        font-weight: 700; // make font bolder and clearer
+                                    }
+                                }
                             }
                         }
 
