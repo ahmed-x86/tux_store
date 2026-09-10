@@ -4,6 +4,7 @@
 #include "log.h"
 #include "package.h"
 #include <QGuiApplication>
+#include <QClipboard>
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
@@ -263,6 +264,12 @@ int main(int argc, char *argv[])
         watcher->setFuture(QtConcurrent::run([pkgName]() {
             return PacmanManager::getPackageExact(pkgName);
         }));
+    });
+
+    ui->on_copy_to_clipboard([](slint::SharedString text) {
+        if (QClipboard *clip = QGuiApplication::clipboard()) {
+            clip->setText(QString::fromStdString(std::string(text)));
+        }
     });
 
     ui->on_open_url([](slint::SharedString repo_slint, slint::SharedString name_slint) {
