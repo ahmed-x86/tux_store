@@ -123,13 +123,25 @@ int main(int argc, char *argv[])
 
             QString cachedPath = cacheDir.filePath(p.name + ".svg");
             if (!QFile::exists(cachedPath)) cachedPath = cacheDir.filePath(p.name + ".png");
-            if (QFile::exists(cachedPath)) {
+            const bool hasNetworkCache = QFile::exists(cachedPath);
+            if (hasNetworkCache) {
                 sp.icon = slint::Image::load_from_path(slint::SharedString(cachedPath.toStdString()));
-            } else {
-                iconFetcher->request(QString::fromStdString(std::string(sp.name)), 64);
             }
 
+            // IMPORTANT: push into the model BEFORE requesting the icon.
+            // IconFetcher::request() resolves bundled/local and system-theme
+            // icons SYNCHRONOUSLY and emits iconReady() immediately (direct
+            // connection, same thread) — before this call even returns. If
+            // we requested first, the iconReady handler would search
+            // pkgModel for a row that isn't inserted yet, find nothing, and
+            // silently drop the icon (the package would then be pushed with
+            // no icon at all). Pushing first guarantees the row already
+            // exists by the time any iconReady (sync or async) fires.
             pkgModel->push_back(sp);
+
+            if (!hasNetworkCache) {
+                iconFetcher->request(QString::fromStdString(std::string(sp.name)), 64);
+            }
             
             if (isDefault) {
                 QString n = p.name.toLower();
