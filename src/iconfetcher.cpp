@@ -3,6 +3,9 @@
 #include "log.h"
 #include <QNetworkReply>
 #include <QFile>
+#include <QFileInfo>
+#include <QDateTime>
+#include <QCoreApplication>
 #include <QTimer>
 #include <QIcon>
 #include <QPixmap>
@@ -18,6 +21,8 @@ IconFetcher::IconFetcher(QDir cacheDir, QObject *parent)
 
 // ---------------------------------------------------------------------------
 // Candidate name generation (aliases -> raw -> sanitized -> truncated -> hints)
+// candidates[0] is our single best guess and the only one we ever hit the
+// network with.
 // ---------------------------------------------------------------------------
 static QString aliasFor(const QString &name)
 {
@@ -90,7 +95,7 @@ bool IconFetcher::isValidImageContent(const QByteArray &bytes)
 }
 
 // ---------------------------------------------------------------------------
-// Disk cache
+// Disk cache (positive)
 // ---------------------------------------------------------------------------
 QString IconFetcher::diskPathFor(const QString &appName, const QString &ext) const
 {
@@ -104,6 +109,119 @@ QString IconFetcher::findCached(const QString &appName) const
     const QString png = diskPathFor(appName, "png");
     if (QFile::exists(png)) return png;
     return QString();
+}
+
+// ---------------------------------------------------------------------------
+// Disk cache (negative) — remembers "no icon found" so the same package
+// doesn't get its (now single, but still real) network request repeated on
+// every app launch / every list reload.
+// ---------------------------------------------------------------------------
+QString IconFetcher::negativeCachePathFor(const QString &appName) const
+{
+    return m_cacheDir.filePath(appName + ".notfound");
+}
+
+bool IconFetcher::hasFreshNegativeCache(const QString &appName) const
+{
+    const QFileInfo info(negativeCachePathFor(appName));
+    if (!info.exists()) return false;
+    const qint64 ageDays = info.lastModified().daysTo(QDateTime::currentDateTime());
+    return ageDays < kNegativeCacheDays;
+}
+
+void IconFetcher::writeNegativeCache(const QString &appName) const
+{
+    QFile f(negativeCachePathFor(appName));
+    if (f.open(QIODevice::WriteOnly)) {
+        f.write(QDateTime::currentDateTimeUtc().toString(Qt::ISODate).toUtf8());
+        f.close();
+    } else {
+        qCWarning(logIcon) << "failed to write negative-cache marker for:" << appName;
+    }
+}
+
+void IconFetcher::clearNegativeCache(const QString &appName) const
+{
+    QFile::remove(negativeCachePathFor(appName));
+}
+
+// ---------------------------------------------------------------------------
+// Bundled local icons root, resolved to an ABSOLUTE path once. Previously
+// this was built as a bare relative string ("images/icons/...") which
+// depends on the process's current working directory at launch time. The
+// lookup itself could still succeed (QFile::exists() resolves relative to
+// CWD too), but the path handed to the UI was still relative — and Slint's
+// image loader needs an absolute (or resource) path to reliably display it,
+// which is why the icon fetcher logged a "hit" while the UI kept showing a
+// blank placeholder square.
+// ---------------------------------------------------------------------------
+static QString localIconsRoot()
+{
+    static const QString root = [] {
+        const QStringList candidates = {
+            QCoreApplication::applicationDirPath() + "/images/icons",
+            QCoreApplication::applicationDirPath() + "/../images/icons",
+            QCoreApplication::applicationDirPath() + "/../share/tuxstore/images/icons",
+            QDir::current().filePath("images/icons"),
+        };
+        for (const QString &c : candidates) {
+            if (QDir(c).exists())
+                return QDir(c).absolutePath();
+        }
+        // Last resort: keep the old relative behavior rather than crash,
+        // but this should only be hit if the assets truly aren't installed.
+        return QDir("images/icons").absolutePath();
+    }();
+    return root;
+}
+
+// ---------------------------------------------------------------------------
+// Zero-network lookups: local custom icons and the system icon theme.
+// Resolved synchronously and unconditionally in request() — never queued
+// behind, or rate-limited alongside, network jobs.
+// ---------------------------------------------------------------------------
+bool IconFetcher::tryLocalOrThemeIcon(const QString &appName, int pixelSize)
+{
+    const QStringList candidates = generateCandidates(appName);
+
+    for (const QString &c : candidates) {
+        // Bundled custom icons (currently: LibreOffice Fresh language packs).
+        if (c.startsWith("libreoffice-fresh")) {
+            const QString base = localIconsRoot() + "/libreoffice-fresh/" + c;
+            QString localPath;
+            if (QFile::exists(base + ".svg")) localPath = base + ".svg";
+            else if (QFile::exists(base + ".png")) localPath = base + ".png";
+
+            if (!localPath.isEmpty()) {
+                // Always hand back an absolute path — this is what the UI
+                // actually needs to render it.
+                localPath = QFileInfo(localPath).absoluteFilePath();
+                qCInfo(logIcon) << "local custom icon hit:" << appName
+                                 << "via candidate:" << c << "at" << localPath;
+                emit iconReady(appName, localPath);
+                return true;
+            }
+        }
+
+        // System icon theme (e.g. Papirus, as configured in the screenshot).
+        if (QIcon::hasThemeIcon(c)) {
+            QIcon sysIcon = QIcon::fromTheme(c);
+            if (!sysIcon.isNull()) {
+                QPixmap pix = sysIcon.pixmap(pixelSize, pixelSize);
+                if (!pix.isNull()) {
+                    const QString savePath = diskPathFor(appName, "png");
+                    if (pix.save(savePath, "PNG")) {
+                        qCInfo(logIcon) << "system theme hit:" << appName << "via candidate:" << c;
+                        emit iconReady(appName, savePath);
+                        return true;
+                    }
+                    qCWarning(logIcon) << "failed to save system theme icon for:" << appName;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,40 +240,43 @@ void IconFetcher::request(const QString &appName, int pixelSize)
         return;
     }
 
+    if (tryLocalOrThemeIcon(appName, pixelSize))
+        return;
 
+    if (hasFreshNegativeCache(appName)) {
+        qCDebug(logIcon) << "negative-cache hit, skipping network:" << appName;
+        emit iconFailed(appName);
+        return;
+    }
 
-    enqueueJob(appName, pixelSize);
+    enqueueJob(appName);
 }
 
 // ---------------------------------------------------------------------------
-// Job orchestration: GLOBAL cap on in-flight requests via a queue, plus a
-// small per-job parallelism so each icon still races a couple of candidates.
+// Job orchestration: at most kMaxGlobalInFlight requests in flight, each job
+// is exactly ONE request to ONE repo (Papirus) for ONE best-guess candidate
+// name. No racing across multiple icon themes/extensions/name variants.
 // ---------------------------------------------------------------------------
-static QStringList urlsForCandidate(const QString &candidate)
+static QString singleUrlFor(const QString &candidate)
 {
-    return {
-        QStringLiteral("https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/%1.svg").arg(candidate),
-        QStringLiteral("https://raw.githubusercontent.com/vinceliuice/Tela-icon-theme/master/src/64/apps/%1.svg").arg(candidate),
-        QStringLiteral("https://raw.githubusercontent.com/vinceliuice/Fluent-icon-theme/master/src/64/apps/%1.svg").arg(candidate),
-        QStringLiteral("https://raw.githubusercontent.com/vinceliuice/WhiteSur-icon-theme/master/src/64/apps/%1.svg").arg(candidate),
-        QStringLiteral("https://raw.githubusercontent.com/vinceliuice/Qogir-icon-theme/master/src/64/apps/%1.svg").arg(candidate),
-        QStringLiteral("https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/%1.png").arg(candidate),
-    };
+    return QStringLiteral(
+        "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/%1.svg"
+    ).arg(candidate);
 }
 
-void IconFetcher::enqueueJob(const QString &appName, int pixelSize)
+void IconFetcher::enqueueJob(const QString &appName)
 {
+    const QStringList candidates = generateCandidates(appName);
+    const QString bestCandidate = candidates.isEmpty() ? appName : candidates.first();
+
     auto *job = new Job();
     job->appName = appName;
-    job->pixelSize = pixelSize;
-    job->candidates = generateCandidates(appName);
-    for (const QString &c : job->candidates)
-        job->urls << urlsForCandidate(c);
+    job->url = singleUrlFor(bestCandidate);
 
     m_jobs.insert(appName, job);
     m_pending.enqueue(appName);
-    qCDebug(logIcon) << "queued:" << appName << "candidates:" << job->candidates.size()
-                      << "urls:" << job->urls.size() << "queueDepth:" << m_pending.size();
+    qCDebug(logIcon) << "queued:" << appName << "candidate:" << bestCandidate
+                      << "queueDepth:" << m_pending.size();
 
     tryStartNext();
 }
@@ -167,144 +288,70 @@ void IconFetcher::tryStartNext()
         Job *job = m_jobs.value(appName);
         if (!job || job->done) continue; // may have been cancelled/coalesced away
         if (job->started) continue;
-        
-        // NEW: Check local custom icons first, then system icon theme before hitting the network
-        bool foundSystemIcon = false;
-        for (const QString &c : job->candidates) {
-            // Check local custom icons directly for performance
-            QString localPath;
-            if (c.startsWith("libreoffice-fresh")) {
-                QString p = "images/icons/libreoffice-fresh/" + c;
-                if (QFile::exists(p + ".svg")) {
-                    localPath = p + ".svg";
-                } else if (QFile::exists(p + ".png")) {
-                    localPath = p + ".png";
-                }
-            }
-
-            if (!localPath.isEmpty()) {
-                qCInfo(logIcon) << "local custom icon hit:" << appName << "via candidate:" << c << "at" << localPath;
-                job->done = true;
-                m_jobs.remove(appName);
-                emit iconReady(appName, localPath);
-                delete job;
-                foundSystemIcon = true;
-                break;
-            }
-
-            if (QIcon::hasThemeIcon(c)) {
-                QIcon sysIcon = QIcon::fromTheme(c);
-                if (!sysIcon.isNull()) {
-                    QPixmap pix = sysIcon.pixmap(job->pixelSize, job->pixelSize);
-                    if (!pix.isNull()) {
-                        QString savePath = diskPathFor(appName, "png");
-                        if (pix.save(savePath, "PNG")) {
-                            qCInfo(logIcon) << "system theme hit:" << appName << "via candidate:" << c;
-                            job->done = true;
-                            m_jobs.remove(appName);
-                            emit iconReady(appName, savePath);
-                            delete job;
-                            foundSystemIcon = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (foundSystemIcon) continue; // move to next job in the while loop
 
         job->started = true;
         job->timer.start();
-        qCDebug(logIcon) << "starting job:" << appName
-                          << "globalInFlight:" << m_globalInFlight
-                          << "queueRemaining:" << m_pending.size();
-        pumpJob(job);
+        startJob(job);
     }
 }
 
-void IconFetcher::pumpJob(Job *job)
+void IconFetcher::startJob(Job *job)
 {
-    if (job->done) return;
+    qCDebug(logIcon) << "GET" << job->url << "job:" << job->appName
+                      << "globalInFlight:" << m_globalInFlight + 1;
 
-    while (job->inFlight < kPerJobParallelism
-           && m_globalInFlight < kMaxGlobalInFlight
-           && job->urlIndex < job->urls.size()) {
-        const QString url = job->urls[job->urlIndex++];
-        const QString ext = url.endsWith(".png") ? "png" : "svg";
+    QNetworkRequest req{QUrl(job->url)};
+    req.setTransferTimeout(kRequestTimeoutMs);
+    QNetworkReply *reply = m_net.get(req);
+    m_globalInFlight++;
 
-        QNetworkRequest req{QUrl(url)};
-        req.setTransferTimeout(kRequestTimeoutMs);
-        QNetworkReply *reply = m_net.get(req);
-        job->inFlight++;
-        m_globalInFlight++;
+    // Hard-abort safety net: setTransferTimeout should fire finished() with
+    // an error, but if a connection wedges before headers arrive we force
+    // it closed so this job (and its global slot) can never hang.
+    auto *hardTimeout = new QTimer(reply);
+    hardTimeout->setSingleShot(true);
+    connect(hardTimeout, &QTimer::timeout, reply, [reply, url = job->url]() {
+        if (reply->isRunning()) {
+            qCWarning(logIcon) << "hard timeout, aborting:" << url;
+            reply->abort();
+        }
+    });
+    hardTimeout->start(kRequestTimeoutMs + 2000);
 
-        qCDebug(logIcon) << "GET" << url << "job:" << job->appName
-                          << "jobInFlight:" << job->inFlight
-                          << "globalInFlight:" << m_globalInFlight;
+    connect(reply, &QNetworkReply::finished, this, [this, job, reply]() {
+        m_globalInFlight--;
+        reply->deleteLater();
 
-        // Hard-abort safety net: setTransferTimeout should fire NoError-less
-        // finished(), but if a connection wedges before headers arrive we
-        // force it closed so this job (and the global slot) can never hang.
-        auto *hardTimeout = new QTimer(reply);
-        hardTimeout->setSingleShot(true);
-        connect(hardTimeout, &QTimer::timeout, reply, [reply, url]() {
-            if (reply->isRunning()) {
-                qCWarning(logIcon) << "hard timeout, aborting:" << url;
-                reply->abort();
-            }
-        });
-        hardTimeout->start(kRequestTimeoutMs + 2000);
+        if (job->done) {
+            // Shouldn't normally happen (jobs are single-shot now), but
+            // guard against it anyway.
+            delete job;
+            tryStartNext();
+            return;
+        }
 
-        connect(reply, &QNetworkReply::finished, this, [this, job, reply, ext, url]() {
-            job->inFlight--;
-            m_globalInFlight--;
-            reply->deleteLater();
+        const bool ok = reply->error() == QNetworkReply::NoError;
+        if (!ok) {
+            qCDebug(logIcon) << "miss:" << job->url << "error:" << reply->errorString();
+        }
 
-            if (job->done) {
-                // Job already completed by a sibling request; this is a late
-                // straggler from the same job's race. Just clean up ourselves
-                // and possibly free the job once every straggler has reported.
-                qCDebug(logIcon) << "late straggler ignored for finished job:" << url;
-                if (job->inFlight == 0) delete job;
+        if (ok) {
+            const QByteArray bytes = reply->readAll();
+            if (isValidImageContent(bytes)) {
+                qCInfo(logIcon) << "hit:" << job->url << "bytes:" << bytes.size()
+                                 << "elapsedMs:" << job->timer.elapsed();
+                finishSuccess(job, bytes, "svg");
                 tryStartNext();
                 return;
             }
+            qCDebug(logIcon) << "invalid content (likely 404 page):" << job->url;
+        }
 
-            const bool ok = reply->error() == QNetworkReply::NoError;
-            if (!ok) {
-                qCDebug(logIcon) << "miss:" << url << "error:" << reply->errorString();
-            }
-
-            if (ok) {
-                const QByteArray bytes = reply->readAll();
-                if (isValidImageContent(bytes)) {
-                    qCInfo(logIcon) << "hit:" << url << "bytes:" << bytes.size()
-                                     << "elapsedMs:" << job->timer.elapsed();
-                    finishSuccess(job, bytes, ext);
-                    tryStartNext();
-                    return;
-                }
-                qCDebug(logIcon) << "invalid content (likely 404 page):" << url;
-            }
-
-            // This candidate URL failed — try to keep the pipeline full.
-            if (job->urlIndex >= job->urls.size() && job->inFlight == 0) {
-                qCWarning(logIcon) << "exhausted all candidates for:" << job->appName
-                                    << "elapsedMs:" << job->timer.elapsed();
-                finishFailure(job);
-            } else {
-                pumpJob(job);
-            }
-            tryStartNext();
-        });
-    }
-
-    // Nothing left to try and nothing in flight -> exhausted.
-    if (job->urlIndex >= job->urls.size() && job->inFlight == 0 && !job->done) {
+        qCDebug(logIcon) << "no icon for:" << job->appName
+                          << "elapsedMs:" << job->timer.elapsed();
         finishFailure(job);
         tryStartNext();
-    }
+    });
 }
 
 void IconFetcher::finishSuccess(Job *job, const QByteArray &bytes, const QString &ext)
@@ -320,20 +367,20 @@ void IconFetcher::finishSuccess(Job *job, const QByteArray &bytes, const QString
         qCWarning(logIcon) << "failed to write cache file:" << savePath;
     }
 
+    clearNegativeCache(job->appName);
+
     m_jobs.remove(job->appName);
     emit iconReady(job->appName, savePath);
-
-    // Only free the job once every sibling request from its race has
-    // reported back (inFlight == 0). Stragglers still in flight will see
-    // job->done == true in their own finished() handler and free it then.
-    if (job->inFlight == 0) delete job;
+    delete job;
 }
 
 void IconFetcher::finishFailure(Job *job)
 {
     job->done = true;
     m_jobs.remove(job->appName);
-    emit iconFailed(job->appName);
 
-    if (job->inFlight == 0) delete job;
+    writeNegativeCache(job->appName);
+
+    emit iconFailed(job->appName);
+    delete job;
 }
