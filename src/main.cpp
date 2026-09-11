@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
     auto devModel = std::make_shared<slint::VectorModel<UiPackage>>();
     auto officeModel = std::make_shared<slint::VectorModel<UiPackage>>();
     auto communicationModel = std::make_shared<slint::VectorModel<UiPackage>>();
+    auto addonsStoreModel = std::make_shared<slint::VectorModel<UiPackage>>();
     
     ui->set_packages(pkgModel);
     ui->set_for_you(forYouModel);
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
     ui->set_dev(devModel);
     ui->set_office(officeModel);
     ui->set_communication(communicationModel);
+    ui->set_addons_store_packages(addonsStoreModel);
 
     auto refreshGrid = [ui, iconFetcher, cacheDir, pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel](const QVector<Package> &pkgs) {
         while (pkgModel->row_count() > 0) pkgModel->erase(0);
@@ -272,6 +274,65 @@ int main(int argc, char *argv[])
         }
     });
 
+    ui->on_view_all_addons_clicked([ui, addonsStoreModel, packageAddons, iconFetcher]() {
+        UiPackage p = ui->get_current_package();
+        QString pkgName = QString::fromStdString(std::string(p.name));
+        
+        while (addonsStoreModel->row_count() > 0) addonsStoreModel->erase(0);
+        
+        if (packageAddons.find(pkgName) != packageAddons.end()) {
+            std::vector<QString> addonNames;
+            for (const auto &item : packageAddons.at(pkgName).items) {
+                addonNames.push_back(item.second);
+            }
+            
+            QFutureWatcher<QVector<Package>> *watcher = new QFutureWatcher<QVector<Package>>();
+            QObject::connect(watcher, &QFutureWatcher<QVector<Package>>::finished, [addonsStoreModel, watcher, iconFetcher]() {
+                for (const Package &ap : watcher->result()) {
+                    UiPackage uip;
+                    uip.name = slint::SharedString(ap.name.toStdString());
+                    uip.pretty_name = slint::SharedString(prettifyName(ap.name).toStdString());
+                    uip.repo = slint::SharedString(ap.repo.toStdString());
+                    uip.version = slint::SharedString(ap.version.toStdString());
+                    uip.description = slint::SharedString(ap.description.toStdString());
+                    uip.installed = ap.installed;
+                    uip.is_same_name = (QString::fromStdString(std::string(uip.pretty_name)).toLower() == ap.name.toLower());
+                    addonsStoreModel->push_back(uip);
+                    iconFetcher->request(ap.name, 64);
+                }
+                watcher->deleteLater();
+            });
+            
+            watcher->setFuture(QtConcurrent::run([addonNames, pkgName]() {
+                QVector<Package> res;
+                
+                // Get installed status bulk
+                QSet<QString> installed;
+                QProcess procQ;
+                QStringList argsQ = {"-Q"};
+                for (const QString &an : addonNames) argsQ << an;
+                procQ.start("pacman", argsQ);
+                procQ.waitForFinished();
+                QString outQ = QString::fromUtf8(procQ.readAllStandardOutput());
+                for (const QString &line : outQ.split('\n', Qt::SkipEmptyParts)) {
+                    QStringList parts = line.split(' ');
+                    if (parts.size() >= 1) installed.insert(parts[0]);
+                }
+                
+                for (const QString &an : addonNames) {
+                    Package p;
+                    p.name = an;
+                    p.repo = "addon"; 
+                    p.version = "";
+                    p.installed = installed.contains(an);
+                    res.push_back(p);
+                }
+                
+                return res;
+            }));
+        }
+    });
+
     ui->on_open_url([](slint::SharedString repo_slint, slint::SharedString name_slint) {
         QString repo = QString::fromStdString(std::string(repo_slint));
         QString name = QString::fromStdString(std::string(name_slint));
@@ -360,23 +421,27 @@ int main(int argc, char *argv[])
         ui->set_current_details(sd);
     });
 
-    // Icon ready -> update flat model
-    QObject::connect(iconFetcher, &IconFetcher::iconReady, [ui, pkgModel](QString appName, QString diskPath) {
+    QObject::connect(iconFetcher, &IconFetcher::iconReady, [ui, pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel, addonsStoreModel](QString appName, QString diskPath) {
         auto img = slint::Image::load_from_path(slint::SharedString(diskPath.toStdString()));
         auto nameStr = slint::SharedString(appName.toStdString());
 
-        // Update in the flat grid model
-        for (size_t i = 0; i < pkgModel->row_count(); ++i) {
-            auto pkg = pkgModel->row_data(i);
-            if (pkg && pkg->name == nameStr) {
-                auto copy = *pkg;
-                copy.icon = img;
-                pkgModel->set_row_data(i, copy);
-                break;
+        std::vector<std::shared_ptr<slint::VectorModel<UiPackage>>> models = {
+            pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel, addonsStoreModel
+        };
+
+        for (auto &model : models) {
+            for (size_t i = 0; i < model->row_count(); ++i) {
+                auto pkg = model->row_data(i);
+                if (pkg && pkg->name == nameStr) {
+                    auto copy = *pkg;
+                    copy.icon = img;
+                    model->set_row_data(i, copy);
+                    // Might be in multiple models (e.g. pkgModel and devModel), so break this model's loop, but keep checking other models.
+                    break;
+                }
             }
         }
 
-        // Also update the current details view package if it matches
         auto current = ui->get_current_package();
         if (current.name == nameStr) {
             current.icon = img;
