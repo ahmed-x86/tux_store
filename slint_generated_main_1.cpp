@@ -205,7 +205,7 @@ auto Component_rectangle_7::init (const class SharedGlobals* globals,slint::cbin
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const AppCard_root_1>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_7.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return [&]{ [[maybe_unused]] auto tmp_Theme_380_accents = self->globals->global_Theme_380->field_accents.get();;return slint::Brush(slint::private_api::access_array_index(tmp_Theme_380_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_1_accent_idx.get(); })),slint::private_api::model_length(tmp_Theme_380_accents)))); }();
+                            return [&]{ [[maybe_unused]] auto tmp_Theme_395_accents = self->globals->global_Theme_395->field_accents.get();;return slint::Brush(slint::private_api::access_array_index(tmp_Theme_395_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_1_accent_idx.get(); })),slint::private_api::model_length(tmp_Theme_395_accents)))); }();
                         });
     self->field_rectangle_7.border_radius.set(12);
     self->field_rectangle_7_layoutinfo_h.set_binding([this]() {
@@ -234,7 +234,7 @@ auto Component_rectangle_7::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_text_8.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
                         });
     self->field_text_8.font_size.set(24);
     self->field_text_8.height.set_binding([this]() {
@@ -464,11 +464,11 @@ auto AppCard_root_1::init (const class SharedGlobals* globals,slint::cbindgen_pr
     self->tree_index = tree_index;
     self->field_root_1.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_ta_2.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_ta_2.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_root_1.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_ta_2.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return slint::Brush((self->field_ta_2.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         });
     self->field_root_1.border_radius.set(12);
     self->field_root_1.border_width.set(1);
@@ -543,7 +543,7 @@ auto AppCard_root_1::init (const class SharedGlobals* globals,slint::cbindgen_pr
     self->field_ta_2.enabled.set(true);
     self->field_text_11.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_11.font_size.set(14);
     self->field_text_11.font_weight.set(static_cast<int>(700));
@@ -563,7 +563,7 @@ auto AppCard_root_1::init (const class SharedGlobals* globals,slint::cbindgen_pr
                         });
     self->field_text_12.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_12.font_size.set(11);
     self->field_text_12.height.set_binding([this]() {
@@ -582,7 +582,7 @@ auto AppCard_root_1::init (const class SharedGlobals* globals,slint::cbindgen_pr
                         });
     self->field_text_13.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_1_pkg.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.285296774e9) : slint::Color::from_argb_encoded(+4.288454832e9))));
+                            return slint::Brush((self->field_root_1_pkg.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.285296774e9) : slint::Color::from_argb_encoded(+4.288454832e9))));
                         });
     self->field_text_13.font_size.set(11);
     self->field_text_13.font_weight.set(static_cast<int>(700));
@@ -1162,7 +1162,7 @@ auto Component_empty_16::init (const class SharedGlobals* globals,slint::cbindge
     self->field_empty_16_thumb_ta_26_press_thumb_x.set(0);
     self->field_text_17.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_17.font_size.set(20);
     self->field_text_17.font_weight.set(static_cast<int>(800));
@@ -1189,12 +1189,12 @@ auto Component_empty_16::init (const class SharedGlobals* globals,slint::cbindge
                         });
     self->field_scroll_track_24.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_scroll_track_24.border_radius.set(3);
     self->field_thumb_25.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_thumb_ta_26.has_hover.get() || self->field_thumb_ta_26.pressed.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
+                            return slint::Brush((self->field_thumb_ta_26.has_hover.get() || self->field_thumb_ta_26.pressed.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
                         });
     self->field_thumb_25.border_radius.set(3);
     self->field_thumb_ta_26.enabled.set(true);
@@ -1459,6 +1459,10 @@ auto AppRow_root_14::init (const class SharedGlobals* globals,slint::cbindgen_pr
     self->globals = globals;
     this->tree_index_of_first_child = tree_index_of_first_child;
     self->tree_index = tree_index;
+    self->field_root_14_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return (slint::private_api::model_length(self->field_root_14_pkgs.get()) > 0 ? 260 : 0);
+                        });
     self->field_root_clip_15.clip.set(true);
     self->field_root_clip_15.border_bottom_left_radius.set_constant();
     self->field_root_clip_15.border_bottom_right_radius.set_constant();
@@ -1577,7 +1581,7 @@ auto UpdateTab_root_28::init (const class SharedGlobals* globals,slint::cbindgen
                         });
     self->field_text_30.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_30.font_size.set(20);
     self->field_text_30.font_weight.set(static_cast<int>(700));
@@ -1679,7 +1683,7 @@ auto InstalledTab_root_31::init (const class SharedGlobals* globals,slint::cbind
                         });
     self->field_text_33.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_33.font_size.set(20);
     self->field_text_33.font_weight.set(static_cast<int>(700));
@@ -1805,12 +1809,12 @@ auto DepRow_root_34::init (const class SharedGlobals* globals,slint::cbindgen_pr
                         });
     self->field_rectangle_36.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (self->field_root_34_dep.get().installed ? slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))) : slint::Brush(self->field_root_34_accent.get()).transparentize(0.82));
+                            return (self->field_root_34_dep.get().installed ? slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))) : slint::Brush(self->field_root_34_accent.get()).transparentize(0.82));
                         });
     self->field_rectangle_36.border_radius.set(5);
     self->field_text_37.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_34_dep.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)) : self->field_root_34_accent.get()));
+                            return slint::Brush((self->field_root_34_dep.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)) : self->field_root_34_accent.get()));
                         });
     self->field_text_37.font_size.set(11);
     self->field_text_37.font_weight.set(static_cast<int>(700));
@@ -1830,7 +1834,7 @@ auto DepRow_root_34::init (const class SharedGlobals* globals,slint::cbindgen_pr
                         });
     self->field_text_38.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_34_dep.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.290429662e9) : slint::Color::from_argb_encoded(+4.284243831e9))));
+                            return slint::Brush((self->field_root_34_dep.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.290429662e9) : slint::Color::from_argb_encoded(+4.284243831e9))));
                         });
     self->field_text_38.font_size.set(13);
     self->field_text_38.height.set(34);
@@ -1845,7 +1849,7 @@ auto DepRow_root_34::init (const class SharedGlobals* globals,slint::cbindgen_pr
                         });
     self->field_text_39.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_34_dep.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9))));
+                            return slint::Brush((self->field_root_34_dep.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9))));
                         });
     self->field_text_39.font_size.set(12);
     self->field_text_39.font_weight.set_binding([this]() {
@@ -2167,7 +2171,7 @@ auto Component_rectangle_45::init (const class SharedGlobals* globals,slint::cbi
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const SuggestionCard_root_40>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_45.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return [&]{ [[maybe_unused]] auto tmp_Theme_380_accents = self->globals->global_Theme_380->field_accents.get();;return slint::Brush(slint::private_api::access_array_index(tmp_Theme_380_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_40_accent_idx.get(); })),slint::private_api::model_length(tmp_Theme_380_accents)))); }();
+                            return [&]{ [[maybe_unused]] auto tmp_Theme_395_accents = self->globals->global_Theme_395->field_accents.get();;return slint::Brush(slint::private_api::access_array_index(tmp_Theme_395_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_40_accent_idx.get(); })),slint::private_api::model_length(tmp_Theme_395_accents)))); }();
                         });
     self->field_rectangle_45.border_radius.set(10);
     self->field_rectangle_45.border_color.set_constant();
@@ -2371,11 +2375,11 @@ auto SuggestionCard_root_40::init (const class SharedGlobals* globals,slint::cbi
     self->tree_index = tree_index;
     self->field_root_40.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_sta_41.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_sta_41.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_root_40.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_sta_41.has_hover.get() ? [&]{ [[maybe_unused]] auto tmp_Theme_380_accents = self->globals->global_Theme_380->field_accents.get();;return slint::private_api::access_array_index(tmp_Theme_380_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(self->field_root_40_accent_idx.get(),slint::private_api::model_length(tmp_Theme_380_accents))); }() : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return slint::Brush((self->field_sta_41.has_hover.get() ? [&]{ [[maybe_unused]] auto tmp_Theme_395_accents = self->globals->global_Theme_395->field_accents.get();;return slint::private_api::access_array_index(tmp_Theme_395_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(self->field_root_40_accent_idx.get(),slint::private_api::model_length(tmp_Theme_395_accents))); }() : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         });
     self->field_root_40.border_radius.set(14);
     self->field_root_40.border_width.set(1);
@@ -2439,7 +2443,7 @@ auto SuggestionCard_root_40::init (const class SharedGlobals* globals,slint::cbi
     self->field_sta_41.enabled.set(true);
     self->field_text_48.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_48.font_size.set(13);
     self->field_text_48.font_weight.set(static_cast<int>(700));
@@ -2455,7 +2459,7 @@ auto SuggestionCard_root_40::init (const class SharedGlobals* globals,slint::cbi
     self->field_text_48.width.set(132);
     self->field_text_49.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_49.font_size.set(10);
     self->field_text_49.height.set_binding([this]() {
@@ -2470,7 +2474,7 @@ auto SuggestionCard_root_40::init (const class SharedGlobals* globals,slint::cbi
     self->field_text_49.width.set(132);
     self->field_text_51.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_40_pkg.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)) : [&]{ [[maybe_unused]] auto tmp_Theme_380_accents = self->globals->global_Theme_380->field_accents.get();;return slint::private_api::access_array_index(tmp_Theme_380_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(self->field_root_40_accent_idx.get(),slint::private_api::model_length(tmp_Theme_380_accents))); }()));
+                            return slint::Brush((self->field_root_40_pkg.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)) : [&]{ [[maybe_unused]] auto tmp_Theme_395_accents = self->globals->global_Theme_395->field_accents.get();;return slint::private_api::access_array_index(tmp_Theme_395_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(self->field_root_40_accent_idx.get(),slint::private_api::model_length(tmp_Theme_395_accents))); }()));
                         });
     self->field_text_51.font_size.set(11);
     self->field_text_51.font_weight.set(static_cast<int>(700));
@@ -3067,7 +3071,7 @@ auto Component_rectangle_80::init (const class SharedGlobals* globals,slint::cbi
     self->field_info_ta_81.mouse_cursor.set(slint::cbindgen_private::MouseCursor::Pointer);
     self->field_image_82.colorize.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_info_ta_81.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.285296774e9) : slint::Color::from_argb_encoded(+4.288454832e9))));
+                            return slint::Brush((self->field_info_ta_81.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.285296774e9) : slint::Color::from_argb_encoded(+4.288454832e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -3094,17 +3098,17 @@ auto Component_rectangle_80::init (const class SharedGlobals* globals,slint::cbi
                         });
     self->field_rectangle_85.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
                         });
     self->field_rectangle_85.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)));
                         });
     self->field_rectangle_85.border_radius.set(6);
     self->field_rectangle_85.border_width.set(1);
     self->field_tooltip_txt_86.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_tooltip_txt_86.font_size.set(13);
     self->field_tooltip_txt_86.font_weight.set(static_cast<int>(700));
@@ -3342,7 +3346,7 @@ auto Component_rectangle_89::init (const class SharedGlobals* globals,slint::cbi
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_89.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9))).transparentize(0.85);
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9))).transparentize(0.85);
                         });
     self->field_rectangle_89.border_radius.set(12);
     self->field_rectangle_89_instTxt_90_min_height.set_binding([this]() {
@@ -3375,7 +3379,7 @@ auto Component_rectangle_89::init (const class SharedGlobals* globals,slint::cbi
                         });
     self->field_instTxt_90.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)));
                         });
     self->field_instTxt_90.font_size.set(11);
     self->field_instTxt_90.font_weight.set(static_cast<int>(700));
@@ -3586,7 +3590,7 @@ auto Component_rectangle_97::init (const class SharedGlobals* globals,slint::cbi
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_97.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_97.border_radius.set(8);
     self->field_rectangle_97_empty_98_layout_cache.set_binding([this]() {
@@ -3635,7 +3639,7 @@ auto Component_rectangle_97::init (const class SharedGlobals* globals,slint::cbi
                         });
     self->field_text_99.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_text_99.font_size.set(13);
     self->field_text_99.height.set(32);
@@ -3882,11 +3886,11 @@ auto Component_rectangle_108::init (const class SharedGlobals* globals,slint::cb
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_108.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_108.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_108.border_radius.set(16);
     self->field_rectangle_108.border_width.set(1);
@@ -3968,7 +3972,7 @@ auto Component_rectangle_108::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_text_111.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return [&]{ [[maybe_unused]] auto tmp_root_52_install_state = slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_52_install_state.get(); }));;return slint::Brush((tmp_root_52_install_state.finished && (! tmp_root_52_install_state.success) ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)))); }();
+                            return [&]{ [[maybe_unused]] auto tmp_root_52_install_state = slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_52_install_state.get(); }));;return slint::Brush((tmp_root_52_install_state.finished && (! tmp_root_52_install_state.success) ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)))); }();
                         });
     self->field_text_111.font_size.set(15);
     self->field_text_111.font_weight.set(static_cast<int>(700));
@@ -3987,7 +3991,7 @@ auto Component_rectangle_108::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_text_112.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_112.font_size.set(13);
     self->field_text_112.height.set_binding([this]() {
@@ -4005,7 +4009,7 @@ auto Component_rectangle_108::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_rectangle_114.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_114.border_radius.set(5);
     self->field__clip_115.border_bottom_left_radius.set(5);
@@ -4018,11 +4022,11 @@ auto Component_rectangle_108::init (const class SharedGlobals* globals,slint::cb
     self->field_rectangle_119.background.set(slint::Brush(slint::Color::from_argb_encoded(+4.285296774e9)));
     self->field_rectangle_120.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_console_ta_121.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_console_ta_121.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_120.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)));
                         });
     self->field_rectangle_120.border_radius.set(8);
     self->field_rectangle_120.border_width.set(1);
@@ -4034,7 +4038,7 @@ auto Component_rectangle_108::init (const class SharedGlobals* globals,slint::cb
     self->field_console_ta_121.enabled.set(true);
     self->field_text_122.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_122.font_size.set(12);
     self->field_text_122.font_weight.set(static_cast<int>(700));
@@ -4510,7 +4514,7 @@ auto Component_text_130::init (const class SharedGlobals* globals,slint::cbindge
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_text_130.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_130.font_size.set(13);
     self->field_text_130.height.set_binding([this]() {
@@ -4840,7 +4844,7 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_133.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_133.border_radius.set(4);
     self->field__clip_134.border_bottom_left_radius.set(4);
@@ -4852,13 +4856,13 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
     self->field_rectangle_137.background.set(slint::Brush(slint::Color::from_argb_encoded(+4.287214842e9)));
     self->field_rectangle_138.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291536631e9) : slint::Color::from_argb_encoded(+4.287117807e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291536631e9) : slint::Color::from_argb_encoded(+4.287117807e9)));
                         });
     self->field_rectangle_141.background.set(slint::Brush(slint::Color::from_argb_encoded(+4.285296774e9)));
     self->field_rectangle_141.border_radius.set(4.5);
     self->field_text_142.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_text_142.font_size.set(12);
     self->field_text_142.height.set_binding([this]() {
@@ -4877,7 +4881,7 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
     self->field_rectangle_144.border_radius.set(4.5);
     self->field_text_145.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_text_145.font_size.set(12);
     self->field_text_145.height.set_binding([this]() {
@@ -4894,12 +4898,12 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_147.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291536631e9) : slint::Color::from_argb_encoded(+4.287117807e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291536631e9) : slint::Color::from_argb_encoded(+4.287117807e9)));
                         });
     self->field_rectangle_147.border_radius.set(4.5);
     self->field_text_148.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_text_148.font_size.set(12);
     self->field_text_148.height.set_binding([this]() {
@@ -4916,11 +4920,11 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_149.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_text_152.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_152.font_size.set(11);
     self->field_text_152.height.set_binding([this]() {
@@ -4934,7 +4938,7 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_153.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_153.font_size.set(17);
     self->field_text_153.font_weight.set(static_cast<int>(700));
@@ -4952,7 +4956,7 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_156.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_156.font_size.set(11);
     self->field_text_156.height.set_binding([this]() {
@@ -4967,7 +4971,7 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_157.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_157.font_size.set(17);
     self->field_text_157.font_weight.set(static_cast<int>(700));
@@ -4986,7 +4990,7 @@ auto Component_empty_132::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_160.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_160.font_size.set(11);
     self->field_text_160.height.set_binding([this]() {
@@ -5363,7 +5367,7 @@ auto Component_rectangle_167::init (const class SharedGlobals* globals,slint::cb
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const Component_rectangle_163>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_167.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_view_more_ta_168.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_view_more_ta_168.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_167.border_radius.set(8);
     self->field_rectangle_167_layoutinfo_h.set_binding([this]() {
@@ -5399,7 +5403,7 @@ auto Component_rectangle_167::init (const class SharedGlobals* globals,slint::cb
     self->field_view_more_ta_168.mouse_cursor.set(slint::cbindgen_private::MouseCursor::Pointer);
     self->field_text_169.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_169.font_size.set(13);
     self->field_text_169.font_weight.set(static_cast<int>(700));
@@ -5655,7 +5659,7 @@ auto Component__visibility_172::init (const class SharedGlobals* globals,slint::
                         });
     self->field_rectangle_175.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_ta_addon_176.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)) : slint::Color::from_argb_encoded(0)));
+                            return slint::Brush((self->field_ta_addon_176.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)) : slint::Color::from_argb_encoded(0)));
                         });
     self->field_rectangle_175.border_radius.set(8);
     self->field_ta_addon_176.clicked.set_handler(
@@ -5667,7 +5671,7 @@ auto Component__visibility_172::init (const class SharedGlobals* globals,slint::
     self->field_ta_addon_176.mouse_cursor.set(slint::cbindgen_private::MouseCursor::Pointer);
     self->field_text_178.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_178.font_size.set(14);
     self->field_text_178.height.set(38);
@@ -5682,7 +5686,7 @@ auto Component__visibility_172::init (const class SharedGlobals* globals,slint::
                         });
     self->field_text_179.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_text_179.font_size.set(12);
     self->field_text_179.height.set(38);
@@ -5924,11 +5928,11 @@ auto Component_rectangle_163::init (const class SharedGlobals* globals,slint::cb
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_163.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_163.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_163.border_radius.set(16);
     self->field_rectangle_163.border_width.set(1);
@@ -5998,7 +6002,7 @@ auto Component_rectangle_163::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_text_166.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_166.font_size.set(16);
     self->field_text_166.font_weight.set(static_cast<int>(700));
@@ -6503,11 +6507,11 @@ auto Component_rectangle_182::init (const class SharedGlobals* globals,slint::cb
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_182.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_182.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_182.border_radius.set(16);
     self->field_rectangle_182.border_width.set(1);
@@ -6537,7 +6541,7 @@ auto Component_rectangle_182::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_text_184.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_184.font_size.set(16);
     self->field_text_184.font_weight.set(static_cast<int>(700));
@@ -6784,11 +6788,11 @@ auto Component_rectangle_189::init (const class SharedGlobals* globals,slint::cb
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_189.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_189.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_189.border_radius.set(16);
     self->field_rectangle_189.border_width.set(1);
@@ -6806,7 +6810,7 @@ auto Component_rectangle_189::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_text_191.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.290429662e9) : slint::Color::from_argb_encoded(+4.284243831e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.290429662e9) : slint::Color::from_argb_encoded(+4.284243831e9)));
                         });
     self->field_text_191.font_size.set(13);
     self->field_text_191.height.set_binding([this]() {
@@ -7385,7 +7389,7 @@ auto Component_empty_193::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_194.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_194.font_size.set(18);
     self->field_text_194.font_weight.set(static_cast<int>(700));
@@ -7409,12 +7413,12 @@ auto Component_empty_193::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_scroll_track_200.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_scroll_track_200.border_radius.set(4);
     self->field_thumb_201.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_thumb_ta_202.has_hover.get() || self->field_thumb_ta_202.pressed.get() ? slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_52_accent.get(); })) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
+                            return slint::Brush((self->field_thumb_ta_202.has_hover.get() || self->field_thumb_ta_202.pressed.get() ? slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_52_accent.get(); })) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
                         });
     self->field_thumb_201.border_radius.set(4);
     self->field_thumb_ta_202.enabled.set(true);
@@ -7692,7 +7696,7 @@ auto Component_rectangle_204::init (const class SharedGlobals* globals,slint::cb
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_204.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9))).transparentize(0.15);
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9))).transparentize(0.15);
                         });
     self->field_rectangle_204_empty_207_layout_cache.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -7760,17 +7764,17 @@ auto Component_rectangle_204::init (const class SharedGlobals* globals,slint::cb
     self->field_toucharea_205.enabled.set(true);
     self->field_rectangle_206.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_206.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_206.border_radius.set(14);
     self->field_rectangle_206.border_width.set(1);
     self->field_text_209.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_209.font_size.set(15);
     self->field_text_209.font_weight.set(static_cast<int>(700));
@@ -7786,7 +7790,7 @@ auto Component_rectangle_204::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_rectangle_210.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_close_ta_211.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return slint::Brush((self->field_close_ta_211.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         });
     self->field_rectangle_210.border_radius.set(8);
     self->field_close_ta_211.clicked.set_handler(
@@ -7797,7 +7801,7 @@ auto Component_rectangle_204::init (const class SharedGlobals* globals,slint::cb
     self->field_close_ta_211.enabled.set(true);
     self->field_text_212.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_212.font_size.set(12);
     self->field_text_212.font_weight.set(static_cast<int>(700));
@@ -7814,7 +7818,7 @@ auto Component_rectangle_204::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_rectangle_213.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
                         });
     self->field_rectangle_213.border_radius.set(8);
     self->field__clip_214.border_bottom_left_radius.set(8);
@@ -8196,7 +8200,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const DetailsView_root_52>(parent->self_weak.lock().value(), parent);
     self->field_rectangle_219.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9))).transparentize(0.15);
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9))).transparentize(0.15);
                         });
     self->field_rectangle_219_empty_221_alignment.set(slint::cbindgen_private::LayoutAlignment::Center);
     self->field_rectangle_219_empty_221_layout_cache.set_binding([this]() {
@@ -8377,17 +8381,17 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_toucharea_220.enabled.set(true);
     self->field_rectangle_223.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_223.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_223.border_radius.set(14);
     self->field_rectangle_223.border_width.set(1);
     self->field_text_226.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_226.font_size.set(20);
     self->field_text_226.font_weight.set(static_cast<int>(700));
@@ -8406,7 +8410,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_rectangle_227.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_close_uninstall_ta_228.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return slint::Brush((self->field_close_uninstall_ta_228.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         });
     self->field_rectangle_227.border_radius.set(8);
     self->field_close_uninstall_ta_228.clicked.set_handler(
@@ -8417,7 +8421,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_close_uninstall_ta_228.enabled.set(true);
     self->field_text_229.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_229.font_size.set(13);
     self->field_text_229.font_weight.set(static_cast<int>(700));
@@ -8434,7 +8438,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_text_230.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_text_230.font_size.set(14);
     self->field_text_230.height.set_binding([this]() {
@@ -8448,7 +8452,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
                         });
     self->field_rectangle_232.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_r_ta_233.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_r_ta_233.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_232.border_radius.set(10);
     self->field_r_ta_233.clicked.set_handler(
@@ -8459,7 +8463,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_r_ta_233.enabled.set(true);
     self->field_text_235.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_235.font_size.set(14);
     self->field_text_235.font_weight.set(static_cast<int>(700));
@@ -8475,7 +8479,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_235.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_text_236.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_236.font_size.set(12);
     self->field_text_236.height.set_binding([this]() {
@@ -8490,7 +8494,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_236.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_rectangle_237.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_rn_ta_238.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_rn_ta_238.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_237.border_radius.set(10);
     self->field_rn_ta_238.clicked.set_handler(
@@ -8501,7 +8505,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_rn_ta_238.enabled.set(true);
     self->field_text_240.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_240.font_size.set(14);
     self->field_text_240.font_weight.set(static_cast<int>(700));
@@ -8517,7 +8521,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_240.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_text_241.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_241.font_size.set(12);
     self->field_text_241.height.set_binding([this]() {
@@ -8532,7 +8536,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_241.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_rectangle_242.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_rs_ta_243.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_rs_ta_243.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_242.border_radius.set(10);
     self->field_rs_ta_243.clicked.set_handler(
@@ -8543,7 +8547,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_rs_ta_243.enabled.set(true);
     self->field_text_245.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_245.font_size.set(14);
     self->field_text_245.font_weight.set(static_cast<int>(700));
@@ -8559,7 +8563,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_245.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_text_246.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_246.font_size.set(12);
     self->field_text_246.height.set_binding([this]() {
@@ -8574,11 +8578,11 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_246.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_rectangle_247.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_rdd_ta_248.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_rdd_ta_248.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_247.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)));
                         });
     self->field_rectangle_247.border_radius.set(10);
     self->field_rectangle_247.border_width.set(1);
@@ -8590,7 +8594,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_rdd_ta_248.enabled.set(true);
     self->field_text_250.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)));
                         });
     self->field_text_250.font_size.set(14);
     self->field_text_250.font_weight.set(static_cast<int>(700));
@@ -8606,7 +8610,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_250.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_text_251.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_251.font_size.set(12);
     self->field_text_251.height.set_binding([this]() {
@@ -8621,11 +8625,11 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_251.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_rectangle_252.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_rns_ta_253.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return slint::Brush((self->field_rns_ta_253.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         });
     self->field_rectangle_252.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)));
                         });
     self->field_rectangle_252.border_radius.set(10);
     self->field_rectangle_252.border_width.set(1);
@@ -8637,7 +8641,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_rns_ta_253.enabled.set(true);
     self->field_text_255.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289127329e9) : slint::Color::from_argb_encoded(+4.282425387e9)));
                         });
     self->field_text_255.font_size.set(14);
     self->field_text_255.font_weight.set(static_cast<int>(700));
@@ -8653,7 +8657,7 @@ auto Component_rectangle_219::init (const class SharedGlobals* globals,slint::cb
     self->field_text_255.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_text_256.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_256.font_size.set(12);
     self->field_text_256.height.set_binding([this]() {
@@ -9254,11 +9258,11 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
     self->tree_index = tree_index;
     self->field_root_52_accent.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return [&]{ [[maybe_unused]] auto tmp_Theme_380_accents = self->globals->global_Theme_380->field_accents.get();;return slint::private_api::access_array_index(tmp_Theme_380_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(self->field_root_52_accent_idx.get(),slint::private_api::model_length(tmp_Theme_380_accents))); }();
+                            return [&]{ [[maybe_unused]] auto tmp_Theme_395_accents = self->globals->global_Theme_395->field_accents.get();;return slint::private_api::access_array_index(tmp_Theme_395_accents, ([](float a, float b) { auto r = std::fmod(a, b); return r >= 0 ? r : r + std::abs(b); })(self->field_root_52_accent_idx.get(),slint::private_api::model_length(tmp_Theme_395_accents))); }();
                         });
     self->field_root_52.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
                         });
     self->field_root_52_empty_104_layout_cache.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -9769,23 +9773,23 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_54.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_54.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_54.border_width.set(1);
     self->field_image_59.colorize.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_image_59.height.set(22);
     self->field_image_59.source.set(slint::Image::load_from_path(slint::SharedString(u8"/mnt/data/github_repos/tux_store/ui/settings.svg")));
     self->field_image_59.width.set(22);
     self->field_text_61.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
                         });
     self->field_text_61.font_size.set(18);
     self->field_text_61.font_weight.set(static_cast<int>(700));
@@ -9800,7 +9804,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_62.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_62.font_size.set(11);
     self->field_text_62.height.set_binding([this]() {
@@ -9814,11 +9818,11 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_64.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_back_ta_65.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_back_ta_65.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_64.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_64.border_radius.set(10);
     self->field_rectangle_64.border_width.set(1);
@@ -9830,7 +9834,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
     self->field_back_ta_65.enabled.set(true);
     self->field_text_66.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_66.font_size.set(13);
     self->field_text_66.font_weight.set(static_cast<int>(700));
@@ -9863,7 +9867,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
     self->field_toucharea_78.mouse_cursor.set(slint::cbindgen_private::MouseCursor::Pointer);
     self->field_pretty_name_txt_79.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_pretty_name_txt_79.font_size.set(30);
     self->field_pretty_name_txt_79.font_weight.set(static_cast<int>(700));
@@ -9883,7 +9887,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_92.background.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_repo_ta_93.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return slint::Brush((self->field_repo_ta_93.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -9901,7 +9905,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
     self->field_repo_ta_93.mouse_cursor.set(slint::cbindgen_private::MouseCursor::Pointer);
     self->field_repoTxt_94.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_repoTxt_94.font_size.set(11);
     self->field_repoTxt_94.font_weight.set(static_cast<int>(700));
@@ -9921,7 +9925,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_95.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.289113544e9) : slint::Color::from_argb_encoded(+4.285296517e9)));
                         });
     self->field_text_95.font_size.set(14);
     self->field_text_95.height.set_binding([this]() {
@@ -9939,7 +9943,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
     self->field_text_95.wrap.set(slint::cbindgen_private::TextWrap::WordWrap);
     self->field_text_96.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_96.font_size.set(12);
     self->field_text_96.height.set_binding([this]() {
@@ -9956,11 +9960,11 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_105.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_52_pkg.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)) : self->field_root_52_accent.get()));
+                            return slint::Brush((self->field_root_52_pkg.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)) : self->field_root_52_accent.get()));
                         });
     self->field_rectangle_105.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_52_pkg.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)) : self->field_root_52_accent.get()));
+                            return slint::Brush((self->field_root_52_pkg.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)) : self->field_root_52_accent.get()));
                         });
     self->field_rectangle_105.border_radius.set(10);
     self->field_rectangle_105.border_width.set_binding([this]() {
@@ -9975,7 +9979,7 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
     self->field_toucharea_106.enabled.set(true);
     self->field_text_107.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_root_52_pkg.get().installed ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9))));
+                            return slint::Brush((self->field_root_52_pkg.get().installed ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.29415108e9) : slint::Color::from_argb_encoded(+4.291956537e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9))));
                         });
     self->field_text_107.font_size.set(14);
     self->field_text_107.font_weight.set(static_cast<int>(700));
@@ -9995,17 +9999,17 @@ auto DetailsView_root_52::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_124.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_124.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_124.border_radius.set(16);
     self->field_rectangle_124.border_width.set(1);
     self->field_text_127.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_127.font_size.set(16);
     self->field_text_127.font_weight.set(static_cast<int>(700));
@@ -10477,7 +10481,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
     self->tree_index = tree_index;
     self->field_root_258.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
                         });
     self->field_root_258_empty_259_layout_cache.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -10736,23 +10740,23 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_rectangle_260.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_260.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_260.border_width.set(1);
     self->field_image_265.colorize.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_image_265.height.set(22);
     self->field_image_265.source.set(slint::Image::load_from_path(slint::SharedString(u8"/mnt/data/github_repos/tux_store/ui/settings.svg")));
     self->field_image_265.width.set(22);
     self->field_text_267.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
                         });
     self->field_text_267.font_size.set(18);
     self->field_text_267.font_weight.set(static_cast<int>(700));
@@ -10767,7 +10771,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_text_268.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_268.font_size.set(11);
     self->field_text_268.height.set_binding([this]() {
@@ -10781,11 +10785,11 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_rectangle_270.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_back_ta_271.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_back_ta_271.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_270.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_270.border_radius.set(10);
     self->field_rectangle_270.border_width.set(1);
@@ -10797,7 +10801,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
     self->field_back_ta_271.enabled.set(true);
     self->field_text_272.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_272.font_size.set(13);
     self->field_text_272.font_weight.set(static_cast<int>(700));
@@ -10823,7 +10827,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_text_276.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_276.font_size.set(28);
     self->field_text_276.font_weight.set(static_cast<int>(800));
@@ -10838,7 +10842,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_text_279.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_279.font_size.set(12);
     self->field_text_279.font_weight.set(static_cast<int>(800));
@@ -10854,17 +10858,17 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_rectangle_280.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_280.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_280.border_radius.set(12);
     self->field_rectangle_280.border_width.set(1);
     self->field_text_284.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_284.font_size.set(16);
     self->field_text_284.font_weight.set(static_cast<int>(600));
@@ -10879,7 +10883,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_text_285.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.285296774e9) : slint::Color::from_argb_encoded(+4.288454832e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.285296774e9) : slint::Color::from_argb_encoded(+4.288454832e9)));
                         });
     self->field_text_285.font_size.set(13);
     self->field_text_285.height.set_binding([this]() {
@@ -10893,7 +10897,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_rectangle_287.background.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (! self->globals->global_Theme_380->field_is_dark.get() ? slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9))).transparentize(0.85) : slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return (! self->globals->global_Theme_395->field_is_dark.get() ? slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9))).transparentize(0.85) : slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10903,7 +10907,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                                 });
     self->field_rectangle_287.border_color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((! self->globals->global_Theme_380->field_is_dark.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
+                            return slint::Brush((! self->globals->global_Theme_395->field_is_dark.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10916,17 +10920,17 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
     self->field_light_ta_288.clicked.set_handler(
                 [this]() {
                     [[maybe_unused]] auto self = this;
-                    self->globals->global_Theme_380->field_is_dark.set(false);
+                    self->globals->global_Theme_395->field_is_dark.set(false);
                 });
     self->field_light_ta_288.enabled.set(true);
     self->field_text_290.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((! self->globals->global_Theme_380->field_is_dark.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
+                            return slint::Brush((! self->globals->global_Theme_395->field_is_dark.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
                         });
     self->field_text_290.font_size.set(14);
     self->field_text_290.font_weight.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return static_cast<int>((! self->globals->global_Theme_380->field_is_dark.get() ? 700 : 500));
+                            return static_cast<int>((! self->globals->global_Theme_395->field_is_dark.get() ? 700 : 500));
                         });
     self->field_text_290.height.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -10940,7 +10944,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                         });
     self->field_rectangle_291.background.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return (self->globals->global_Theme_380->field_is_dark.get() ? slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9))).transparentize(0.85) : slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
+                            return (self->globals->global_Theme_395->field_is_dark.get() ? slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9))).transparentize(0.85) : slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10950,7 +10954,7 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
                                 });
     self->field_rectangle_291.border_color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.283980656e9) : slint::Color::from_argb_encoded(+4.289507518e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -10963,17 +10967,17 @@ auto SettingsView_root_258::init (const class SharedGlobals* globals,slint::cbin
     self->field_dark_ta_292.clicked.set_handler(
                 [this]() {
                     [[maybe_unused]] auto self = this;
-                    self->globals->global_Theme_380->field_is_dark.set(true);
+                    self->globals->global_Theme_395->field_is_dark.set(true);
                 });
     self->field_dark_ta_292.enabled.set(true);
     self->field_text_294.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
                         });
     self->field_text_294.font_size.set(14);
     self->field_text_294.font_weight.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return static_cast<int>((self->globals->global_Theme_380->field_is_dark.get() ? 700 : 500));
+                            return static_cast<int>((self->globals->global_Theme_395->field_is_dark.get() ? 700 : 500));
                         });
     self->field_text_294.height.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -11502,7 +11506,7 @@ auto AddonsStore_root_295::init (const class SharedGlobals* globals,slint::cbind
     self->tree_index = tree_index;
     self->field_root_295.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
                         });
     self->field_root_295_empty_296_layout_cache.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -11647,23 +11651,23 @@ auto AddonsStore_root_295::init (const class SharedGlobals* globals,slint::cbind
                         });
     self->field_rectangle_297.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_297.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_297.border_width.set(1);
     self->field_image_302.colorize.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_image_302.height.set(22);
     self->field_image_302.source.set(slint::Image::load_from_path(slint::SharedString(u8"/mnt/data/github_repos/tux_store/ui/settings.svg")));
     self->field_image_302.width.set(22);
     self->field_text_304.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
                         });
     self->field_text_304.font_size.set(18);
     self->field_text_304.font_weight.set(static_cast<int>(700));
@@ -11678,7 +11682,7 @@ auto AddonsStore_root_295::init (const class SharedGlobals* globals,slint::cbind
                         });
     self->field_text_305.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_305.font_size.set(11);
     self->field_text_305.height.set_binding([this]() {
@@ -11692,11 +11696,11 @@ auto AddonsStore_root_295::init (const class SharedGlobals* globals,slint::cbind
                         });
     self->field_rectangle_307.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_back_ta_308.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_back_ta_308.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_307.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_307.border_radius.set(10);
     self->field_rectangle_307.border_width.set(1);
@@ -11708,7 +11712,7 @@ auto AddonsStore_root_295::init (const class SharedGlobals* globals,slint::cbind
     self->field_back_ta_308.enabled.set(true);
     self->field_text_309.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_309.font_size.set(13);
     self->field_text_309.font_weight.set(static_cast<int>(700));
@@ -11725,7 +11729,7 @@ auto AddonsStore_root_295::init (const class SharedGlobals* globals,slint::cbind
                         });
     self->field_text_312.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_text_312.font_size.set(24);
     self->field_text_312.font_weight.set(static_cast<int>(800));
@@ -11900,12 +11904,12 @@ auto AddonsStore_root_295::subtree_component (uintptr_t dyn_index, [[maybe_unuse
         std::abort();
 }
 
-Theme_380::Theme_380 (const class SharedGlobals *globals)
+Theme_395::Theme_395 (const class SharedGlobals *globals)
  : globals(globals)
 {
 }
 
-auto Theme_380::init () -> void{
+auto Theme_395::init () -> void{
     (void)this->globals;
     this->field_accents.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -11914,12 +11918,12 @@ auto Theme_380::init () -> void{
     this->field_is_dark.set(true);
 }
 
-FluentPalette_382::FluentPalette_382 (const class SharedGlobals *globals)
+FluentPalette_397::FluentPalette_397 (const class SharedGlobals *globals)
  : globals(globals)
 {
 }
 
-auto FluentPalette_382::init () -> void{
+auto FluentPalette_397::init () -> void{
     (void)this->globals;
     this->field_color_scheme.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -11931,11 +11935,11 @@ auto FluentPalette_382::init () -> void{
                         });
     this->field_selection_foreground.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush(([&]{ [[maybe_unused]] auto tmp_FluentPalette_382_color_scheme = this->field_color_scheme.get();;return (! (tmp_FluentPalette_382_color_scheme == slint::cbindgen_private::ColorScheme::Unknown) ? (tmp_FluentPalette_382_color_scheme == slint::cbindgen_private::ColorScheme::Dark) : ([&]{ auto _root = (*this->globals->root_weak.lock()).into_dyn(); return slint::cbindgen_private::slint_context_color_scheme(&_root); }() == slint::cbindgen_private::ColorScheme::Dark)); }() ? slint::Color::from_argb_encoded(+4.27819008e9) : slint::Color::from_argb_encoded(+4.294967295e9)));
+                            return slint::Brush(([&]{ [[maybe_unused]] auto tmp_FluentPalette_397_color_scheme = this->field_color_scheme.get();;return (! (tmp_FluentPalette_397_color_scheme == slint::cbindgen_private::ColorScheme::Unknown) ? (tmp_FluentPalette_397_color_scheme == slint::cbindgen_private::ColorScheme::Dark) : ([&]{ auto _root = (*this->globals->root_weak.lock()).into_dyn(); return slint::cbindgen_private::slint_context_color_scheme(&_root); }() == slint::cbindgen_private::ColorScheme::Dark)); }() ? slint::Color::from_argb_encoded(+4.27819008e9) : slint::Color::from_argb_encoded(+4.294967295e9)));
                         });
 }
 
-auto FluentPalette_382::fn_accentify ([[maybe_unused]] slint::Color arg_0) const -> slint::Color{
+auto FluentPalette_397::fn_accentify ([[maybe_unused]] slint::Color arg_0) const -> slint::Color{
     [[maybe_unused]] auto self = this;
     return [&]{ [[maybe_unused]] auto local_accent_color = [&]{ auto _root = (*this->globals->root_weak.lock()).into_dyn(); slint::Color col; slint::cbindgen_private::slint_context_accent_color(&_root, &col); return col; }();;return (! (local_accent_color.to_argb_uint().alpha > 0) ? arg_0 : [&]{ [[maybe_unused]] auto local_default_lch = arg_0.to_oklch();;[[maybe_unused]] auto local_accent_lch = local_accent_color.to_oklch();;return slint::Color::from_oklch(std::clamp(static_cast<float>(local_default_lch.lightness), 0.f, 1.f), std::max(static_cast<float>(local_accent_lch.chroma), 0.f), static_cast<float>(local_accent_lch.hue), std::clamp(static_cast<float>(1), 0.f, 1.f)); }()); }();
 }
@@ -12471,7 +12475,864 @@ auto Component_flickable_352::flexbox_layout_item_info (slint::cbindgen_private:
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
+const slint::private_api::ItemTreeVTable Component_rectangle_366::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_rectangle_366>, slint::private_api::dealloc };
+
+auto Component_rectangle_366::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_rectangle_361 const *parent) -> void{
+    auto self = this;
+    self->self_weak = enclosing_component;
+    self->globals = globals;
+    this->tree_index_of_first_child = tree_index_of_first_child;
+    self->tree_index = tree_index;
+    self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const Component_rectangle_361>(parent->self_weak.lock().value(), parent);
+    self->field_rectangle_366.background.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::Brush((self->field_ta_left_368.has_hover.get() ? slint::Color::from_argb_encoded(+3.439329279e9) : slint::Color::from_argb_encoded(+2.298478591e9)));
+                        });
+    self->field_rectangle_366.border_radius.set(24);
+    self->field_rectangle_366_layoutinfo_h.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_rectangle_366_text_367_max_width.get(), 100, self->field_rectangle_366_text_367_min_width.get(), 0, self->field_rectangle_366_text_367_preferred_width.get(), self->field_rectangle_366_text_367_horizontal_stretch.get()));
+                        });
+    self->field_rectangle_366_layoutinfo_v.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_rectangle_366_text_367_max_height.get(), 100, self->field_rectangle_366_text_367_min_height.get(), 0, self->field_rectangle_366_text_367_preferred_height.get(), self->field_rectangle_366_text_367_vertical_stretch.get()));
+                        });
+    self->field_rectangle_366_text_367_horizontal_stretch.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).stretch;
+                        });
+    self->field_rectangle_366_text_367_max_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).max;
+                        });
+    self->field_rectangle_366_text_367_max_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).max;
+                        });
+    self->field_rectangle_366_text_367_min_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).min;
+                        });
+    self->field_rectangle_366_text_367_min_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).min;
+                        });
+    self->field_rectangle_366_text_367_preferred_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).preferred;
+                        });
+    self->field_rectangle_366_text_367_preferred_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).preferred;
+                        });
+    self->field_rectangle_366_text_367_vertical_stretch.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_367), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).stretch;
+                        });
+    self->field_text_367.color.set(slint::Brush(slint::Color::from_argb_encoded(+4.27819008e9)));
+    self->field_text_367.font_size.set(24);
+    self->field_text_367.font_weight.set(static_cast<int>(800));
+    self->field_text_367.height.set((1 * 48));
+    self->field_text_367.horizontal_alignment.set(slint::cbindgen_private::TextHorizontalAlignment::Center);
+    self->field_text_367.text.set(slint::SharedString(u8"<"));
+    self->field_text_367.vertical_alignment.set(slint::cbindgen_private::TextVerticalAlignment::Center);
+    self->field_text_367.width.set((1 * 48));
+    self->field_ta_left_368.clicked.set_handler(
+                [this]() {
+                    [[maybe_unused]] auto self = this;
+                    [&]{ if (slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); })) > 0) { slint::private_api::optional_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { x->field_flickable_357_rectangle_360_active_idx.set((slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); })) -(float) static_cast<int>(1))); }); } else { slint::private_api::optional_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { x->field_flickable_357_rectangle_360_active_idx.set(static_cast<int>((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_covers.get(); }))) -(float) 1))); }); };slint::private_api::optional_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { x->field_flickable_357_rectangle_360_request_randomize.call(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); }))); }); }();
+                });
+    self->field_ta_left_368.enabled.set(true);
+    self->field_rectangle_366.border_color.set_constant();
+    self->field_rectangle_366.border_radius.set_constant();
+    self->field_rectangle_366.border_width.set_constant();
+    self->field_text_367.color.set_constant();
+    self->field_text_367.font_size.set_constant();
+    self->field_text_367.font_weight.set_constant();
+    self->field_text_367.height.set_constant();
+    self->field_text_367.horizontal_alignment.set_constant();
+    self->field_text_367.text.set_constant();
+    self->field_text_367.vertical_alignment.set_constant();
+    self->field_text_367.width.set_constant();
+    self->field_ta_left_368.enabled.set_constant();
+    self->field_ta_left_368.mouse_cursor.set_constant();
+}
+
+auto Component_rectangle_366::user_init () -> void{
+    [[maybe_unused]] auto self = this;
+}
+
+auto Component_rectangle_366::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+    [[maybe_unused]] auto self = this;
+    return o == slint::cbindgen_private::Orientation::Horizontal ? self->field_rectangle_366_layoutinfo_h.get() : self->field_rectangle_366_layoutinfo_v.get();
+}
+
+auto Component_rectangle_366::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+        case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(48), float(48), float(16), float(((((std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000) * 9) /(float) 16) -(float) 48) /(float) 2))));
+        case 1: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((1 * 48)), float((1 * 48)), float(0), float(0)));
+        case 2: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(48), float(48), float(0), float(0)));
+    }
+    return {};
+}
+
+auto Component_rectangle_366::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+        case 1: return slint::cbindgen_private::AccessibleRole::Text;
+    }
+    return {};
+}
+
+auto Component_rectangle_366::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+    [[maybe_unused]] auto self = this;
+    switch ((index << 8) | uintptr_t(what)) {
+        case (1 << 8) | uintptr_t(slint::cbindgen_private::AccessibleStringProperty::Label): return slint::SharedString(u8"<");
+    }
+    return {};
+}
+
+auto Component_rectangle_366::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+    [[maybe_unused]] auto self = this;
+    switch ((index << 8) | uintptr_t(action.tag)) {
+    }
+    return ;
+}
+
+auto Component_rectangle_366::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+    }
+    return {};
+}
+
+auto Component_rectangle_366::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+    }
+    return {};
+}
+
+auto Component_rectangle_366::ensure_instantiated () const -> bool{
+    [[maybe_unused]] auto self = this;
+    bool _changed = false;
+    return _changed;
+}
+
+auto Component_rectangle_366::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+    static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_rectangle_366*>(base);
+        std::abort();
+    };
+    auto self_rc = reinterpret_cast<const Component_rectangle_366*>(component.instance)->self_weak.lock()->into_dyn();
+    return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
+}
+
+auto Component_rectangle_366::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+    return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
+}
+
+auto Component_rectangle_366::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+        std::abort();
+}
+
+auto Component_rectangle_366::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+        std::abort();
+}
+
+auto Component_rectangle_366::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+    return item_tree();
+}
+
+auto Component_rectangle_366::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_rectangle_366*>(component.instance);
+    auto parent = self->parent.lock().value();
+    *result = { parent->self_weak, parent->tree_index_of_first_child + 3 };
+}
+
+auto Component_rectangle_366::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+    return false; /* todo! */
+}
+
+auto Component_rectangle_366::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+    return std::numeric_limits<uintptr_t>::max();
+}
+
+auto Component_rectangle_366::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+    static const slint::private_api::ItemTreeNode children[] {
+        slint::private_api::make_item_node(2, 1, 0, 0, false), 
+slint::private_api::make_item_node(0, 3, 0, 1, true), 
+slint::private_api::make_item_node(0, 3, 0, 2, false) };
+    return slint::private_api::make_slice(std::span(children));
+}
+
+auto Component_rectangle_366::item_array () -> const slint::private_api::ItemArray{
+    static const slint::private_api::ItemArrayEntry items[] {
+        { SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable),  offsetof(Component_rectangle_366, field_rectangle_366) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable),  offsetof(Component_rectangle_366, field_text_367) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable),  offsetof(Component_rectangle_366, field_ta_left_368) } };
+    return slint::private_api::make_slice(std::span(items));
+}
+
+auto Component_rectangle_366::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_rectangle_366*>(component.instance)->layout_info(o);
+}
+
+auto Component_rectangle_366::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_rectangle_366*>(component.instance)->ensure_instantiated();
+}
+
+auto Component_rectangle_366::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_rectangle_366*>(component.instance)->item_geometry(index);
+}
+
+auto Component_rectangle_366::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_rectangle_366*>(component.instance)->accessible_role(index);
+}
+
+auto Component_rectangle_366::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_rectangle_366*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+}
+
+auto Component_rectangle_366::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_rectangle_366*>(component.instance)->accessibility_action(index, *action);
+}
+
+auto Component_rectangle_366::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_rectangle_366*>(component.instance)->supported_accessibility_actions(index);
+}
+
+auto Component_rectangle_366::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+    return false;
+}
+
+auto Component_rectangle_366::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_rectangle_366*>(component.instance)->globals->window().window_handle();
+}
+
+auto Component_rectangle_366::create (class Component_rectangle_361 const * parent) -> slint::ComponentHandle<Component_rectangle_366>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_366>::make();
+    auto self = const_cast<Component_rectangle_366 *>(&*self_rc);
+    self->self_weak = vtable::VWeak(self_rc).into_dyn();
+    slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
+    self->init(parent->globals, self->self_weak, 0, 1 , parent);
+    return slint::ComponentHandle<Component_rectangle_366>{ self_rc };
+}
+
+Component_rectangle_366::~Component_rectangle_366 (){
+    if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
+}
+
+auto Component_rectangle_366::init () -> void{
+    user_init();
+}
+
+auto Component_rectangle_366::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+    return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
+}
+
+auto Component_rectangle_366::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+    auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
+}
+
+const slint::private_api::ItemTreeVTable Component_rectangle_370::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_rectangle_370>, slint::private_api::dealloc };
+
+auto Component_rectangle_370::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_rectangle_361 const *parent) -> void{
+    auto self = this;
+    self->self_weak = enclosing_component;
+    self->globals = globals;
+    this->tree_index_of_first_child = tree_index_of_first_child;
+    self->tree_index = tree_index;
+    self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const Component_rectangle_361>(parent->self_weak.lock().value(), parent);
+    self->field_rectangle_370.background.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::Brush((self->field_ta_right_372.has_hover.get() ? slint::Color::from_argb_encoded(+3.439329279e9) : slint::Color::from_argb_encoded(+2.298478591e9)));
+                        });
+    self->field_rectangle_370.border_radius.set(24);
+    self->field_rectangle_370_layoutinfo_h.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_rectangle_370_text_371_max_width.get(), 100, self->field_rectangle_370_text_371_min_width.get(), 0, self->field_rectangle_370_text_371_preferred_width.get(), self->field_rectangle_370_text_371_horizontal_stretch.get()));
+                        });
+    self->field_rectangle_370_layoutinfo_v.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_rectangle_370_text_371_max_height.get(), 100, self->field_rectangle_370_text_371_min_height.get(), 0, self->field_rectangle_370_text_371_preferred_height.get(), self->field_rectangle_370_text_371_vertical_stretch.get()));
+                        });
+    self->field_rectangle_370_text_371_horizontal_stretch.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).stretch;
+                        });
+    self->field_rectangle_370_text_371_max_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).max;
+                        });
+    self->field_rectangle_370_text_371_max_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).max;
+                        });
+    self->field_rectangle_370_text_371_min_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).min;
+                        });
+    self->field_rectangle_370_text_371_min_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).min;
+                        });
+    self->field_rectangle_370_text_371_preferred_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).preferred;
+                        });
+    self->field_rectangle_370_text_371_preferred_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).preferred;
+                        });
+    self->field_rectangle_370_text_371_vertical_stretch.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_371), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 1 - 1).stretch;
+                        });
+    self->field_text_371.color.set(slint::Brush(slint::Color::from_argb_encoded(+4.27819008e9)));
+    self->field_text_371.font_size.set(24);
+    self->field_text_371.font_weight.set(static_cast<int>(800));
+    self->field_text_371.height.set((1 * 48));
+    self->field_text_371.horizontal_alignment.set(slint::cbindgen_private::TextHorizontalAlignment::Center);
+    self->field_text_371.text.set(slint::SharedString(u8">"));
+    self->field_text_371.vertical_alignment.set(slint::cbindgen_private::TextVerticalAlignment::Center);
+    self->field_text_371.width.set((1 * 48));
+    self->field_ta_right_372.clicked.set_handler(
+                [this]() {
+                    [[maybe_unused]] auto self = this;
+                    [&]{ if (slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); })) < (slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_covers.get(); }))) -(float) 1)) { slint::private_api::optional_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { x->field_flickable_357_rectangle_360_active_idx.set((slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); })) + static_cast<int>(1))); }); } else { slint::private_api::optional_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { x->field_flickable_357_rectangle_360_active_idx.set(static_cast<int>(0)); }); };slint::private_api::optional_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { x->field_flickable_357_rectangle_360_request_randomize.call(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); }))); }); }();
+                });
+    self->field_ta_right_372.enabled.set(true);
+    self->field_rectangle_370.border_color.set_constant();
+    self->field_rectangle_370.border_radius.set_constant();
+    self->field_rectangle_370.border_width.set_constant();
+    self->field_text_371.color.set_constant();
+    self->field_text_371.font_size.set_constant();
+    self->field_text_371.font_weight.set_constant();
+    self->field_text_371.height.set_constant();
+    self->field_text_371.horizontal_alignment.set_constant();
+    self->field_text_371.text.set_constant();
+    self->field_text_371.vertical_alignment.set_constant();
+    self->field_text_371.width.set_constant();
+    self->field_ta_right_372.enabled.set_constant();
+    self->field_ta_right_372.mouse_cursor.set_constant();
+}
+
+auto Component_rectangle_370::user_init () -> void{
+    [[maybe_unused]] auto self = this;
+}
+
+auto Component_rectangle_370::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+    [[maybe_unused]] auto self = this;
+    return o == slint::cbindgen_private::Orientation::Horizontal ? self->field_rectangle_370_layoutinfo_h.get() : self->field_rectangle_370_layoutinfo_v.get();
+}
+
+auto Component_rectangle_370::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+        case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(48), float(48), float(((std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000) -(float) 48) -(float) 16)), float(((((std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000) * 9) /(float) 16) -(float) 48) /(float) 2))));
+        case 1: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((1 * 48)), float((1 * 48)), float(0), float(0)));
+        case 2: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(48), float(48), float(0), float(0)));
+    }
+    return {};
+}
+
+auto Component_rectangle_370::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+        case 1: return slint::cbindgen_private::AccessibleRole::Text;
+    }
+    return {};
+}
+
+auto Component_rectangle_370::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+    [[maybe_unused]] auto self = this;
+    switch ((index << 8) | uintptr_t(what)) {
+        case (1 << 8) | uintptr_t(slint::cbindgen_private::AccessibleStringProperty::Label): return slint::SharedString(u8">");
+    }
+    return {};
+}
+
+auto Component_rectangle_370::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+    [[maybe_unused]] auto self = this;
+    switch ((index << 8) | uintptr_t(action.tag)) {
+    }
+    return ;
+}
+
+auto Component_rectangle_370::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+    }
+    return {};
+}
+
+auto Component_rectangle_370::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+    }
+    return {};
+}
+
+auto Component_rectangle_370::ensure_instantiated () const -> bool{
+    [[maybe_unused]] auto self = this;
+    bool _changed = false;
+    return _changed;
+}
+
+auto Component_rectangle_370::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+    static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_rectangle_370*>(base);
+        std::abort();
+    };
+    auto self_rc = reinterpret_cast<const Component_rectangle_370*>(component.instance)->self_weak.lock()->into_dyn();
+    return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
+}
+
+auto Component_rectangle_370::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+    return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
+}
+
+auto Component_rectangle_370::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+        std::abort();
+}
+
+auto Component_rectangle_370::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+        std::abort();
+}
+
+auto Component_rectangle_370::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+    return item_tree();
+}
+
+auto Component_rectangle_370::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_rectangle_370*>(component.instance);
+    auto parent = self->parent.lock().value();
+    *result = { parent->self_weak, parent->tree_index_of_first_child + 4 };
+}
+
+auto Component_rectangle_370::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+    return false; /* todo! */
+}
+
+auto Component_rectangle_370::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+    return std::numeric_limits<uintptr_t>::max();
+}
+
+auto Component_rectangle_370::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+    static const slint::private_api::ItemTreeNode children[] {
+        slint::private_api::make_item_node(2, 1, 0, 0, false), 
+slint::private_api::make_item_node(0, 3, 0, 1, true), 
+slint::private_api::make_item_node(0, 3, 0, 2, false) };
+    return slint::private_api::make_slice(std::span(children));
+}
+
+auto Component_rectangle_370::item_array () -> const slint::private_api::ItemArray{
+    static const slint::private_api::ItemArrayEntry items[] {
+        { SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable),  offsetof(Component_rectangle_370, field_rectangle_370) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable),  offsetof(Component_rectangle_370, field_text_371) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable),  offsetof(Component_rectangle_370, field_ta_right_372) } };
+    return slint::private_api::make_slice(std::span(items));
+}
+
+auto Component_rectangle_370::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_rectangle_370*>(component.instance)->layout_info(o);
+}
+
+auto Component_rectangle_370::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_rectangle_370*>(component.instance)->ensure_instantiated();
+}
+
+auto Component_rectangle_370::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_rectangle_370*>(component.instance)->item_geometry(index);
+}
+
+auto Component_rectangle_370::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_rectangle_370*>(component.instance)->accessible_role(index);
+}
+
+auto Component_rectangle_370::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_rectangle_370*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+}
+
+auto Component_rectangle_370::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_rectangle_370*>(component.instance)->accessibility_action(index, *action);
+}
+
+auto Component_rectangle_370::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_rectangle_370*>(component.instance)->supported_accessibility_actions(index);
+}
+
+auto Component_rectangle_370::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+    return false;
+}
+
+auto Component_rectangle_370::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_rectangle_370*>(component.instance)->globals->window().window_handle();
+}
+
+auto Component_rectangle_370::create (class Component_rectangle_361 const * parent) -> slint::ComponentHandle<Component_rectangle_370>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_370>::make();
+    auto self = const_cast<Component_rectangle_370 *>(&*self_rc);
+    self->self_weak = vtable::VWeak(self_rc).into_dyn();
+    slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
+    self->init(parent->globals, self->self_weak, 0, 1 , parent);
+    return slint::ComponentHandle<Component_rectangle_370>{ self_rc };
+}
+
+Component_rectangle_370::~Component_rectangle_370 (){
+    if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
+}
+
+auto Component_rectangle_370::init () -> void{
+    user_init();
+}
+
+auto Component_rectangle_370::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+    return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
+}
+
+auto Component_rectangle_370::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+    auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
+}
+
+const slint::private_api::ItemTreeVTable Component_rectangle_361::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_rectangle_361>, slint::private_api::dealloc };
+
+auto Component_rectangle_361::fn_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo{
+    [[maybe_unused]] auto self = this;
+    return ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, self->field_rectangle_361_image_363_preferred_height.get(), 0));
+}
+
+auto Component_rectangle_361::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_flickable_357 const *parent) -> void{
+    auto self = this;
+    self->self_weak = enclosing_component;
+    self->globals = globals;
+    this->tree_index_of_first_child = tree_index_of_first_child;
+    self->tree_index = tree_index;
+    self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const Component_flickable_357>(parent->self_weak.lock().value(), parent);
+    self->field_rectangle_361.border_radius.set(20);
+    self->field_rectangle_361_image_363_preferred_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(ImageItemVTable), const_cast<slint::cbindgen_private::ImageItem*>(&self->field_image_363), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 2 - 1).preferred;
+                        });
+    self->field_rectangle_361_image_363_preferred_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(ImageItemVTable), const_cast<slint::cbindgen_private::ImageItem*>(&self->field_image_363), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 2 - 1).preferred;
+                        });
+    self->field_rectangle_361_text_365_min_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_365), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 6 - 1).min;
+                        });
+    self->field_rectangle_361_text_365_min_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_365), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 6 - 1).min;
+                        });
+    self->field_rectangle_361_text_365_preferred_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_365), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 6 - 1).preferred;
+                        });
+    self->field_rectangle_361_text_365_preferred_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(SimpleTextVTable), const_cast<slint::cbindgen_private::SimpleText*>(&self->field_text_365), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 6 - 1).preferred;
+                        });
+    self->field_rectangle_361_x.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return ((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000)) /(float) 2);
+                        });
+    self->field__clip_362.border_bottom_left_radius.set(20);
+    self->field__clip_362.border_bottom_right_radius.set(20);
+    self->field__clip_362.border_top_left_radius.set(20);
+    self->field__clip_362.border_top_right_radius.set(20);
+    self->field__clip_362.clip.set(true);
+    self->field_image_363.height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return (1 * ((std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000) * 9) /(float) 16));
+                        });
+    self->field_image_363.image_fit.set(slint::cbindgen_private::ImageFit::Cover);
+    self->field_image_363.source.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::access_array_index(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_covers.get(); })), slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); }))).image;
+                        });
+    self->field_image_363.width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return (1 * std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000));
+                        });
+    self->field_rectangle_364.background.set([&] { const slint::private_api::GradientStop stops[] = { slint::private_api::GradientStop{ slint::Color::from_argb_encoded(0), float(0), }, slint::private_api::GradientStop{ slint::Color::from_argb_encoded(+3.422552064e9), float(1), } }; return slint::Brush(slint::private_api::LinearGradientBrush(180, stops, 2)); }());
+    self->field_text_365.color.set(slint::Brush(slint::Color::from_argb_encoded(+4.294967295e9)));
+    self->field_text_365.font_size.set(36);
+    self->field_text_365.font_weight.set(static_cast<int>(800));
+    self->field_text_365.height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return std::max<float>(self->field_rectangle_361_text_365_preferred_height.get(), self->field_rectangle_361_text_365_min_height.get());
+                        });
+    self->field_text_365.text.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::access_array_index(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_covers.get(); })), slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357_rectangle_360_active_idx.get(); }))).name;
+                        });
+    self->field_text_365.width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return std::max<float>(self->field_rectangle_361_text_365_preferred_width.get(), self->field_rectangle_361_text_365_min_width.get());
+                        });
+    self->field_rectangle_361.background.set_constant();
+    self->field_rectangle_361.border_color.set_constant();
+    self->field_rectangle_361.border_radius.set_constant();
+    self->field_rectangle_361.border_width.set_constant();
+    self->field__clip_362.border_bottom_left_radius.set_constant();
+    self->field__clip_362.border_bottom_right_radius.set_constant();
+    self->field__clip_362.border_top_left_radius.set_constant();
+    self->field__clip_362.border_top_right_radius.set_constant();
+    self->field__clip_362.border_width.set_constant();
+    self->field_image_363.colorize.set_constant();
+    self->field_image_363.image_fit.set_constant();
+    self->field_image_363.image_rendering.set_constant();
+    self->field_rectangle_364.background.set_constant();
+    self->field_text_365.color.set_constant();
+    self->field_text_365.font_size.set_constant();
+    self->field_text_365.font_weight.set_constant();
+    self->field_text_365.horizontal_alignment.set_constant();
+    self->field_text_365.vertical_alignment.set_constant();
+    self->repeater_0.set_model_binding([self] { (void)self; return (slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357_rectangle_360_covers.get(); }))) > 1); });
+    self->repeater_1.set_model_binding([self] { (void)self; return (slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357_rectangle_360_covers.get(); }))) > 1); });
+}
+
+auto Component_rectangle_361::user_init () -> void{
+    [[maybe_unused]] auto self = this;
+}
+
+auto Component_rectangle_361::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+    [[maybe_unused]] auto self = this;
+    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, self->field_rectangle_361_image_363_preferred_width.get(), 0)) : ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, self->field_rectangle_361_image_363_preferred_height.get(), 0));
+}
+
+auto Component_rectangle_361::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+        case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(((std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000) * 9) /(float) 16)), float(std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000)), float(self->field_rectangle_361_x.get()), float(0)));
+        case 1: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357_rectangle_360_height.get(); }))), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357_rectangle_360_banner_width.get(); }))), float(0), float(0)));
+        case 2: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((1 * ((std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000) * 9) /(float) 16))), float((1 * std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000))), float(0), float(0)));
+        case 3: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(120), float((1 * std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000))), float(0), float((((std::min<float>((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_flickable_357.viewport_width.get(); })) -(float) 64), 1000) * 9) /(float) 16) -(float) 120))));
+        case 6: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(self->field_text_365.height.get()), float(self->field_text_365.width.get()), float(32), float(50)));
+    }
+    return {};
+}
+
+auto Component_rectangle_361::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+        case 2: return slint::cbindgen_private::AccessibleRole::Image;
+        case 6: return slint::cbindgen_private::AccessibleRole::Text;
+    }
+    return {};
+}
+
+auto Component_rectangle_361::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+    [[maybe_unused]] auto self = this;
+    switch ((index << 8) | uintptr_t(what)) {
+        case (6 << 8) | uintptr_t(slint::cbindgen_private::AccessibleStringProperty::Label): return self->field_text_365.text.get();
+    }
+    return {};
+}
+
+auto Component_rectangle_361::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+    [[maybe_unused]] auto self = this;
+    switch ((index << 8) | uintptr_t(action.tag)) {
+    }
+    return ;
+}
+
+auto Component_rectangle_361::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+    }
+    return {};
+}
+
+auto Component_rectangle_361::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+    [[maybe_unused]] auto self = this;
+    switch (index) {
+    }
+    return {};
+}
+
+auto Component_rectangle_361::ensure_instantiated () const -> bool{
+    [[maybe_unused]] auto self = this;
+    bool _changed = false;
+    _changed |= self->repeater_0.ensure_updated(self);
+    _changed |= self->repeater_1.ensure_updated(self);
+    return _changed;
+}
+
+auto Component_rectangle_361::visit_dynamic_children (uint32_t dyn_index, [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor) const -> uint64_t{
+        auto self = this;
+        switch(dyn_index) { 
+        case 0: {
+                return self->repeater_0.visit(order, visitor);
+            }
+        case 1: {
+                return self->repeater_1.visit(order, visitor);
+            } };
+        std::abort();
+}
+
+auto Component_rectangle_361::subtree_range (uintptr_t dyn_index) const -> slint::private_api::IndexRange{
+    [[maybe_unused]] auto self = this;
+        switch(dyn_index) { 
+        case 0: {
+                self->repeater_0.track_instance_changes();
+                return self->repeater_0.index_range();
+            }
+        case 1: {
+                self->repeater_1.track_instance_changes();
+                return self->repeater_1.index_range();
+            } };
+        std::abort();
+}
+
+auto Component_rectangle_361::subtree_component (uintptr_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) const -> void{
+    [[maybe_unused]] auto self = this;
+        switch(dyn_index) { 
+        case 0: {
+                *result = self->repeater_0.instance_at(subtree_index);
+                return;
+            }
+        case 1: {
+                *result = self->repeater_1.instance_at(subtree_index);
+                return;
+            } };
+        std::abort();
+}
+
+auto Component_rectangle_361::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+    static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_rectangle_361*>(base);
+        return self->visit_dynamic_children(dyn_index, order, visitor);
+    };
+    auto self_rc = reinterpret_cast<const Component_rectangle_361*>(component.instance)->self_weak.lock()->into_dyn();
+    return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
+}
+
+auto Component_rectangle_361::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+    return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
+}
+
+auto Component_rectangle_361::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+    auto self = reinterpret_cast<const Component_rectangle_361*>(component.instance);
+    return self->subtree_range(dyn_index);
+}
+
+auto Component_rectangle_361::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_rectangle_361*>(component.instance);
+    self->subtree_component(dyn_index, subtree_index, result);
+}
+
+auto Component_rectangle_361::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+    return item_tree();
+}
+
+auto Component_rectangle_361::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_rectangle_361*>(component.instance);
+    auto parent = self->parent.lock().value();
+    *result = { parent->self_weak, parent->tree_index_of_first_child + 10 };
+}
+
+auto Component_rectangle_361::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+    return false; /* todo! */
+}
+
+auto Component_rectangle_361::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+    return std::numeric_limits<uintptr_t>::max();
+}
+
+auto Component_rectangle_361::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+    static const slint::private_api::ItemTreeNode children[] {
+        slint::private_api::make_item_node(1, 1, 0, 0, false), 
+slint::private_api::make_item_node(4, 2, 0, 1, false), 
+slint::private_api::make_item_node(0, 6, 1, 2, true), 
+slint::private_api::make_item_node(1, 6, 1, 3, false), 
+slint::private_api::make_dyn_node(0, 1), 
+slint::private_api::make_dyn_node(1, 1), 
+slint::private_api::make_item_node(0, 7, 3, 4, true) };
+    return slint::private_api::make_slice(std::span(children));
+}
+
+auto Component_rectangle_361::item_array () -> const slint::private_api::ItemArray{
+    static const slint::private_api::ItemArrayEntry items[] {
+        { SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable),  offsetof(Component_rectangle_361, field_rectangle_361) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable),  offsetof(Component_rectangle_361, field__clip_362) }, 
+{ SLINT_GET_ITEM_VTABLE(ImageItemVTable),  offsetof(Component_rectangle_361, field_image_363) }, 
+{ SLINT_GET_ITEM_VTABLE(RectangleVTable),  offsetof(Component_rectangle_361, field_rectangle_364) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable),  offsetof(Component_rectangle_361, field_text_365) } };
+    return slint::private_api::make_slice(std::span(items));
+}
+
+auto Component_rectangle_361::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_rectangle_361*>(component.instance)->layout_info(o);
+}
+
+auto Component_rectangle_361::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_rectangle_361*>(component.instance)->ensure_instantiated();
+}
+
+auto Component_rectangle_361::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_rectangle_361*>(component.instance)->item_geometry(index);
+}
+
+auto Component_rectangle_361::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_rectangle_361*>(component.instance)->accessible_role(index);
+}
+
+auto Component_rectangle_361::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_rectangle_361*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+}
+
+auto Component_rectangle_361::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_rectangle_361*>(component.instance)->accessibility_action(index, *action);
+}
+
+auto Component_rectangle_361::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_rectangle_361*>(component.instance)->supported_accessibility_actions(index);
+}
+
+auto Component_rectangle_361::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+    return false;
+}
+
+auto Component_rectangle_361::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_rectangle_361*>(component.instance)->globals->window().window_handle();
+}
+
+auto Component_rectangle_361::create (class Component_flickable_357 const * parent) -> slint::ComponentHandle<Component_rectangle_361>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_rectangle_361>::make();
+    auto self = const_cast<Component_rectangle_361 *>(&*self_rc);
+    self->self_weak = vtable::VWeak(self_rc).into_dyn();
+    slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
+    self->init(parent->globals, self->self_weak, 0, 1 , parent);
+    return slint::ComponentHandle<Component_rectangle_361>{ self_rc };
+}
+
+Component_rectangle_361::~Component_rectangle_361 (){
+    if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
+}
+
+auto Component_rectangle_361::init () -> void{
+    user_init();
+}
+
+auto Component_rectangle_361::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+    return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
+}
+
+auto Component_rectangle_361::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+    auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
+}
+
 const slint::private_api::ItemTreeVTable Component_flickable_357::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_flickable_357>, slint::private_api::dealloc };
+
+auto Component_flickable_357::fn_feed_layout_359_layoutinfo_v_with_constraint ([[maybe_unused]] float arg_0) const -> slint::cbindgen_private::LayoutInfo{
+    [[maybe_unused]] auto self = this;
+    return slint::private_api::box_layout_info(slint::private_api::make_slice<slint::cbindgen_private::LayoutItemInfo>(std::array<slint::cbindgen_private::LayoutItemInfo, 8>{ slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_rectangle_360), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 3 - 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_flickable_357_rectangle_360_height.get(), layout_info.max_percent, self->field_flickable_357_rectangle_360_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_375.field_root_14), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->field_approw_375.self_weak.lock()->into_dyn(), self->field_approw_375.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_approw_375.field_root_14_height.get(), layout_info.max_percent, self->field_approw_375.field_root_14_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_376.field_root_14), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->field_approw_376.self_weak.lock()->into_dyn(), self->field_approw_376.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_approw_376.field_root_14_height.get(), layout_info.max_percent, self->field_approw_376.field_root_14_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_377.field_root_14), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->field_approw_377.self_weak.lock()->into_dyn(), self->field_approw_377.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_approw_377.field_root_14_height.get(), layout_info.max_percent, self->field_approw_377.field_root_14_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_378.field_root_14), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->field_approw_378.self_weak.lock()->into_dyn(), self->field_approw_378.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_approw_378.field_root_14_height.get(), layout_info.max_percent, self->field_approw_378.field_root_14_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_379.field_root_14), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->field_approw_379.self_weak.lock()->into_dyn(), self->field_approw_379.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_approw_379.field_root_14_height.get(), layout_info.max_percent, self->field_approw_379.field_root_14_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_380.field_root_14), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->field_approw_380.self_weak.lock()->into_dyn(), self->field_approw_380.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_approw_380.field_root_14_height.get(), layout_info.max_percent, self->field_approw_380.field_root_14_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_381.field_root_14), slint::cbindgen_private::Orientation::Vertical, arg_0, &self->globals->window().window_handle(), self->field_approw_381.self_weak.lock()->into_dyn(), self->field_approw_381.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(self->field_approw_381.field_root_14_height.get(), layout_info.max_percent, self->field_approw_381.field_root_14_height.get(), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ) }.data(), 8),self->field_flickable_357_feed_layout_359_spacing.get(),[&](const auto &a_0, const auto &a_1){ slint::cbindgen_private::Padding o{}; o.begin = a_0; o.end = a_1; return o; }(0, 0),self->field_flickable_357_feed_layout_359_alignment.get());
+}
 
 auto Component_flickable_357::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_rectangle_351 const *parent) -> void{
     auto self = this;
@@ -12480,13 +13341,13 @@ auto Component_flickable_357::init (const class SharedGlobals* globals,slint::cb
     this->tree_index_of_first_child = tree_index_of_first_child;
     self->tree_index = tree_index;
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const Component_rectangle_351>(parent->self_weak.lock().value(), parent);
-    this->field_approw_360.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 3 - 1, tree_index_of_first_child + 10 - 1);
-    this->field_approw_361.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 4 - 1, tree_index_of_first_child + 12 - 1);
-    this->field_approw_362.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 5 - 1, tree_index_of_first_child + 14 - 1);
-    this->field_approw_363.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 6 - 1, tree_index_of_first_child + 16 - 1);
-    this->field_approw_364.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 7 - 1, tree_index_of_first_child + 18 - 1);
-    this->field_approw_365.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 8 - 1, tree_index_of_first_child + 20 - 1);
-    this->field_approw_366.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 9 - 1, tree_index_of_first_child + 22 - 1);
+    this->field_approw_375.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 4 - 1, tree_index_of_first_child + 12 - 1);
+    this->field_approw_376.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 5 - 1, tree_index_of_first_child + 14 - 1);
+    this->field_approw_377.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 6 - 1, tree_index_of_first_child + 16 - 1);
+    this->field_approw_378.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 7 - 1, tree_index_of_first_child + 18 - 1);
+    this->field_approw_379.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 8 - 1, tree_index_of_first_child + 20 - 1);
+    this->field_approw_380.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 9 - 1, tree_index_of_first_child + 22 - 1);
+    this->field_approw_381.init(globals, self_weak.into_dyn(), tree_index_of_first_child + 10 - 1, tree_index_of_first_child + 24 - 1);
     self->field_flickable_357_app_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
@@ -12508,17 +13369,23 @@ auto Component_flickable_357::init (const class SharedGlobals* globals,slint::cb
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_dev.get(); }));
                         });
+    self->field_flickable_357_feed_layout_359_alignment.set(slint::cbindgen_private::LayoutAlignment::Start);
     self->field_flickable_357_feed_layout_359_layout_cache.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::solve_box_layout([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4){ slint::cbindgen_private::BoxLayoutData o{}; o.alignment = a_0; o.cells = a_1; o.padding = a_2; o.size = a_3; o.spacing = a_4; return o; }(slint::cbindgen_private::LayoutAlignment::Start, slint::private_api::make_slice<slint::cbindgen_private::LayoutItemInfo>(std::array<slint::cbindgen_private::LayoutItemInfo, 7>{ slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_360.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_360.self_weak.lock()->into_dyn(), self->field_approw_360.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_361.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_361.self_weak.lock()->into_dyn(), self->field_approw_361.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_362.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_362.self_weak.lock()->into_dyn(), self->field_approw_362.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_363.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_363.self_weak.lock()->into_dyn(), self->field_approw_363.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_364.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_364.self_weak.lock()->into_dyn(), self->field_approw_364.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_365.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_365.self_weak.lock()->into_dyn(), self->field_approw_365.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_366.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_366.self_weak.lock()->into_dyn(), self->field_approw_366.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ) }.data(), 7), [&](const auto &a_0, const auto &a_1){ slint::cbindgen_private::Padding o{}; o.begin = a_0; o.end = a_1; return o; }(0, 0), self->field_flickable_357.viewport_height.get(), 32),slint::private_api::make_slice<int>(std::array<int, 0>{  }.data(), 0));
+                            return slint::private_api::solve_box_layout([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4){ slint::cbindgen_private::BoxLayoutData o{}; o.alignment = a_0; o.cells = a_1; o.padding = a_2; o.size = a_3; o.spacing = a_4; return o; }(slint::cbindgen_private::LayoutAlignment::Start, slint::private_api::make_slice<slint::cbindgen_private::LayoutItemInfo>(std::array<slint::cbindgen_private::LayoutItemInfo, 8>{ slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_rectangle_360), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 3 - 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(((std::min<float>((self->field_flickable_357_feed_layout_359_width.get() -(float) 64), 1000) * 9) /(float) 16), layout_info.max_percent, ((std::min<float>((self->field_flickable_357_feed_layout_359_width.get() -(float) 64), 1000) * 9) /(float) 16), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_375.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_375.self_weak.lock()->into_dyn(), self->field_approw_375.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_376.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_376.self_weak.lock()->into_dyn(), self->field_approw_376.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_377.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_377.self_weak.lock()->into_dyn(), self->field_approw_377.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_378.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_378.self_weak.lock()->into_dyn(), self->field_approw_378.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_379.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_379.self_weak.lock()->into_dyn(), self->field_approw_379.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_380.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_380.self_weak.lock()->into_dyn(), self->field_approw_380.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_381.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_381.self_weak.lock()->into_dyn(), self->field_approw_381.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ) }.data(), 8), [&](const auto &a_0, const auto &a_1){ slint::cbindgen_private::Padding o{}; o.begin = a_0; o.end = a_1; return o; }(0, 0), self->field_flickable_357.viewport_height.get(), 32),slint::private_api::make_slice<int>(std::array<int, 0>{  }.data(), 0));
                         });
     self->field_flickable_357_feed_layout_359_layoutinfo_h.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::box_layout_info_ortho(slint::private_api::make_slice<slint::cbindgen_private::LayoutItemInfo>(std::array<slint::cbindgen_private::LayoutItemInfo, 7>{ slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_360.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_360.self_weak.lock()->into_dyn(), self->field_approw_360.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_361.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_361.self_weak.lock()->into_dyn(), self->field_approw_361.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_362.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_362.self_weak.lock()->into_dyn(), self->field_approw_362.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_363.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_363.self_weak.lock()->into_dyn(), self->field_approw_363.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_364.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_364.self_weak.lock()->into_dyn(), self->field_approw_364.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_365.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_365.self_weak.lock()->into_dyn(), self->field_approw_365.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_366.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_366.self_weak.lock()->into_dyn(), self->field_approw_366.tree_index)) ) }.data(), 7),[&](const auto &a_0, const auto &a_1){ slint::cbindgen_private::Padding o{}; o.begin = a_0; o.end = a_1; return o; }(0, 0));
+                            return slint::private_api::box_layout_info_ortho(slint::private_api::make_slice<slint::cbindgen_private::LayoutItemInfo>(std::array<slint::cbindgen_private::LayoutItemInfo, 8>{ slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_rectangle_360), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 3 - 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info.max, 100, layout_info.min, 100, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_375.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_375.self_weak.lock()->into_dyn(), self->field_approw_375.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_376.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_376.self_weak.lock()->into_dyn(), self->field_approw_376.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_377.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_377.self_weak.lock()->into_dyn(), self->field_approw_377.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_378.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_378.self_weak.lock()->into_dyn(), self->field_approw_378.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_379.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_379.self_weak.lock()->into_dyn(), self->field_approw_379.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_380.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_380.self_weak.lock()->into_dyn(), self->field_approw_380.tree_index)) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }(slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_381.field_root_14), slint::cbindgen_private::Orientation::Horizontal, -1, &self->globals->window().window_handle(), self->field_approw_381.self_weak.lock()->into_dyn(), self->field_approw_381.tree_index)) ) }.data(), 8),[&](const auto &a_0, const auto &a_1){ slint::cbindgen_private::Padding o{}; o.begin = a_0; o.end = a_1; return o; }(0, 0));
                         });
     self->field_flickable_357_feed_layout_359_layoutinfo_v.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::box_layout_info(slint::private_api::make_slice<slint::cbindgen_private::LayoutItemInfo>(std::array<slint::cbindgen_private::LayoutItemInfo, 7>{ slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_360.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_360.self_weak.lock()->into_dyn(), self->field_approw_360.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_361.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_361.self_weak.lock()->into_dyn(), self->field_approw_361.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_362.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_362.self_weak.lock()->into_dyn(), self->field_approw_362.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_363.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_363.self_weak.lock()->into_dyn(), self->field_approw_363.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_364.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_364.self_weak.lock()->into_dyn(), self->field_approw_364.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_365.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_365.self_weak.lock()->into_dyn(), self->field_approw_365.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_366.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_366.self_weak.lock()->into_dyn(), self->field_approw_366.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ) }.data(), 7),32,[&](const auto &a_0, const auto &a_1){ slint::cbindgen_private::Padding o{}; o.begin = a_0; o.end = a_1; return o; }(0, 0),slint::cbindgen_private::LayoutAlignment::Start);
+                            return slint::private_api::box_layout_info(slint::private_api::make_slice<slint::cbindgen_private::LayoutItemInfo>(std::array<slint::cbindgen_private::LayoutItemInfo, 8>{ slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_rectangle_360), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->self_weak.lock()->into_dyn(), self->tree_index_of_first_child + 3 - 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(((std::min<float>((self->field_flickable_357_feed_layout_359_width.get() -(float) 64), 1000) * 9) /(float) 16), layout_info.max_percent, ((std::min<float>((self->field_flickable_357_feed_layout_359_width.get() -(float) 64), 1000) * 9) /(float) 16), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_375.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_375.self_weak.lock()->into_dyn(), self->field_approw_375.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_for_you.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_376.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_376.self_weak.lock()->into_dyn(), self->field_approw_376.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_browsers.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_377.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_377.self_weak.lock()->into_dyn(), self->field_approw_377.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_communication.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_378.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_378.self_weak.lock()->into_dyn(), self->field_approw_378.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_design.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_379.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_379.self_weak.lock()->into_dyn(), self->field_approw_379.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_office.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_380.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_380.self_weak.lock()->into_dyn(), self->field_approw_380.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_dev.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ), slint::cbindgen_private::LayoutItemInfo ( [&](const auto &a_0){ slint::cbindgen_private::LayoutItemInfo o{}; o.constraint = a_0; return o; }([&]{ [[maybe_unused]] auto layout_info = slint::private_api::item_layout_info(SLINT_GET_ITEM_VTABLE(EmptyVTable), const_cast<slint::cbindgen_private::Empty*>(&self->field_approw_381.field_root_14), slint::cbindgen_private::Orientation::Vertical, -1, &self->globals->window().window_handle(), self->field_approw_381.self_weak.lock()->into_dyn(), self->field_approw_381.tree_index);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }((slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.max_percent, (slint::private_api::model_length(self->field_flickable_357_utilities.get()) > 0 ? 260 : 0), layout_info.min_percent, layout_info.preferred, layout_info.stretch); }()) ) }.data(), 8),32,[&](const auto &a_0, const auto &a_1){ slint::cbindgen_private::Padding o{}; o.begin = a_0; o.end = a_1; return o; }(0, 0),slint::cbindgen_private::LayoutAlignment::Start);
+                        });
+    self->field_flickable_357_feed_layout_359_spacing.set(32);
+    self->field_flickable_357_feed_layout_359_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return self->field_flickable_357.viewport_width.get();
                         });
     self->field_flickable_357_for_you.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -12529,6 +13396,29 @@ auto Component_flickable_357::init (const class SharedGlobals* globals,slint::cb
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_office.get(); }));
                         });
+    self->field_flickable_357_rectangle_360_active_idx.set(static_cast<int>(0));
+    self->field_flickable_357_rectangle_360_banner_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return std::min<float>((self->field_flickable_357_feed_layout_359_width.get() -(float) 64), 1000);
+                        });
+    self->field_flickable_357_rectangle_360_covers.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_covers.get(); }));
+                        });
+    self->field_flickable_357_rectangle_360_height.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return ((std::min<float>((self->field_flickable_357.viewport_width.get() -(float) 64), 1000) * 9) /(float) 16);
+                        });
+    self->field_flickable_357_rectangle_360_request_randomize.set_handler(
+                [this]([[maybe_unused]] int arg_0) {
+                    [[maybe_unused]] auto self = this;
+                    self->field_flickable_357_request_randomize_cover.call(arg_0);
+                });
+    self->field_flickable_357_request_randomize_cover.set_handler(
+                [this]([[maybe_unused]] int arg_0) {
+                    [[maybe_unused]] auto self = this;
+                    slint::private_api::optional_then(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { x->field_root_317_request_randomize_cover.call(arg_0); });
+                });
     self->field_flickable_357_utilities.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_utilities.get(); }));
@@ -12541,165 +13431,168 @@ auto Component_flickable_357::init (const class SharedGlobals* globals,slint::cb
                             [[maybe_unused]] auto self = this;
                             return std::max<float>(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_rectangle_351_width.get(); })), self->field_flickable_357_feed_layout_359_layoutinfo_h.get().min);
                         });
-    self->field_approw_360.field_root_14_clicked.set_handler(
+    self->field_approw_375.field_root_14_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     self->field_flickable_357_app_clicked.call(arg_0);
                 });
-    self->field_approw_360.field_root_14_pkgs.set_binding([this]() {
+    self->field_approw_375.field_root_14_pkgs.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_for_you.get(); }));
                         });
-    self->field_approw_360.field_root_14_row_idx.set(static_cast<int>(0));
-    self->field_approw_360.field_root_14_title.set(slint::SharedString(u8"For You"));
-    self->field_approw_360.field_root_14_width.set_binding([this]() {
+    self->field_approw_375.field_root_14_row_idx.set(static_cast<int>(0));
+    self->field_approw_375.field_root_14_title.set(slint::SharedString(u8"For You"));
+    self->field_approw_375.field_root_14_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357.viewport_width.get();
                         });
-    self->field_approw_360.field_root_14_y.set_binding([this]() {
-                            [[maybe_unused]] auto self = this;
-                            return self->field_flickable_357_feed_layout_359_layout_cache.get()[0];
-                        });
-    self->field_approw_361.field_root_14_clicked.set_handler(
-                [this]([[maybe_unused]] UiPackage arg_0) {
-                    [[maybe_unused]] auto self = this;
-                    self->field_flickable_357_app_clicked.call(arg_0);
-                });
-    self->field_approw_361.field_root_14_pkgs.set_binding([this]() {
-                            [[maybe_unused]] auto self = this;
-                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_browsers.get(); }));
-                        });
-    self->field_approw_361.field_root_14_row_idx.set(static_cast<int>(1));
-    self->field_approw_361.field_root_14_title.set(slint::SharedString(u8"Browsers"));
-    self->field_approw_361.field_root_14_width.set_binding([this]() {
-                            [[maybe_unused]] auto self = this;
-                            return self->field_flickable_357.viewport_width.get();
-                        });
-    self->field_approw_361.field_root_14_y.set_binding([this]() {
+    self->field_approw_375.field_root_14_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357_feed_layout_359_layout_cache.get()[2];
                         });
-    self->field_approw_362.field_root_14_clicked.set_handler(
+    self->field_approw_376.field_root_14_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     self->field_flickable_357_app_clicked.call(arg_0);
                 });
-    self->field_approw_362.field_root_14_pkgs.set_binding([this]() {
+    self->field_approw_376.field_root_14_pkgs.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_communication.get(); }));
+                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_browsers.get(); }));
                         });
-    self->field_approw_362.field_root_14_row_idx.set(static_cast<int>(2));
-    self->field_approw_362.field_root_14_title.set(slint::SharedString(u8"Communication"));
-    self->field_approw_362.field_root_14_width.set_binding([this]() {
+    self->field_approw_376.field_root_14_row_idx.set(static_cast<int>(1));
+    self->field_approw_376.field_root_14_title.set(slint::SharedString(u8"Browsers"));
+    self->field_approw_376.field_root_14_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357.viewport_width.get();
                         });
-    self->field_approw_362.field_root_14_y.set_binding([this]() {
+    self->field_approw_376.field_root_14_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357_feed_layout_359_layout_cache.get()[4];
                         });
-    self->field_approw_363.field_root_14_clicked.set_handler(
+    self->field_approw_377.field_root_14_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     self->field_flickable_357_app_clicked.call(arg_0);
                 });
-    self->field_approw_363.field_root_14_pkgs.set_binding([this]() {
+    self->field_approw_377.field_root_14_pkgs.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_design.get(); }));
+                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_communication.get(); }));
                         });
-    self->field_approw_363.field_root_14_row_idx.set(static_cast<int>(3));
-    self->field_approw_363.field_root_14_title.set(slint::SharedString(u8"Design & Multimedia"));
-    self->field_approw_363.field_root_14_width.set_binding([this]() {
+    self->field_approw_377.field_root_14_row_idx.set(static_cast<int>(2));
+    self->field_approw_377.field_root_14_title.set(slint::SharedString(u8"Communication"));
+    self->field_approw_377.field_root_14_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357.viewport_width.get();
                         });
-    self->field_approw_363.field_root_14_y.set_binding([this]() {
+    self->field_approw_377.field_root_14_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357_feed_layout_359_layout_cache.get()[6];
                         });
-    self->field_approw_364.field_root_14_clicked.set_handler(
+    self->field_approw_378.field_root_14_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     self->field_flickable_357_app_clicked.call(arg_0);
                 });
-    self->field_approw_364.field_root_14_pkgs.set_binding([this]() {
+    self->field_approw_378.field_root_14_pkgs.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_office.get(); }));
+                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_design.get(); }));
                         });
-    self->field_approw_364.field_root_14_row_idx.set(static_cast<int>(4));
-    self->field_approw_364.field_root_14_title.set(slint::SharedString(u8"Office & Productivity"));
-    self->field_approw_364.field_root_14_width.set_binding([this]() {
+    self->field_approw_378.field_root_14_row_idx.set(static_cast<int>(3));
+    self->field_approw_378.field_root_14_title.set(slint::SharedString(u8"Design & Multimedia"));
+    self->field_approw_378.field_root_14_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357.viewport_width.get();
                         });
-    self->field_approw_364.field_root_14_y.set_binding([this]() {
+    self->field_approw_378.field_root_14_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357_feed_layout_359_layout_cache.get()[8];
                         });
-    self->field_approw_365.field_root_14_clicked.set_handler(
+    self->field_approw_379.field_root_14_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     self->field_flickable_357_app_clicked.call(arg_0);
                 });
-    self->field_approw_365.field_root_14_pkgs.set_binding([this]() {
+    self->field_approw_379.field_root_14_pkgs.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_dev.get(); }));
+                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_office.get(); }));
                         });
-    self->field_approw_365.field_root_14_row_idx.set(static_cast<int>(5));
-    self->field_approw_365.field_root_14_title.set(slint::SharedString(u8"Development"));
-    self->field_approw_365.field_root_14_width.set_binding([this]() {
+    self->field_approw_379.field_root_14_row_idx.set(static_cast<int>(4));
+    self->field_approw_379.field_root_14_title.set(slint::SharedString(u8"Office & Productivity"));
+    self->field_approw_379.field_root_14_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357.viewport_width.get();
                         });
-    self->field_approw_365.field_root_14_y.set_binding([this]() {
+    self->field_approw_379.field_root_14_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357_feed_layout_359_layout_cache.get()[10];
                         });
-    self->field_approw_366.field_root_14_clicked.set_handler(
+    self->field_approw_380.field_root_14_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     self->field_flickable_357_app_clicked.call(arg_0);
                 });
-    self->field_approw_366.field_root_14_pkgs.set_binding([this]() {
+    self->field_approw_380.field_root_14_pkgs.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_utilities.get(); }));
+                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_dev.get(); }));
                         });
-    self->field_approw_366.field_root_14_row_idx.set(static_cast<int>(6));
-    self->field_approw_366.field_root_14_title.set(slint::SharedString(u8"Utilities"));
-    self->field_approw_366.field_root_14_width.set_binding([this]() {
+    self->field_approw_380.field_root_14_row_idx.set(static_cast<int>(5));
+    self->field_approw_380.field_root_14_title.set(slint::SharedString(u8"Development"));
+    self->field_approw_380.field_root_14_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357.viewport_width.get();
                         });
-    self->field_approw_366.field_root_14_y.set_binding([this]() {
+    self->field_approw_380.field_root_14_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return self->field_flickable_357_feed_layout_359_layout_cache.get()[12];
                         });
+    self->field_approw_381.field_root_14_clicked.set_handler(
+                [this]([[maybe_unused]] UiPackage arg_0) {
+                    [[maybe_unused]] auto self = this;
+                    self->field_flickable_357_app_clicked.call(arg_0);
+                });
+    self->field_approw_381.field_root_14_pkgs.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_utilities.get(); }));
+                        });
+    self->field_approw_381.field_root_14_row_idx.set(static_cast<int>(6));
+    self->field_approw_381.field_root_14_title.set(slint::SharedString(u8"Utilities"));
+    self->field_approw_381.field_root_14_width.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return self->field_flickable_357.viewport_width.get();
+                        });
+    self->field_approw_381.field_root_14_y.set_binding([this]() {
+                            [[maybe_unused]] auto self = this;
+                            return self->field_flickable_357_feed_layout_359_layout_cache.get()[14];
+                        });
+    self->field_flickable_357_feed_layout_359_alignment.set_constant();
+    self->field_flickable_357_feed_layout_359_spacing.set_constant();
     self->field_flickable_357.interactive.set_constant();
-    self->field_approw_360.field_root_14_row_idx.set_constant();
-    self->field_approw_360.field_root_14_title.set_constant();
-    self->field_approw_361.field_root_14_row_idx.set_constant();
-    self->field_approw_361.field_root_14_title.set_constant();
-    self->field_approw_362.field_root_14_row_idx.set_constant();
-    self->field_approw_362.field_root_14_title.set_constant();
-    self->field_approw_363.field_root_14_row_idx.set_constant();
-    self->field_approw_363.field_root_14_title.set_constant();
-    self->field_approw_364.field_root_14_row_idx.set_constant();
-    self->field_approw_364.field_root_14_title.set_constant();
-    self->field_approw_365.field_root_14_row_idx.set_constant();
-    self->field_approw_365.field_root_14_title.set_constant();
-    self->field_approw_366.field_root_14_row_idx.set_constant();
-    self->field_approw_366.field_root_14_title.set_constant();
+    self->field_approw_375.field_root_14_row_idx.set_constant();
+    self->field_approw_375.field_root_14_title.set_constant();
+    self->field_approw_376.field_root_14_row_idx.set_constant();
+    self->field_approw_376.field_root_14_title.set_constant();
+    self->field_approw_377.field_root_14_row_idx.set_constant();
+    self->field_approw_377.field_root_14_title.set_constant();
+    self->field_approw_378.field_root_14_row_idx.set_constant();
+    self->field_approw_378.field_root_14_title.set_constant();
+    self->field_approw_379.field_root_14_row_idx.set_constant();
+    self->field_approw_379.field_root_14_title.set_constant();
+    self->field_approw_380.field_root_14_row_idx.set_constant();
+    self->field_approw_380.field_root_14_title.set_constant();
+    self->field_approw_381.field_root_14_row_idx.set_constant();
+    self->field_approw_381.field_root_14_title.set_constant();
+    self->repeater_0.set_model_binding([self] { (void)self; return (slint::private_api::model_length(self->field_flickable_357_rectangle_360_covers.get()) > 0); });
 }
 
 auto Component_flickable_357::user_init () -> void{
     [[maybe_unused]] auto self = this;
-    this->field_approw_360.user_init();
-    this->field_approw_361.user_init();
-    this->field_approw_362.user_init();
-    this->field_approw_363.user_init();
-    this->field_approw_364.user_init();
-    this->field_approw_365.user_init();
-    this->field_approw_366.user_init();
+    this->field_approw_375.user_init();
+    this->field_approw_376.user_init();
+    this->field_approw_377.user_init();
+    this->field_approw_378.user_init();
+    this->field_approw_379.user_init();
+    this->field_approw_380.user_init();
+    this->field_approw_381.user_init();
     ;
 }
 
@@ -12714,42 +13607,43 @@ auto Component_flickable_357::item_geometry (uint32_t index) const -> slint::cbi
         case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 5, 0, 2); }))), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317.width.get(); }))), float(0), float(0)));
         case 1: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(self->field_flickable_357.viewport_height.get()), float(self->field_flickable_357.viewport_width.get()), float(self->field_flickable_357.viewport_x.get()), float(self->field_flickable_357.viewport_y.get())));
         case 2: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(self->field_flickable_357.viewport_height.get()), float(self->field_flickable_357.viewport_width.get()), float(0), float(24)));
-        case 3: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_for_you.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[0])));
-        case 4: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_browsers.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[2])));
-        case 5: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_communication.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[4])));
-        case 6: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_design.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[6])));
-        case 7: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_office.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[8])));
-        case 8: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_dev.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[10])));
-        case 9: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_utilities.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[12])));
+        case 3: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(((std::min<float>((self->field_flickable_357.viewport_width.get() -(float) 64), 1000) * 9) /(float) 16)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[0])));
+        case 4: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_for_you.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[2])));
+        case 5: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_browsers.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[4])));
+        case 6: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_communication.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[6])));
+        case 7: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_design.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[8])));
+        case 8: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_office.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[10])));
+        case 9: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_dev.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[12])));
+        case 10: return slint::private_api::convert_anonymous_rect(std::make_tuple(float((slint::private_api::model_length(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317_utilities.get(); }))) > 0 ? 260 : 0)), float(self->field_flickable_357.viewport_width.get()), float(0), float(self->field_flickable_357_feed_layout_359_layout_cache.get()[14])));
     }
-    if (index == 3) {
-        return self->field_approw_360.item_geometry(0);
-    } else if (index >= 10 && index < 12) {
-        return self->field_approw_360.item_geometry(index - 9);
-    } else if (index == 4) {
-        return self->field_approw_361.item_geometry(0);
+    if (index == 4) {
+        return self->field_approw_375.item_geometry(0);
     } else if (index >= 12 && index < 14) {
-        return self->field_approw_361.item_geometry(index - 11);
+        return self->field_approw_375.item_geometry(index - 11);
     } else if (index == 5) {
-        return self->field_approw_362.item_geometry(0);
+        return self->field_approw_376.item_geometry(0);
     } else if (index >= 14 && index < 16) {
-        return self->field_approw_362.item_geometry(index - 13);
+        return self->field_approw_376.item_geometry(index - 13);
     } else if (index == 6) {
-        return self->field_approw_363.item_geometry(0);
+        return self->field_approw_377.item_geometry(0);
     } else if (index >= 16 && index < 18) {
-        return self->field_approw_363.item_geometry(index - 15);
+        return self->field_approw_377.item_geometry(index - 15);
     } else if (index == 7) {
-        return self->field_approw_364.item_geometry(0);
+        return self->field_approw_378.item_geometry(0);
     } else if (index >= 18 && index < 20) {
-        return self->field_approw_364.item_geometry(index - 17);
+        return self->field_approw_378.item_geometry(index - 17);
     } else if (index == 8) {
-        return self->field_approw_365.item_geometry(0);
+        return self->field_approw_379.item_geometry(0);
     } else if (index >= 20 && index < 22) {
-        return self->field_approw_365.item_geometry(index - 19);
+        return self->field_approw_379.item_geometry(index - 19);
     } else if (index == 9) {
-        return self->field_approw_366.item_geometry(0);
+        return self->field_approw_380.item_geometry(0);
     } else if (index >= 22 && index < 24) {
-        return self->field_approw_366.item_geometry(index - 21);
+        return self->field_approw_380.item_geometry(index - 21);
+    } else if (index == 10) {
+        return self->field_approw_381.item_geometry(0);
+    } else if (index >= 24 && index < 26) {
+        return self->field_approw_381.item_geometry(index - 23);
     } else return {};
 }
 
@@ -12757,34 +13651,34 @@ auto Component_flickable_357::accessible_role (uint32_t index) const -> slint::c
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
-    if (index == 3) {
-        return self->field_approw_360.accessible_role(0);
-    } else if (index >= 10 && index < 12) {
-        return self->field_approw_360.accessible_role(index - 9);
-    } else if (index == 4) {
-        return self->field_approw_361.accessible_role(0);
+    if (index == 4) {
+        return self->field_approw_375.accessible_role(0);
     } else if (index >= 12 && index < 14) {
-        return self->field_approw_361.accessible_role(index - 11);
+        return self->field_approw_375.accessible_role(index - 11);
     } else if (index == 5) {
-        return self->field_approw_362.accessible_role(0);
+        return self->field_approw_376.accessible_role(0);
     } else if (index >= 14 && index < 16) {
-        return self->field_approw_362.accessible_role(index - 13);
+        return self->field_approw_376.accessible_role(index - 13);
     } else if (index == 6) {
-        return self->field_approw_363.accessible_role(0);
+        return self->field_approw_377.accessible_role(0);
     } else if (index >= 16 && index < 18) {
-        return self->field_approw_363.accessible_role(index - 15);
+        return self->field_approw_377.accessible_role(index - 15);
     } else if (index == 7) {
-        return self->field_approw_364.accessible_role(0);
+        return self->field_approw_378.accessible_role(0);
     } else if (index >= 18 && index < 20) {
-        return self->field_approw_364.accessible_role(index - 17);
+        return self->field_approw_378.accessible_role(index - 17);
     } else if (index == 8) {
-        return self->field_approw_365.accessible_role(0);
+        return self->field_approw_379.accessible_role(0);
     } else if (index >= 20 && index < 22) {
-        return self->field_approw_365.accessible_role(index - 19);
+        return self->field_approw_379.accessible_role(index - 19);
     } else if (index == 9) {
-        return self->field_approw_366.accessible_role(0);
+        return self->field_approw_380.accessible_role(0);
     } else if (index >= 22 && index < 24) {
-        return self->field_approw_366.accessible_role(index - 21);
+        return self->field_approw_380.accessible_role(index - 21);
+    } else if (index == 10) {
+        return self->field_approw_381.accessible_role(0);
+    } else if (index >= 24 && index < 26) {
+        return self->field_approw_381.accessible_role(index - 23);
     } else return {};
 }
 
@@ -12792,34 +13686,34 @@ auto Component_flickable_357::accessible_string_property (uint32_t index, slint:
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(what)) {
     }
-    if (index == 3) {
-        return self->field_approw_360.accessible_string_property(0, what);
-    } else if (index >= 10 && index < 12) {
-        return self->field_approw_360.accessible_string_property(index - 9, what);
-    } else if (index == 4) {
-        return self->field_approw_361.accessible_string_property(0, what);
+    if (index == 4) {
+        return self->field_approw_375.accessible_string_property(0, what);
     } else if (index >= 12 && index < 14) {
-        return self->field_approw_361.accessible_string_property(index - 11, what);
+        return self->field_approw_375.accessible_string_property(index - 11, what);
     } else if (index == 5) {
-        return self->field_approw_362.accessible_string_property(0, what);
+        return self->field_approw_376.accessible_string_property(0, what);
     } else if (index >= 14 && index < 16) {
-        return self->field_approw_362.accessible_string_property(index - 13, what);
+        return self->field_approw_376.accessible_string_property(index - 13, what);
     } else if (index == 6) {
-        return self->field_approw_363.accessible_string_property(0, what);
+        return self->field_approw_377.accessible_string_property(0, what);
     } else if (index >= 16 && index < 18) {
-        return self->field_approw_363.accessible_string_property(index - 15, what);
+        return self->field_approw_377.accessible_string_property(index - 15, what);
     } else if (index == 7) {
-        return self->field_approw_364.accessible_string_property(0, what);
+        return self->field_approw_378.accessible_string_property(0, what);
     } else if (index >= 18 && index < 20) {
-        return self->field_approw_364.accessible_string_property(index - 17, what);
+        return self->field_approw_378.accessible_string_property(index - 17, what);
     } else if (index == 8) {
-        return self->field_approw_365.accessible_string_property(0, what);
+        return self->field_approw_379.accessible_string_property(0, what);
     } else if (index >= 20 && index < 22) {
-        return self->field_approw_365.accessible_string_property(index - 19, what);
+        return self->field_approw_379.accessible_string_property(index - 19, what);
     } else if (index == 9) {
-        return self->field_approw_366.accessible_string_property(0, what);
+        return self->field_approw_380.accessible_string_property(0, what);
     } else if (index >= 22 && index < 24) {
-        return self->field_approw_366.accessible_string_property(index - 21, what);
+        return self->field_approw_380.accessible_string_property(index - 21, what);
+    } else if (index == 10) {
+        return self->field_approw_381.accessible_string_property(0, what);
+    } else if (index >= 24 && index < 26) {
+        return self->field_approw_381.accessible_string_property(index - 23, what);
     } else return {};
 }
 
@@ -12827,34 +13721,34 @@ auto Component_flickable_357::accessibility_action (uint32_t index, const slint:
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(action.tag)) {
     }
-    if (index == 3) {
-        return self->field_approw_360.accessibility_action(0, action);
-    } else if (index >= 10 && index < 12) {
-        return self->field_approw_360.accessibility_action(index - 9, action);
-    } else if (index == 4) {
-        return self->field_approw_361.accessibility_action(0, action);
+    if (index == 4) {
+        return self->field_approw_375.accessibility_action(0, action);
     } else if (index >= 12 && index < 14) {
-        return self->field_approw_361.accessibility_action(index - 11, action);
+        return self->field_approw_375.accessibility_action(index - 11, action);
     } else if (index == 5) {
-        return self->field_approw_362.accessibility_action(0, action);
+        return self->field_approw_376.accessibility_action(0, action);
     } else if (index >= 14 && index < 16) {
-        return self->field_approw_362.accessibility_action(index - 13, action);
+        return self->field_approw_376.accessibility_action(index - 13, action);
     } else if (index == 6) {
-        return self->field_approw_363.accessibility_action(0, action);
+        return self->field_approw_377.accessibility_action(0, action);
     } else if (index >= 16 && index < 18) {
-        return self->field_approw_363.accessibility_action(index - 15, action);
+        return self->field_approw_377.accessibility_action(index - 15, action);
     } else if (index == 7) {
-        return self->field_approw_364.accessibility_action(0, action);
+        return self->field_approw_378.accessibility_action(0, action);
     } else if (index >= 18 && index < 20) {
-        return self->field_approw_364.accessibility_action(index - 17, action);
+        return self->field_approw_378.accessibility_action(index - 17, action);
     } else if (index == 8) {
-        return self->field_approw_365.accessibility_action(0, action);
+        return self->field_approw_379.accessibility_action(0, action);
     } else if (index >= 20 && index < 22) {
-        return self->field_approw_365.accessibility_action(index - 19, action);
+        return self->field_approw_379.accessibility_action(index - 19, action);
     } else if (index == 9) {
-        return self->field_approw_366.accessibility_action(0, action);
+        return self->field_approw_380.accessibility_action(0, action);
     } else if (index >= 22 && index < 24) {
-        return self->field_approw_366.accessibility_action(index - 21, action);
+        return self->field_approw_380.accessibility_action(index - 21, action);
+    } else if (index == 10) {
+        return self->field_approw_381.accessibility_action(0, action);
+    } else if (index >= 24 && index < 26) {
+        return self->field_approw_381.accessibility_action(index - 23, action);
     } else return ;
 }
 
@@ -12862,34 +13756,34 @@ auto Component_flickable_357::supported_accessibility_actions (uint32_t index) c
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
-    if (index == 3) {
-        return self->field_approw_360.supported_accessibility_actions(0);
-    } else if (index >= 10 && index < 12) {
-        return self->field_approw_360.supported_accessibility_actions(index - 9);
-    } else if (index == 4) {
-        return self->field_approw_361.supported_accessibility_actions(0);
+    if (index == 4) {
+        return self->field_approw_375.supported_accessibility_actions(0);
     } else if (index >= 12 && index < 14) {
-        return self->field_approw_361.supported_accessibility_actions(index - 11);
+        return self->field_approw_375.supported_accessibility_actions(index - 11);
     } else if (index == 5) {
-        return self->field_approw_362.supported_accessibility_actions(0);
+        return self->field_approw_376.supported_accessibility_actions(0);
     } else if (index >= 14 && index < 16) {
-        return self->field_approw_362.supported_accessibility_actions(index - 13);
+        return self->field_approw_376.supported_accessibility_actions(index - 13);
     } else if (index == 6) {
-        return self->field_approw_363.supported_accessibility_actions(0);
+        return self->field_approw_377.supported_accessibility_actions(0);
     } else if (index >= 16 && index < 18) {
-        return self->field_approw_363.supported_accessibility_actions(index - 15);
+        return self->field_approw_377.supported_accessibility_actions(index - 15);
     } else if (index == 7) {
-        return self->field_approw_364.supported_accessibility_actions(0);
+        return self->field_approw_378.supported_accessibility_actions(0);
     } else if (index >= 18 && index < 20) {
-        return self->field_approw_364.supported_accessibility_actions(index - 17);
+        return self->field_approw_378.supported_accessibility_actions(index - 17);
     } else if (index == 8) {
-        return self->field_approw_365.supported_accessibility_actions(0);
+        return self->field_approw_379.supported_accessibility_actions(0);
     } else if (index >= 20 && index < 22) {
-        return self->field_approw_365.supported_accessibility_actions(index - 19);
+        return self->field_approw_379.supported_accessibility_actions(index - 19);
     } else if (index == 9) {
-        return self->field_approw_366.supported_accessibility_actions(0);
+        return self->field_approw_380.supported_accessibility_actions(0);
     } else if (index >= 22 && index < 24) {
-        return self->field_approw_366.supported_accessibility_actions(index - 21);
+        return self->field_approw_380.supported_accessibility_actions(index - 21);
+    } else if (index == 10) {
+        return self->field_approw_381.supported_accessibility_actions(0);
+    } else if (index >= 24 && index < 26) {
+        return self->field_approw_381.supported_accessibility_actions(index - 23);
     } else return {};
 }
 
@@ -12897,135 +13791,147 @@ auto Component_flickable_357::element_infos (uint32_t index) const -> std::optio
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
-    if (index == 3) {
-        return self->field_approw_360.element_infos(0);
-    } else if (index >= 10 && index < 12) {
-        return self->field_approw_360.element_infos(index - 9);
-    } else if (index == 4) {
-        return self->field_approw_361.element_infos(0);
+    if (index == 4) {
+        return self->field_approw_375.element_infos(0);
     } else if (index >= 12 && index < 14) {
-        return self->field_approw_361.element_infos(index - 11);
+        return self->field_approw_375.element_infos(index - 11);
     } else if (index == 5) {
-        return self->field_approw_362.element_infos(0);
+        return self->field_approw_376.element_infos(0);
     } else if (index >= 14 && index < 16) {
-        return self->field_approw_362.element_infos(index - 13);
+        return self->field_approw_376.element_infos(index - 13);
     } else if (index == 6) {
-        return self->field_approw_363.element_infos(0);
+        return self->field_approw_377.element_infos(0);
     } else if (index >= 16 && index < 18) {
-        return self->field_approw_363.element_infos(index - 15);
+        return self->field_approw_377.element_infos(index - 15);
     } else if (index == 7) {
-        return self->field_approw_364.element_infos(0);
+        return self->field_approw_378.element_infos(0);
     } else if (index >= 18 && index < 20) {
-        return self->field_approw_364.element_infos(index - 17);
+        return self->field_approw_378.element_infos(index - 17);
     } else if (index == 8) {
-        return self->field_approw_365.element_infos(0);
+        return self->field_approw_379.element_infos(0);
     } else if (index >= 20 && index < 22) {
-        return self->field_approw_365.element_infos(index - 19);
+        return self->field_approw_379.element_infos(index - 19);
     } else if (index == 9) {
-        return self->field_approw_366.element_infos(0);
+        return self->field_approw_380.element_infos(0);
     } else if (index >= 22 && index < 24) {
-        return self->field_approw_366.element_infos(index - 21);
+        return self->field_approw_380.element_infos(index - 21);
+    } else if (index == 10) {
+        return self->field_approw_381.element_infos(0);
+    } else if (index >= 24 && index < 26) {
+        return self->field_approw_381.element_infos(index - 23);
     } else return {};
 }
 
 auto Component_flickable_357::ensure_instantiated () const -> bool{
     [[maybe_unused]] auto self = this;
     bool _changed = false;
-    _changed |= self->field_approw_360.ensure_instantiated();
-    _changed |= self->field_approw_361.ensure_instantiated();
-    _changed |= self->field_approw_362.ensure_instantiated();
-    _changed |= self->field_approw_363.ensure_instantiated();
-    _changed |= self->field_approw_364.ensure_instantiated();
-    _changed |= self->field_approw_365.ensure_instantiated();
-    _changed |= self->field_approw_366.ensure_instantiated();
+    _changed |= self->field_approw_375.ensure_instantiated();
+    _changed |= self->field_approw_376.ensure_instantiated();
+    _changed |= self->field_approw_377.ensure_instantiated();
+    _changed |= self->field_approw_378.ensure_instantiated();
+    _changed |= self->field_approw_379.ensure_instantiated();
+    _changed |= self->field_approw_380.ensure_instantiated();
+    _changed |= self->field_approw_381.ensure_instantiated();
+    _changed |= self->repeater_0.ensure_updated(self);
     return _changed;
 }
 
 auto Component_flickable_357::visit_dynamic_children (uint32_t dyn_index, [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor) const -> uint64_t{
         auto self = this;
         switch(dyn_index) { 
-        case 0:  {
-                        return self->field_approw_360.visit_dynamic_children(dyn_index - 0, order, visitor);
-                    }
         case 1:  {
-                        return self->field_approw_361.visit_dynamic_children(dyn_index - 1, order, visitor);
+                        return self->field_approw_375.visit_dynamic_children(dyn_index - 1, order, visitor);
                     }
         case 2:  {
-                        return self->field_approw_362.visit_dynamic_children(dyn_index - 2, order, visitor);
+                        return self->field_approw_376.visit_dynamic_children(dyn_index - 2, order, visitor);
                     }
         case 3:  {
-                        return self->field_approw_363.visit_dynamic_children(dyn_index - 3, order, visitor);
+                        return self->field_approw_377.visit_dynamic_children(dyn_index - 3, order, visitor);
                     }
         case 4:  {
-                        return self->field_approw_364.visit_dynamic_children(dyn_index - 4, order, visitor);
+                        return self->field_approw_378.visit_dynamic_children(dyn_index - 4, order, visitor);
                     }
         case 5:  {
-                        return self->field_approw_365.visit_dynamic_children(dyn_index - 5, order, visitor);
+                        return self->field_approw_379.visit_dynamic_children(dyn_index - 5, order, visitor);
                     }
         case 6:  {
-                        return self->field_approw_366.visit_dynamic_children(dyn_index - 6, order, visitor);
-                    } };
+                        return self->field_approw_380.visit_dynamic_children(dyn_index - 6, order, visitor);
+                    }
+        case 7:  {
+                        return self->field_approw_381.visit_dynamic_children(dyn_index - 7, order, visitor);
+                    }
+        case 0: {
+                return self->repeater_0.visit(order, visitor);
+            } };
         std::abort();
 }
 
 auto Component_flickable_357::subtree_range (uintptr_t dyn_index) const -> slint::private_api::IndexRange{
     [[maybe_unused]] auto self = this;
         switch(dyn_index) { 
-        case 0:  {
-                        return self->field_approw_360.subtree_range(dyn_index - 0);
-                    }
         case 1:  {
-                        return self->field_approw_361.subtree_range(dyn_index - 1);
+                        return self->field_approw_375.subtree_range(dyn_index - 1);
                     }
         case 2:  {
-                        return self->field_approw_362.subtree_range(dyn_index - 2);
+                        return self->field_approw_376.subtree_range(dyn_index - 2);
                     }
         case 3:  {
-                        return self->field_approw_363.subtree_range(dyn_index - 3);
+                        return self->field_approw_377.subtree_range(dyn_index - 3);
                     }
         case 4:  {
-                        return self->field_approw_364.subtree_range(dyn_index - 4);
+                        return self->field_approw_378.subtree_range(dyn_index - 4);
                     }
         case 5:  {
-                        return self->field_approw_365.subtree_range(dyn_index - 5);
+                        return self->field_approw_379.subtree_range(dyn_index - 5);
                     }
         case 6:  {
-                        return self->field_approw_366.subtree_range(dyn_index - 6);
-                    } };
+                        return self->field_approw_380.subtree_range(dyn_index - 6);
+                    }
+        case 7:  {
+                        return self->field_approw_381.subtree_range(dyn_index - 7);
+                    }
+        case 0: {
+                self->repeater_0.track_instance_changes();
+                return self->repeater_0.index_range();
+            } };
         std::abort();
 }
 
 auto Component_flickable_357::subtree_component (uintptr_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) const -> void{
     [[maybe_unused]] auto self = this;
         switch(dyn_index) { 
-        case 0:  {
-                        self->field_approw_360.subtree_component(dyn_index - 0, subtree_index, result);
-                        return;
-                    }
         case 1:  {
-                        self->field_approw_361.subtree_component(dyn_index - 1, subtree_index, result);
+                        self->field_approw_375.subtree_component(dyn_index - 1, subtree_index, result);
                         return;
                     }
         case 2:  {
-                        self->field_approw_362.subtree_component(dyn_index - 2, subtree_index, result);
+                        self->field_approw_376.subtree_component(dyn_index - 2, subtree_index, result);
                         return;
                     }
         case 3:  {
-                        self->field_approw_363.subtree_component(dyn_index - 3, subtree_index, result);
+                        self->field_approw_377.subtree_component(dyn_index - 3, subtree_index, result);
                         return;
                     }
         case 4:  {
-                        self->field_approw_364.subtree_component(dyn_index - 4, subtree_index, result);
+                        self->field_approw_378.subtree_component(dyn_index - 4, subtree_index, result);
                         return;
                     }
         case 5:  {
-                        self->field_approw_365.subtree_component(dyn_index - 5, subtree_index, result);
+                        self->field_approw_379.subtree_component(dyn_index - 5, subtree_index, result);
                         return;
                     }
         case 6:  {
-                        self->field_approw_366.subtree_component(dyn_index - 6, subtree_index, result);
+                        self->field_approw_380.subtree_component(dyn_index - 6, subtree_index, result);
                         return;
-                    } };
+                    }
+        case 7:  {
+                        self->field_approw_381.subtree_component(dyn_index - 7, subtree_index, result);
+                        return;
+                    }
+        case 0: {
+                *result = self->repeater_0.instance_at(subtree_index);
+                return;
+            } };
         std::abort();
 }
 
@@ -13074,16 +13980,16 @@ auto Component_flickable_357::item_tree () -> slint::cbindgen_private::Slice<sli
     static const slint::private_api::ItemTreeNode children[] {
         slint::private_api::make_item_node(1, 1, 0, 0, false), 
 slint::private_api::make_item_node(1, 2, 0, 1, false), 
-slint::private_api::make_item_node(7, 3, 1, 2, false), 
-slint::private_api::make_item_node(1, 10, 2, 3, false), 
+slint::private_api::make_item_node(8, 3, 1, 2, false), 
+slint::private_api::make_item_node(1, 11, 2, 3, false), 
 slint::private_api::make_item_node(1, 12, 2, 4, false), 
 slint::private_api::make_item_node(1, 14, 2, 5, false), 
 slint::private_api::make_item_node(1, 16, 2, 6, false), 
 slint::private_api::make_item_node(1, 18, 2, 7, false), 
 slint::private_api::make_item_node(1, 20, 2, 8, false), 
 slint::private_api::make_item_node(1, 22, 2, 9, false), 
-slint::private_api::make_item_node(1, 11, 3, 10, false), 
-slint::private_api::make_dyn_node(0, 10), 
+slint::private_api::make_item_node(1, 24, 2, 10, false), 
+slint::private_api::make_dyn_node(0, 3), 
 slint::private_api::make_item_node(1, 13, 4, 11, false), 
 slint::private_api::make_dyn_node(1, 12), 
 slint::private_api::make_item_node(1, 15, 5, 12, false), 
@@ -13095,7 +14001,9 @@ slint::private_api::make_dyn_node(4, 18),
 slint::private_api::make_item_node(1, 21, 8, 15, false), 
 slint::private_api::make_dyn_node(5, 20), 
 slint::private_api::make_item_node(1, 23, 9, 16, false), 
-slint::private_api::make_dyn_node(6, 22) };
+slint::private_api::make_dyn_node(6, 22), 
+slint::private_api::make_item_node(1, 25, 10, 17, false), 
+slint::private_api::make_dyn_node(7, 24) };
     return slint::private_api::make_slice(std::span(children));
 }
 
@@ -13104,20 +14012,21 @@ auto Component_flickable_357::item_array () -> const slint::private_api::ItemArr
         { SLINT_GET_ITEM_VTABLE(FlickableVTable),  offsetof(Component_flickable_357, field_flickable_357) }, 
 { SLINT_GET_ITEM_VTABLE(EmptyVTable),  offsetof(Component_flickable_357, field__viewport_358) }, 
 { SLINT_GET_ITEM_VTABLE(EmptyVTable),  offsetof(Component_flickable_357, field_feed_layout_359) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_360) +  offsetof(AppRow_root_14, field_root_14) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_361) +  offsetof(AppRow_root_14, field_root_14) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_362) +  offsetof(AppRow_root_14, field_root_14) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_363) +  offsetof(AppRow_root_14, field_root_14) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_364) +  offsetof(AppRow_root_14, field_root_14) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_365) +  offsetof(AppRow_root_14, field_root_14) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_366) +  offsetof(AppRow_root_14, field_root_14) }, 
-{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_360) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
-{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_361) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
-{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_362) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
-{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_363) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
-{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_364) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
-{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_365) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
-{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_366) +  offsetof(AppRow_root_14, field_root_clip_15) } };
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable),  offsetof(Component_flickable_357, field_rectangle_360) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_375) +  offsetof(AppRow_root_14, field_root_14) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_376) +  offsetof(AppRow_root_14, field_root_14) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_377) +  offsetof(AppRow_root_14, field_root_14) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_378) +  offsetof(AppRow_root_14, field_root_14) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_379) +  offsetof(AppRow_root_14, field_root_14) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_380) +  offsetof(AppRow_root_14, field_root_14) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_flickable_357, field_approw_381) +  offsetof(AppRow_root_14, field_root_14) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_375) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_376) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_377) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_378) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_379) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_380) +  offsetof(AppRow_root_14, field_root_clip_15) }, 
+{ SLINT_GET_ITEM_VTABLE(ClipVTable), offsetof(Component_flickable_357, field_approw_381) +  offsetof(AppRow_root_14, field_root_clip_15) } };
     return slint::private_api::make_slice(std::span(items));
 }
 
@@ -13415,445 +14324,445 @@ auto Component_rectangle_351::flexbox_layout_item_info (slint::cbindgen_private:
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
-const slint::private_api::ItemTreeVTable Component_updatetab_369::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_updatetab_369>, slint::private_api::dealloc };
+const slint::private_api::ItemTreeVTable Component_updatetab_384::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_updatetab_384>, slint::private_api::dealloc };
 
-auto Component_updatetab_369::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_318 const *parent) -> void{
+auto Component_updatetab_384::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_318 const *parent) -> void{
     auto self = this;
     self->self_weak = enclosing_component;
     self->globals = globals;
     this->tree_index_of_first_child = tree_index_of_first_child;
     self->tree_index = tree_index;
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const Component_empty_318>(parent->self_weak.lock().value(), parent);
-    this->field_updatetab_369.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
-    self->field_updatetab_369.field_root_28_height.set_binding([this]() {
+    this->field_updatetab_384.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
+    self->field_updatetab_384.field_root_28_height.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 7, 0, 2); }));
                         });
-    self->field_updatetab_369.field_root_28_width.set_binding([this]() {
+    self->field_updatetab_384.field_root_28_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317.width.get(); }));
                         });
-    self->field_updatetab_369.field_root_28_y.set_binding([this]() {
+    self->field_updatetab_384.field_root_28_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 6, 0, 2); }));
                         });
 }
 
-auto Component_updatetab_369::user_init () -> void{
+auto Component_updatetab_384::user_init () -> void{
     [[maybe_unused]] auto self = this;
-    this->field_updatetab_369.user_init();
+    this->field_updatetab_384.user_init();
 }
 
-auto Component_updatetab_369::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+auto Component_updatetab_384::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
     [[maybe_unused]] auto self = this;
-    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_updatetab_369.field_root_28_empty_29_layoutinfo_h.get()) : [&]{ [[maybe_unused]] auto layout_info = ([&]{ [[maybe_unused]] auto layout_info_0 = [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info_0.max, layout_info_0.max_percent, layout_info_0.min, layout_info_0.min_percent, layout_info_0.preferred, 1); }() + self->field_updatetab_369.field_root_28_empty_29_layoutinfo_v.get());;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info.max, layout_info.max_percent, layout_info.min, layout_info.min_percent, layout_info.preferred, 1); }();
+    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_updatetab_384.field_root_28_empty_29_layoutinfo_h.get()) : [&]{ [[maybe_unused]] auto layout_info = ([&]{ [[maybe_unused]] auto layout_info_0 = [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info_0.max, layout_info_0.max_percent, layout_info_0.min, layout_info_0.min_percent, layout_info_0.preferred, 1); }() + self->field_updatetab_384.field_root_28_empty_29_layoutinfo_v.get());;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info.max, layout_info.max_percent, layout_info.min, layout_info.min_percent, layout_info.preferred, 1); }();
 }
 
-auto Component_updatetab_369::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+auto Component_updatetab_384::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
     [[maybe_unused]] auto self = this;
     switch (index) {
         case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 7, 0, 2); }))), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317.width.get(); }))), float(0), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 6, 0, 2); })))));
     }
     if (index == 0) {
-        return self->field_updatetab_369.item_geometry(0);
+        return self->field_updatetab_384.item_geometry(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_updatetab_369.item_geometry(index - 0);
+        return self->field_updatetab_384.item_geometry(index - 0);
     } else return {};
 }
 
-auto Component_updatetab_369::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+auto Component_updatetab_384::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_updatetab_369.accessible_role(0);
+        return self->field_updatetab_384.accessible_role(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_updatetab_369.accessible_role(index - 0);
+        return self->field_updatetab_384.accessible_role(index - 0);
     } else return {};
 }
 
-auto Component_updatetab_369::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+auto Component_updatetab_384::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(what)) {
     }
     if (index == 0) {
-        return self->field_updatetab_369.accessible_string_property(0, what);
+        return self->field_updatetab_384.accessible_string_property(0, what);
     } else if (index >= 1 && index < 2) {
-        return self->field_updatetab_369.accessible_string_property(index - 0, what);
+        return self->field_updatetab_384.accessible_string_property(index - 0, what);
     } else return {};
 }
 
-auto Component_updatetab_369::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+auto Component_updatetab_384::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(action.tag)) {
     }
     if (index == 0) {
-        return self->field_updatetab_369.accessibility_action(0, action);
+        return self->field_updatetab_384.accessibility_action(0, action);
     } else if (index >= 1 && index < 2) {
-        return self->field_updatetab_369.accessibility_action(index - 0, action);
+        return self->field_updatetab_384.accessibility_action(index - 0, action);
     } else return ;
 }
 
-auto Component_updatetab_369::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+auto Component_updatetab_384::supported_accessibility_actions (uint32_t index) const -> uint32_t{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_updatetab_369.supported_accessibility_actions(0);
+        return self->field_updatetab_384.supported_accessibility_actions(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_updatetab_369.supported_accessibility_actions(index - 0);
+        return self->field_updatetab_384.supported_accessibility_actions(index - 0);
     } else return {};
 }
 
-auto Component_updatetab_369::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+auto Component_updatetab_384::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_updatetab_369.element_infos(0);
+        return self->field_updatetab_384.element_infos(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_updatetab_369.element_infos(index - 0);
+        return self->field_updatetab_384.element_infos(index - 0);
     } else return {};
 }
 
-auto Component_updatetab_369::ensure_instantiated () const -> bool{
+auto Component_updatetab_384::ensure_instantiated () const -> bool{
     [[maybe_unused]] auto self = this;
     bool _changed = false;
     return _changed;
 }
 
-auto Component_updatetab_369::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+auto Component_updatetab_384::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
     static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
-        [[maybe_unused]] auto self = reinterpret_cast<const Component_updatetab_369*>(base);
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_updatetab_384*>(base);
         std::abort();
     };
-    auto self_rc = reinterpret_cast<const Component_updatetab_369*>(component.instance)->self_weak.lock()->into_dyn();
+    auto self_rc = reinterpret_cast<const Component_updatetab_384*>(component.instance)->self_weak.lock()->into_dyn();
     return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
 }
 
-auto Component_updatetab_369::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+auto Component_updatetab_384::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
     return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
 }
 
-auto Component_updatetab_369::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+auto Component_updatetab_384::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
         std::abort();
 }
 
-auto Component_updatetab_369::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+auto Component_updatetab_384::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
         std::abort();
 }
 
-auto Component_updatetab_369::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_updatetab_384::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     return item_tree();
 }
 
-auto Component_updatetab_369::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
-    auto self = reinterpret_cast<const Component_updatetab_369*>(component.instance);
+auto Component_updatetab_384::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_updatetab_384*>(component.instance);
     auto parent = self->parent.lock().value();
     *result = { parent->self_weak, parent->tree_index_of_first_child + 3 };
 }
 
-auto Component_updatetab_369::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+auto Component_updatetab_384::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
     return false; /* todo! */
 }
 
-auto Component_updatetab_369::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+auto Component_updatetab_384::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
     return std::numeric_limits<uintptr_t>::max();
 }
 
-auto Component_updatetab_369::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_updatetab_384::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     static const slint::private_api::ItemTreeNode children[] {
         slint::private_api::make_item_node(1, 1, 0, 0, false), 
 slint::private_api::make_item_node(0, 2, 0, 1, true) };
     return slint::private_api::make_slice(std::span(children));
 }
 
-auto Component_updatetab_369::item_array () -> const slint::private_api::ItemArray{
+auto Component_updatetab_384::item_array () -> const slint::private_api::ItemArray{
     static const slint::private_api::ItemArrayEntry items[] {
-        { SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_updatetab_369, field_updatetab_369) +  offsetof(UpdateTab_root_28, field_root_28) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_updatetab_369, field_updatetab_369) +  offsetof(UpdateTab_root_28, field_text_30) } };
+        { SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_updatetab_384, field_updatetab_384) +  offsetof(UpdateTab_root_28, field_root_28) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_updatetab_384, field_updatetab_384) +  offsetof(UpdateTab_root_28, field_text_30) } };
     return slint::private_api::make_slice(std::span(items));
 }
 
-auto Component_updatetab_369::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
-    return reinterpret_cast<const Component_updatetab_369*>(component.instance)->layout_info(o);
+auto Component_updatetab_384::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_updatetab_384*>(component.instance)->layout_info(o);
 }
 
-auto Component_updatetab_369::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
-    return reinterpret_cast<const Component_updatetab_369*>(component.instance)->ensure_instantiated();
+auto Component_updatetab_384::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_updatetab_384*>(component.instance)->ensure_instantiated();
 }
 
-auto Component_updatetab_369::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
-    return reinterpret_cast<const Component_updatetab_369*>(component.instance)->item_geometry(index);
+auto Component_updatetab_384::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_updatetab_384*>(component.instance)->item_geometry(index);
 }
 
-auto Component_updatetab_369::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
-    return reinterpret_cast<const Component_updatetab_369*>(component.instance)->accessible_role(index);
+auto Component_updatetab_384::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_updatetab_384*>(component.instance)->accessible_role(index);
 }
 
-auto Component_updatetab_369::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
-    if (auto r = reinterpret_cast<const Component_updatetab_369*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+auto Component_updatetab_384::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_updatetab_384*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
 }
 
-auto Component_updatetab_369::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
-    reinterpret_cast<const Component_updatetab_369*>(component.instance)->accessibility_action(index, *action);
+auto Component_updatetab_384::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_updatetab_384*>(component.instance)->accessibility_action(index, *action);
 }
 
-auto Component_updatetab_369::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
-    return reinterpret_cast<const Component_updatetab_369*>(component.instance)->supported_accessibility_actions(index);
+auto Component_updatetab_384::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_updatetab_384*>(component.instance)->supported_accessibility_actions(index);
 }
 
-auto Component_updatetab_369::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+auto Component_updatetab_384::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
     return false;
 }
 
-auto Component_updatetab_369::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
-    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_updatetab_369*>(component.instance)->globals->window().window_handle();
+auto Component_updatetab_384::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_updatetab_384*>(component.instance)->globals->window().window_handle();
 }
 
-auto Component_updatetab_369::create (class Component_empty_318 const * parent) -> slint::ComponentHandle<Component_updatetab_369>{
-    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_updatetab_369>::make();
-    auto self = const_cast<Component_updatetab_369 *>(&*self_rc);
+auto Component_updatetab_384::create (class Component_empty_318 const * parent) -> slint::ComponentHandle<Component_updatetab_384>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_updatetab_384>::make();
+    auto self = const_cast<Component_updatetab_384 *>(&*self_rc);
     self->self_weak = vtable::VWeak(self_rc).into_dyn();
     slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
     self->init(parent->globals, self->self_weak, 0, 1 , parent);
-    return slint::ComponentHandle<Component_updatetab_369>{ self_rc };
+    return slint::ComponentHandle<Component_updatetab_384>{ self_rc };
 }
 
-Component_updatetab_369::~Component_updatetab_369 (){
+Component_updatetab_384::~Component_updatetab_384 (){
     if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
 }
 
-auto Component_updatetab_369::init () -> void{
+auto Component_updatetab_384::init () -> void{
     user_init();
 }
 
-auto Component_updatetab_369::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+auto Component_updatetab_384::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
     return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
 }
 
-auto Component_updatetab_369::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+auto Component_updatetab_384::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
-const slint::private_api::ItemTreeVTable Component_installedtab_371::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_installedtab_371>, slint::private_api::dealloc };
+const slint::private_api::ItemTreeVTable Component_installedtab_386::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_installedtab_386>, slint::private_api::dealloc };
 
-auto Component_installedtab_371::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_318 const *parent) -> void{
+auto Component_installedtab_386::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class Component_empty_318 const *parent) -> void{
     auto self = this;
     self->self_weak = enclosing_component;
     self->globals = globals;
     this->tree_index_of_first_child = tree_index_of_first_child;
     self->tree_index = tree_index;
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const Component_empty_318>(parent->self_weak.lock().value(), parent);
-    this->field_installedtab_371.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
-    self->field_installedtab_371.field_root_31_height.set_binding([this]() {
+    this->field_installedtab_386.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
+    self->field_installedtab_386.field_root_31_height.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 9, 0, 2); }));
                         });
-    self->field_installedtab_371.field_root_31_width.set_binding([this]() {
+    self->field_installedtab_386.field_root_31_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317.width.get(); }));
                         });
-    self->field_installedtab_371.field_root_31_y.set_binding([this]() {
+    self->field_installedtab_386.field_root_31_y.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 8, 0, 2); }));
                         });
 }
 
-auto Component_installedtab_371::user_init () -> void{
+auto Component_installedtab_386::user_init () -> void{
     [[maybe_unused]] auto self = this;
-    this->field_installedtab_371.user_init();
+    this->field_installedtab_386.user_init();
 }
 
-auto Component_installedtab_371::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+auto Component_installedtab_386::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
     [[maybe_unused]] auto self = this;
-    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_installedtab_371.field_root_31_empty_32_layoutinfo_h.get()) : [&]{ [[maybe_unused]] auto layout_info = ([&]{ [[maybe_unused]] auto layout_info_1 = [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info_1.max, layout_info_1.max_percent, layout_info_1.min, layout_info_1.min_percent, layout_info_1.preferred, 1); }() + self->field_installedtab_371.field_root_31_empty_32_layoutinfo_v.get());;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info.max, layout_info.max_percent, layout_info.min, layout_info.min_percent, layout_info.preferred, 1); }();
+    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_installedtab_386.field_root_31_empty_32_layoutinfo_h.get()) : [&]{ [[maybe_unused]] auto layout_info = ([&]{ [[maybe_unused]] auto layout_info_1 = [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1);;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info_1.max, layout_info_1.max_percent, layout_info_1.min, layout_info_1.min_percent, layout_info_1.preferred, 1); }() + self->field_installedtab_386.field_root_31_empty_32_layoutinfo_v.get());;return [&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(layout_info.max, layout_info.max_percent, layout_info.min, layout_info.min_percent, layout_info.preferred, 1); }();
 }
 
-auto Component_installedtab_371::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+auto Component_installedtab_386::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
     [[maybe_unused]] auto self = this;
     switch (index) {
         case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 9, 0, 2); }))), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(slint::private_api::optional_and_then(self->parent.lock(), [&](auto&&x) { return x->parent.lock(); }), [&](auto&&x) { return x->field_root_317.width.get(); }))), float(0), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return slint::private_api::layout_cache_access(x->field_empty_318_layout_cache.get(), 8, 0, 2); })))));
     }
     if (index == 0) {
-        return self->field_installedtab_371.item_geometry(0);
+        return self->field_installedtab_386.item_geometry(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_installedtab_371.item_geometry(index - 0);
+        return self->field_installedtab_386.item_geometry(index - 0);
     } else return {};
 }
 
-auto Component_installedtab_371::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+auto Component_installedtab_386::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_installedtab_371.accessible_role(0);
+        return self->field_installedtab_386.accessible_role(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_installedtab_371.accessible_role(index - 0);
+        return self->field_installedtab_386.accessible_role(index - 0);
     } else return {};
 }
 
-auto Component_installedtab_371::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+auto Component_installedtab_386::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(what)) {
     }
     if (index == 0) {
-        return self->field_installedtab_371.accessible_string_property(0, what);
+        return self->field_installedtab_386.accessible_string_property(0, what);
     } else if (index >= 1 && index < 2) {
-        return self->field_installedtab_371.accessible_string_property(index - 0, what);
+        return self->field_installedtab_386.accessible_string_property(index - 0, what);
     } else return {};
 }
 
-auto Component_installedtab_371::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+auto Component_installedtab_386::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(action.tag)) {
     }
     if (index == 0) {
-        return self->field_installedtab_371.accessibility_action(0, action);
+        return self->field_installedtab_386.accessibility_action(0, action);
     } else if (index >= 1 && index < 2) {
-        return self->field_installedtab_371.accessibility_action(index - 0, action);
+        return self->field_installedtab_386.accessibility_action(index - 0, action);
     } else return ;
 }
 
-auto Component_installedtab_371::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+auto Component_installedtab_386::supported_accessibility_actions (uint32_t index) const -> uint32_t{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_installedtab_371.supported_accessibility_actions(0);
+        return self->field_installedtab_386.supported_accessibility_actions(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_installedtab_371.supported_accessibility_actions(index - 0);
+        return self->field_installedtab_386.supported_accessibility_actions(index - 0);
     } else return {};
 }
 
-auto Component_installedtab_371::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+auto Component_installedtab_386::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_installedtab_371.element_infos(0);
+        return self->field_installedtab_386.element_infos(0);
     } else if (index >= 1 && index < 2) {
-        return self->field_installedtab_371.element_infos(index - 0);
+        return self->field_installedtab_386.element_infos(index - 0);
     } else return {};
 }
 
-auto Component_installedtab_371::ensure_instantiated () const -> bool{
+auto Component_installedtab_386::ensure_instantiated () const -> bool{
     [[maybe_unused]] auto self = this;
     bool _changed = false;
     return _changed;
 }
 
-auto Component_installedtab_371::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+auto Component_installedtab_386::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
     static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
-        [[maybe_unused]] auto self = reinterpret_cast<const Component_installedtab_371*>(base);
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_installedtab_386*>(base);
         std::abort();
     };
-    auto self_rc = reinterpret_cast<const Component_installedtab_371*>(component.instance)->self_weak.lock()->into_dyn();
+    auto self_rc = reinterpret_cast<const Component_installedtab_386*>(component.instance)->self_weak.lock()->into_dyn();
     return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
 }
 
-auto Component_installedtab_371::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+auto Component_installedtab_386::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
     return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
 }
 
-auto Component_installedtab_371::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+auto Component_installedtab_386::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
         std::abort();
 }
 
-auto Component_installedtab_371::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+auto Component_installedtab_386::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
         std::abort();
 }
 
-auto Component_installedtab_371::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_installedtab_386::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     return item_tree();
 }
 
-auto Component_installedtab_371::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
-    auto self = reinterpret_cast<const Component_installedtab_371*>(component.instance);
+auto Component_installedtab_386::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_installedtab_386*>(component.instance);
     auto parent = self->parent.lock().value();
     *result = { parent->self_weak, parent->tree_index_of_first_child + 4 };
 }
 
-auto Component_installedtab_371::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+auto Component_installedtab_386::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
     return false; /* todo! */
 }
 
-auto Component_installedtab_371::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+auto Component_installedtab_386::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
     return std::numeric_limits<uintptr_t>::max();
 }
 
-auto Component_installedtab_371::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_installedtab_386::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     static const slint::private_api::ItemTreeNode children[] {
         slint::private_api::make_item_node(1, 1, 0, 0, false), 
 slint::private_api::make_item_node(0, 2, 0, 1, true) };
     return slint::private_api::make_slice(std::span(children));
 }
 
-auto Component_installedtab_371::item_array () -> const slint::private_api::ItemArray{
+auto Component_installedtab_386::item_array () -> const slint::private_api::ItemArray{
     static const slint::private_api::ItemArrayEntry items[] {
-        { SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_installedtab_371, field_installedtab_371) +  offsetof(InstalledTab_root_31, field_root_31) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_installedtab_371, field_installedtab_371) +  offsetof(InstalledTab_root_31, field_text_33) } };
+        { SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_installedtab_386, field_installedtab_386) +  offsetof(InstalledTab_root_31, field_root_31) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_installedtab_386, field_installedtab_386) +  offsetof(InstalledTab_root_31, field_text_33) } };
     return slint::private_api::make_slice(std::span(items));
 }
 
-auto Component_installedtab_371::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
-    return reinterpret_cast<const Component_installedtab_371*>(component.instance)->layout_info(o);
+auto Component_installedtab_386::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_installedtab_386*>(component.instance)->layout_info(o);
 }
 
-auto Component_installedtab_371::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
-    return reinterpret_cast<const Component_installedtab_371*>(component.instance)->ensure_instantiated();
+auto Component_installedtab_386::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_installedtab_386*>(component.instance)->ensure_instantiated();
 }
 
-auto Component_installedtab_371::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
-    return reinterpret_cast<const Component_installedtab_371*>(component.instance)->item_geometry(index);
+auto Component_installedtab_386::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_installedtab_386*>(component.instance)->item_geometry(index);
 }
 
-auto Component_installedtab_371::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
-    return reinterpret_cast<const Component_installedtab_371*>(component.instance)->accessible_role(index);
+auto Component_installedtab_386::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_installedtab_386*>(component.instance)->accessible_role(index);
 }
 
-auto Component_installedtab_371::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
-    if (auto r = reinterpret_cast<const Component_installedtab_371*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+auto Component_installedtab_386::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_installedtab_386*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
 }
 
-auto Component_installedtab_371::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
-    reinterpret_cast<const Component_installedtab_371*>(component.instance)->accessibility_action(index, *action);
+auto Component_installedtab_386::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_installedtab_386*>(component.instance)->accessibility_action(index, *action);
 }
 
-auto Component_installedtab_371::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
-    return reinterpret_cast<const Component_installedtab_371*>(component.instance)->supported_accessibility_actions(index);
+auto Component_installedtab_386::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_installedtab_386*>(component.instance)->supported_accessibility_actions(index);
 }
 
-auto Component_installedtab_371::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+auto Component_installedtab_386::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
     return false;
 }
 
-auto Component_installedtab_371::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
-    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_installedtab_371*>(component.instance)->globals->window().window_handle();
+auto Component_installedtab_386::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_installedtab_386*>(component.instance)->globals->window().window_handle();
 }
 
-auto Component_installedtab_371::create (class Component_empty_318 const * parent) -> slint::ComponentHandle<Component_installedtab_371>{
-    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_installedtab_371>::make();
-    auto self = const_cast<Component_installedtab_371 *>(&*self_rc);
+auto Component_installedtab_386::create (class Component_empty_318 const * parent) -> slint::ComponentHandle<Component_installedtab_386>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_installedtab_386>::make();
+    auto self = const_cast<Component_installedtab_386 *>(&*self_rc);
     self->self_weak = vtable::VWeak(self_rc).into_dyn();
     slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
     self->init(parent->globals, self->self_weak, 0, 1 , parent);
-    return slint::ComponentHandle<Component_installedtab_371>{ self_rc };
+    return slint::ComponentHandle<Component_installedtab_386>{ self_rc };
 }
 
-Component_installedtab_371::~Component_installedtab_371 (){
+Component_installedtab_386::~Component_installedtab_386 (){
     if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
 }
 
-auto Component_installedtab_371::init () -> void{
+auto Component_installedtab_386::init () -> void{
     user_init();
 }
 
-auto Component_installedtab_371::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+auto Component_installedtab_386::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
     return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
 }
 
-auto Component_installedtab_371::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+auto Component_installedtab_386::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
@@ -14210,11 +15119,11 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_319.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279769125e9) : slint::Color::from_argb_encoded(+4.293323247e9)));
                         });
     self->field_rectangle_319.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_319.border_width.set(1);
     self->field_settings_ta_324.clicked.set_handler(
@@ -14225,7 +15134,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_settings_ta_324.enabled.set(true);
     self->field_image_325.colorize.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_settings_ta_324.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
+                            return slint::Brush((self->field_settings_ta_324.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -14238,7 +15147,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_image_325.width.set(22);
     self->field_text_327.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)));
                         });
     self->field_text_327.font_size.set(18);
     self->field_text_327.font_weight.set(static_cast<int>(700));
@@ -14253,7 +15162,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_text_328.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)));
                         });
     self->field_text_328.font_size.set(11);
     self->field_text_328.height.set_binding([this]() {
@@ -14267,11 +15176,11 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_330.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_home_ta_331.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
+                            return slint::Brush((self->field_home_ta_331.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9))));
                         });
     self->field_rectangle_330.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_330.border_radius.set(10);
     self->field_rectangle_330.border_width.set(1);
@@ -14283,7 +15192,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_home_ta_331.enabled.set(true);
     self->field_image_332.colorize.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->field_home_ta_331.has_hover.get() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
+                            return slint::Brush((self->field_home_ta_331.has_hover.get() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : slint::Color::from_argb_encoded(+4.280182517e9)) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -14296,11 +15205,11 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_image_332.width.set(18);
     self->field_rectangle_333.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.281414212e9) : slint::Color::from_argb_encoded(+4.29161289e9)));
                         });
     self->field_rectangle_333.border_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.28273033e9) : slint::Color::from_argb_encoded(+4.290560204e9)));
                         });
     self->field_rectangle_333.border_radius.set(10);
     self->field_rectangle_333.border_width.set(1);
@@ -14311,7 +15220,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
                 });
     self->field_textinput_335.color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.291679988e9) : slint::Color::from_argb_encoded(+4.283191145e9)));
                         });
     self->field_textinput_335.enabled.set(true);
     self->field_textinput_335.font_size.set(13);
@@ -14319,11 +15228,11 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_textinput_335.read_only.set(false);
     self->field_textinput_335.selection_background_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return self->globals->global_FluentPalette_382->field_selection_background.get().color();
+                            return self->globals->global_FluentPalette_397->field_selection_background.get().color();
                         });
     self->field_textinput_335.selection_foreground_color.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return self->globals->global_FluentPalette_382->field_selection_foreground.get().color();
+                            return self->globals->global_FluentPalette_397->field_selection_foreground.get().color();
                         });
     self->field_textinput_335.single_line.set(true);
     self->field_textinput_335.text_cursor_width.set(1);
@@ -14334,11 +15243,11 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
                         });
     self->field_rectangle_336.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
                         });
     self->field_rectangle_337.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)));
                         });
     self->field_rectangle_337.border_radius.set(12);
     self->field__shadow_339.blur.set_animated_binding([this]() {
@@ -14382,7 +15291,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_home_tab_ta_341.enabled.set(true);
     self->field_text_342.color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)) : (self->field_home_tab_ta_341.has_hover.get() ? slint::Color::from_argb_encoded(+4.291536631e9) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)))));
+                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_active_tab.get(); })) - 0)) < std::numeric_limits<float>::epsilon() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)) : (self->field_home_tab_ta_341.has_hover.get() ? slint::Color::from_argb_encoded(+4.291536631e9) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -14447,7 +15356,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_update_tab_ta_345.enabled.set(true);
     self->field_text_346.color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)) : (self->field_update_tab_ta_345.has_hover.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)))));
+                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_active_tab.get(); })) - 1)) < std::numeric_limits<float>::epsilon() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)) : (self->field_update_tab_ta_345.has_hover.get() ? slint::Color::from_argb_encoded(+4.287214842e9) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -14512,7 +15421,7 @@ auto Component_empty_318::init (const class SharedGlobals* globals,slint::cbindg
     self->field_installed_tab_ta_349.enabled.set(true);
     self->field_text_350.color.set_animated_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)) : (self->field_installed_tab_ta_349.has_hover.get() ? slint::Color::from_argb_encoded(+4.285843436e9) : (self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)))));
+                            return slint::Brush((std::abs(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_active_tab.get(); })) - 2)) < std::numeric_limits<float>::epsilon() ? (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.279308571e9) : slint::Color::from_argb_encoded(+4.292665576e9)) : (self->field_installed_tab_ta_349.has_hover.get() ? slint::Color::from_argb_encoded(+4.285843436e9) : (self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.2865471e9) : slint::Color::from_argb_encoded(+4.287401889e9)))));
                         },
                                 [this](uint64_t **start_time) -> slint::cbindgen_private::PropertyAnimation {
                                     [[maybe_unused]] auto self = this;
@@ -14977,251 +15886,251 @@ auto Component_empty_318::flexbox_layout_item_info (slint::cbindgen_private::Ori
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
-const slint::private_api::ItemTreeVTable Component_detailsview_374::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_detailsview_374>, slint::private_api::dealloc };
+const slint::private_api::ItemTreeVTable Component_detailsview_389::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_detailsview_389>, slint::private_api::dealloc };
 
-auto Component_detailsview_374::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void{
+auto Component_detailsview_389::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void{
     auto self = this;
     self->self_weak = enclosing_component;
     self->globals = globals;
     this->tree_index_of_first_child = tree_index_of_first_child;
     self->tree_index = tree_index;
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const MainWindow>(parent->self_weak.lock().value(), parent);
-    this->field_detailsview_374.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
-    self->field_detailsview_374.field_root_52_accent_idx.set(static_cast<int>(4));
-    self->field_detailsview_374.field_root_52_addon_clicked.set_handler(
+    this->field_detailsview_389.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
+    self->field_detailsview_389.field_root_52_accent_idx.set(static_cast<int>(4));
+    self->field_detailsview_389.field_root_52_addon_clicked.set_handler(
                 [this]([[maybe_unused]] slint::SharedString arg_0) {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_addon_clicked.call(arg_0); });
                 });
-    self->field_detailsview_374.field_root_52_back_clicked.set_handler(
+    self->field_detailsview_389.field_root_52_back_clicked.set_handler(
                 [this]() {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_back_clicked.call(); });
                 });
-    self->field_detailsview_374.field_root_52_copy_to_clipboard.set_handler(
+    self->field_detailsview_389.field_root_52_copy_to_clipboard.set_handler(
                 [this]([[maybe_unused]] slint::SharedString arg_0) {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_copy_to_clipboard.call(arg_0); });
                 });
-    self->field_detailsview_374.field_root_52_details.set_binding([this]() {
+    self->field_detailsview_389.field_root_52_details.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_details.get(); }));
                         });
-    self->field_detailsview_374.field_root_52_height.set_binding([this]() {
+    self->field_detailsview_389.field_root_52_height.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.height.get(); }));
                         });
-    self->field_detailsview_374.field_root_52_install_clicked.set_handler(
+    self->field_detailsview_389.field_root_52_install_clicked.set_handler(
                 [this]() {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_install_clicked.call(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_package.get(); }))); });
                 });
-    self->field_detailsview_374.field_root_52_install_state.set_binding([this]() {
+    self->field_detailsview_389.field_root_52_install_state.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_install.get(); }));
                         });
-    self->field_detailsview_374.field_root_52_open_url.set_handler(
+    self->field_detailsview_389.field_root_52_open_url.set_handler(
                 [this]([[maybe_unused]] slint::SharedString arg_0, [[maybe_unused]] slint::SharedString arg_1) {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_open_url.call(arg_0,arg_1); });
                 });
-    self->field_detailsview_374.field_root_52_pkg.set_binding([this]() {
+    self->field_detailsview_389.field_root_52_pkg.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_package.get(); }));
                         });
-    self->field_detailsview_374.field_root_52_remove_clicked.set_handler(
+    self->field_detailsview_389.field_root_52_remove_clicked.set_handler(
                 [this]([[maybe_unused]] slint::SharedString arg_0) {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_remove_clicked.call(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_package.get(); })),arg_0); });
                 });
-    self->field_detailsview_374.field_root_52_special_case.set_binding([this]() {
+    self->field_detailsview_389.field_root_52_special_case.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_special_case.get(); }));
                         });
-    self->field_detailsview_374.field_root_52_suggestion_clicked.set_handler(
+    self->field_detailsview_389.field_root_52_suggestion_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_app_clicked.call(arg_0); });
                 });
-    self->field_detailsview_374.field_root_52_suggestions.set_binding([this]() {
+    self->field_detailsview_389.field_root_52_suggestions.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_suggestions.get(); }));
                         });
-    self->field_detailsview_374.field_root_52_view_all_addons_clicked.set_handler(
+    self->field_detailsview_389.field_root_52_view_all_addons_clicked.set_handler(
                 [this]() {
                     [[maybe_unused]] auto self = this;
                     [&]{ slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_is_showing_addons_store.set(true); });slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_view_all_addons_clicked.call(); }); }();
                 });
-    self->field_detailsview_374.field_root_52_width.set_binding([this]() {
+    self->field_detailsview_389.field_root_52_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.width.get(); }));
                         });
-    self->field_detailsview_374.field_root_52_accent_idx.set_constant();
-    self->field_detailsview_374.field_root_52_empty_57_alignment.set_constant();
-    self->field_detailsview_374.field_root_52_empty_69_alignment.set_constant();
-    self->field_detailsview_374.field_root_52_empty_69_padding_bottom.set_constant();
-    self->field_detailsview_374.field_root_52_empty_69_padding_top.set_constant();
-    self->field_detailsview_374.field_root_52_empty_69_spacing.set_constant();
-    self->field_detailsview_374.field_root_52_empty_75_alignment.set_constant();
-    self->field_detailsview_374.field_root_52_empty_75_spacing.set_constant();
-    self->field_detailsview_374.field_root_52_rectangle_54_height.set_constant();
-    self->field_detailsview_374.field_root_52_rectangle_58_height.set_constant();
+    self->field_detailsview_389.field_root_52_accent_idx.set_constant();
+    self->field_detailsview_389.field_root_52_empty_57_alignment.set_constant();
+    self->field_detailsview_389.field_root_52_empty_69_alignment.set_constant();
+    self->field_detailsview_389.field_root_52_empty_69_padding_bottom.set_constant();
+    self->field_detailsview_389.field_root_52_empty_69_padding_top.set_constant();
+    self->field_detailsview_389.field_root_52_empty_69_spacing.set_constant();
+    self->field_detailsview_389.field_root_52_empty_75_alignment.set_constant();
+    self->field_detailsview_389.field_root_52_empty_75_spacing.set_constant();
+    self->field_detailsview_389.field_root_52_rectangle_54_height.set_constant();
+    self->field_detailsview_389.field_root_52_rectangle_58_height.set_constant();
 }
 
-auto Component_detailsview_374::user_init () -> void{
+auto Component_detailsview_389::user_init () -> void{
     [[maybe_unused]] auto self = this;
-    this->field_detailsview_374.user_init();
+    this->field_detailsview_389.user_init();
 }
 
-auto Component_detailsview_374::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+auto Component_detailsview_389::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
     [[maybe_unused]] auto self = this;
-    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_detailsview_374.field_root_52_empty_53_layoutinfo_h.get()) : ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_detailsview_374.field_root_52_empty_53_layoutinfo_v.get());
+    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_detailsview_389.field_root_52_empty_53_layoutinfo_h.get()) : ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_detailsview_389.field_root_52_empty_53_layoutinfo_v.get());
 }
 
-auto Component_detailsview_374::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+auto Component_detailsview_389::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
     [[maybe_unused]] auto self = this;
     switch (index) {
         case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.height.get(); }))), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.width.get(); }))), float(0), float(0)));
     }
     if (index == 0) {
-        return self->field_detailsview_374.item_geometry(0);
+        return self->field_detailsview_389.item_geometry(0);
     } else if (index >= 1 && index < 50) {
-        return self->field_detailsview_374.item_geometry(index - 0);
+        return self->field_detailsview_389.item_geometry(index - 0);
     } else return {};
 }
 
-auto Component_detailsview_374::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+auto Component_detailsview_389::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_detailsview_374.accessible_role(0);
+        return self->field_detailsview_389.accessible_role(0);
     } else if (index >= 1 && index < 50) {
-        return self->field_detailsview_374.accessible_role(index - 0);
+        return self->field_detailsview_389.accessible_role(index - 0);
     } else return {};
 }
 
-auto Component_detailsview_374::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+auto Component_detailsview_389::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(what)) {
     }
     if (index == 0) {
-        return self->field_detailsview_374.accessible_string_property(0, what);
+        return self->field_detailsview_389.accessible_string_property(0, what);
     } else if (index >= 1 && index < 50) {
-        return self->field_detailsview_374.accessible_string_property(index - 0, what);
+        return self->field_detailsview_389.accessible_string_property(index - 0, what);
     } else return {};
 }
 
-auto Component_detailsview_374::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+auto Component_detailsview_389::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(action.tag)) {
     }
     if (index == 0) {
-        return self->field_detailsview_374.accessibility_action(0, action);
+        return self->field_detailsview_389.accessibility_action(0, action);
     } else if (index >= 1 && index < 50) {
-        return self->field_detailsview_374.accessibility_action(index - 0, action);
+        return self->field_detailsview_389.accessibility_action(index - 0, action);
     } else return ;
 }
 
-auto Component_detailsview_374::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+auto Component_detailsview_389::supported_accessibility_actions (uint32_t index) const -> uint32_t{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_detailsview_374.supported_accessibility_actions(0);
+        return self->field_detailsview_389.supported_accessibility_actions(0);
     } else if (index >= 1 && index < 50) {
-        return self->field_detailsview_374.supported_accessibility_actions(index - 0);
+        return self->field_detailsview_389.supported_accessibility_actions(index - 0);
     } else return {};
 }
 
-auto Component_detailsview_374::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+auto Component_detailsview_389::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_detailsview_374.element_infos(0);
+        return self->field_detailsview_389.element_infos(0);
     } else if (index >= 1 && index < 50) {
-        return self->field_detailsview_374.element_infos(index - 0);
+        return self->field_detailsview_389.element_infos(index - 0);
     } else return {};
 }
 
-auto Component_detailsview_374::ensure_instantiated () const -> bool{
+auto Component_detailsview_389::ensure_instantiated () const -> bool{
     [[maybe_unused]] auto self = this;
     bool _changed = false;
-    _changed |= self->field_detailsview_374.ensure_instantiated();
+    _changed |= self->field_detailsview_389.ensure_instantiated();
     return _changed;
 }
 
-auto Component_detailsview_374::visit_dynamic_children (uint32_t dyn_index, [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor) const -> uint64_t{
+auto Component_detailsview_389::visit_dynamic_children (uint32_t dyn_index, [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor) const -> uint64_t{
         auto self = this;
         switch(dyn_index) { 
         case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13: case 14:  {
-                        return self->field_detailsview_374.visit_dynamic_children(dyn_index - 0, order, visitor);
+                        return self->field_detailsview_389.visit_dynamic_children(dyn_index - 0, order, visitor);
                     } };
         std::abort();
 }
 
-auto Component_detailsview_374::subtree_range (uintptr_t dyn_index) const -> slint::private_api::IndexRange{
+auto Component_detailsview_389::subtree_range (uintptr_t dyn_index) const -> slint::private_api::IndexRange{
     [[maybe_unused]] auto self = this;
         switch(dyn_index) { 
         case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13: case 14:  {
-                        return self->field_detailsview_374.subtree_range(dyn_index - 0);
+                        return self->field_detailsview_389.subtree_range(dyn_index - 0);
                     } };
         std::abort();
 }
 
-auto Component_detailsview_374::subtree_component (uintptr_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) const -> void{
+auto Component_detailsview_389::subtree_component (uintptr_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) const -> void{
     [[maybe_unused]] auto self = this;
         switch(dyn_index) { 
         case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13: case 14:  {
-                        self->field_detailsview_374.subtree_component(dyn_index - 0, subtree_index, result);
+                        self->field_detailsview_389.subtree_component(dyn_index - 0, subtree_index, result);
                         return;
                     } };
         std::abort();
 }
 
-auto Component_detailsview_374::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+auto Component_detailsview_389::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
     static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
-        [[maybe_unused]] auto self = reinterpret_cast<const Component_detailsview_374*>(base);
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_detailsview_389*>(base);
         return self->visit_dynamic_children(dyn_index, order, visitor);
     };
-    auto self_rc = reinterpret_cast<const Component_detailsview_374*>(component.instance)->self_weak.lock()->into_dyn();
+    auto self_rc = reinterpret_cast<const Component_detailsview_389*>(component.instance)->self_weak.lock()->into_dyn();
     return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
 }
 
-auto Component_detailsview_374::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+auto Component_detailsview_389::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
     return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
 }
 
-auto Component_detailsview_374::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
-    auto self = reinterpret_cast<const Component_detailsview_374*>(component.instance);
+auto Component_detailsview_389::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+    auto self = reinterpret_cast<const Component_detailsview_389*>(component.instance);
     return self->subtree_range(dyn_index);
 }
 
-auto Component_detailsview_374::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
-    auto self = reinterpret_cast<const Component_detailsview_374*>(component.instance);
+auto Component_detailsview_389::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_detailsview_389*>(component.instance);
     self->subtree_component(dyn_index, subtree_index, result);
 }
 
-auto Component_detailsview_374::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_detailsview_389::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     return item_tree();
 }
 
-auto Component_detailsview_374::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
-    auto self = reinterpret_cast<const Component_detailsview_374*>(component.instance);
+auto Component_detailsview_389::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_detailsview_389*>(component.instance);
     auto parent = self->parent.lock().value();
     *result = { parent->self_weak, parent->tree_index_of_first_child + 1 };
 }
 
-auto Component_detailsview_374::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+auto Component_detailsview_389::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
     return false; /* todo! */
 }
 
-auto Component_detailsview_374::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+auto Component_detailsview_389::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
     return std::numeric_limits<uintptr_t>::max();
 }
 
-auto Component_detailsview_374::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_detailsview_389::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     static const slint::private_api::ItemTreeNode children[] {
         slint::private_api::make_item_node(4, 1, 0, 0, false), 
 slint::private_api::make_item_node(2, 5, 0, 1, false), 
@@ -15276,258 +16185,258 @@ slint::private_api::make_dyn_node(6, 45) };
     return slint::private_api::make_slice(std::span(children));
 }
 
-auto Component_detailsview_374::item_array () -> const slint::private_api::ItemArray{
+auto Component_detailsview_389::item_array () -> const slint::private_api::ItemArray{
     static const slint::private_api::ItemArrayEntry items[] {
-        { SLINT_GET_ITEM_VTABLE(RectangleVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_root_52) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_rectangle_54) }, 
-{ SLINT_GET_ITEM_VTABLE(FlickableVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_flickable_67) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_56) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_63) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_57) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_60) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_rectangle_58) }, 
-{ SLINT_GET_ITEM_VTABLE(ImageItemVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_image_59) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_text_61) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_text_62) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_rectangle_64) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_back_ta_65) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_text_66) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field__viewport_68) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_70) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_rectangle_124) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_75) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_rectangle_103) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_104) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_76) }, 
-{ SLINT_GET_ITEM_VTABLE(ComplexTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_text_95) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_text_96) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_77) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_88) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_toucharea_78) }, 
-{ SLINT_GET_ITEM_VTABLE(ComplexTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_pretty_name_txt_79) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_rectangle_92) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_repo_ta_93) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_repoTxt_94) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_rectangle_105) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_toucharea_106) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_text_107) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_empty_126) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_374, field_detailsview_374) +  offsetof(DetailsView_root_52, field_text_127) } };
+        { SLINT_GET_ITEM_VTABLE(RectangleVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_root_52) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_rectangle_54) }, 
+{ SLINT_GET_ITEM_VTABLE(FlickableVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_flickable_67) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_56) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_63) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_57) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_60) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_rectangle_58) }, 
+{ SLINT_GET_ITEM_VTABLE(ImageItemVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_image_59) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_text_61) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_text_62) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_rectangle_64) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_back_ta_65) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_text_66) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field__viewport_68) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_70) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_rectangle_124) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_75) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_rectangle_103) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_104) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_76) }, 
+{ SLINT_GET_ITEM_VTABLE(ComplexTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_text_95) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_text_96) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_77) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_88) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_toucharea_78) }, 
+{ SLINT_GET_ITEM_VTABLE(ComplexTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_pretty_name_txt_79) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_rectangle_92) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_repo_ta_93) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_repoTxt_94) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_rectangle_105) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_toucharea_106) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_text_107) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_empty_126) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_detailsview_389, field_detailsview_389) +  offsetof(DetailsView_root_52, field_text_127) } };
     return slint::private_api::make_slice(std::span(items));
 }
 
-auto Component_detailsview_374::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
-    return reinterpret_cast<const Component_detailsview_374*>(component.instance)->layout_info(o);
+auto Component_detailsview_389::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_detailsview_389*>(component.instance)->layout_info(o);
 }
 
-auto Component_detailsview_374::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
-    return reinterpret_cast<const Component_detailsview_374*>(component.instance)->ensure_instantiated();
+auto Component_detailsview_389::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_detailsview_389*>(component.instance)->ensure_instantiated();
 }
 
-auto Component_detailsview_374::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
-    return reinterpret_cast<const Component_detailsview_374*>(component.instance)->item_geometry(index);
+auto Component_detailsview_389::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_detailsview_389*>(component.instance)->item_geometry(index);
 }
 
-auto Component_detailsview_374::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
-    return reinterpret_cast<const Component_detailsview_374*>(component.instance)->accessible_role(index);
+auto Component_detailsview_389::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_detailsview_389*>(component.instance)->accessible_role(index);
 }
 
-auto Component_detailsview_374::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
-    if (auto r = reinterpret_cast<const Component_detailsview_374*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+auto Component_detailsview_389::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_detailsview_389*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
 }
 
-auto Component_detailsview_374::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
-    reinterpret_cast<const Component_detailsview_374*>(component.instance)->accessibility_action(index, *action);
+auto Component_detailsview_389::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_detailsview_389*>(component.instance)->accessibility_action(index, *action);
 }
 
-auto Component_detailsview_374::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
-    return reinterpret_cast<const Component_detailsview_374*>(component.instance)->supported_accessibility_actions(index);
+auto Component_detailsview_389::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_detailsview_389*>(component.instance)->supported_accessibility_actions(index);
 }
 
-auto Component_detailsview_374::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+auto Component_detailsview_389::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
     return false;
 }
 
-auto Component_detailsview_374::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
-    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_detailsview_374*>(component.instance)->globals->window().window_handle();
+auto Component_detailsview_389::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_detailsview_389*>(component.instance)->globals->window().window_handle();
 }
 
-auto Component_detailsview_374::create (class MainWindow const * parent) -> slint::ComponentHandle<Component_detailsview_374>{
-    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_detailsview_374>::make();
-    auto self = const_cast<Component_detailsview_374 *>(&*self_rc);
+auto Component_detailsview_389::create (class MainWindow const * parent) -> slint::ComponentHandle<Component_detailsview_389>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_detailsview_389>::make();
+    auto self = const_cast<Component_detailsview_389 *>(&*self_rc);
     self->self_weak = vtable::VWeak(self_rc).into_dyn();
     slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
     self->init(parent->globals, self->self_weak, 0, 1 , parent);
-    return slint::ComponentHandle<Component_detailsview_374>{ self_rc };
+    return slint::ComponentHandle<Component_detailsview_389>{ self_rc };
 }
 
-Component_detailsview_374::~Component_detailsview_374 (){
+Component_detailsview_389::~Component_detailsview_389 (){
     if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
 }
 
-auto Component_detailsview_374::init () -> void{
+auto Component_detailsview_389::init () -> void{
     user_init();
 }
 
-auto Component_detailsview_374::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+auto Component_detailsview_389::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
     return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
 }
 
-auto Component_detailsview_374::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+auto Component_detailsview_389::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
-const slint::private_api::ItemTreeVTable Component_settingsview_376::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_settingsview_376>, slint::private_api::dealloc };
+const slint::private_api::ItemTreeVTable Component_settingsview_391::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_settingsview_391>, slint::private_api::dealloc };
 
-auto Component_settingsview_376::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void{
+auto Component_settingsview_391::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void{
     auto self = this;
     self->self_weak = enclosing_component;
     self->globals = globals;
     this->tree_index_of_first_child = tree_index_of_first_child;
     self->tree_index = tree_index;
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const MainWindow>(parent->self_weak.lock().value(), parent);
-    this->field_settingsview_376.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
-    self->field_settingsview_376.field_root_258_back_clicked.set_handler(
+    this->field_settingsview_391.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
+    self->field_settingsview_391.field_root_258_back_clicked.set_handler(
                 [this]() {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_is_showing_settings.set(false); });
                 });
-    self->field_settingsview_376.field_root_258_height.set_binding([this]() {
+    self->field_settingsview_391.field_root_258_height.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.height.get(); }));
                         });
-    self->field_settingsview_376.field_root_258_width.set_binding([this]() {
+    self->field_settingsview_391.field_root_258_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.width.get(); }));
                         });
-    self->field_settingsview_376.field_root_258_empty_263_alignment.set_constant();
-    self->field_settingsview_376.field_root_258_rectangle_260_height.set_constant();
-    self->field_settingsview_376.field_root_258_rectangle_264_height.set_constant();
+    self->field_settingsview_391.field_root_258_empty_263_alignment.set_constant();
+    self->field_settingsview_391.field_root_258_rectangle_260_height.set_constant();
+    self->field_settingsview_391.field_root_258_rectangle_264_height.set_constant();
 }
 
-auto Component_settingsview_376::user_init () -> void{
+auto Component_settingsview_391::user_init () -> void{
     [[maybe_unused]] auto self = this;
-    this->field_settingsview_376.user_init();
+    this->field_settingsview_391.user_init();
 }
 
-auto Component_settingsview_376::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+auto Component_settingsview_391::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
     [[maybe_unused]] auto self = this;
-    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_settingsview_376.field_root_258_empty_259_layoutinfo_h.get()) : ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_settingsview_376.field_root_258_empty_259_layoutinfo_v.get());
+    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_settingsview_391.field_root_258_empty_259_layoutinfo_h.get()) : ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_settingsview_391.field_root_258_empty_259_layoutinfo_v.get());
 }
 
-auto Component_settingsview_376::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+auto Component_settingsview_391::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
     [[maybe_unused]] auto self = this;
     switch (index) {
         case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.height.get(); }))), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.width.get(); }))), float(0), float(0)));
     }
     if (index == 0) {
-        return self->field_settingsview_376.item_geometry(0);
+        return self->field_settingsview_391.item_geometry(0);
     } else if (index >= 1 && index < 31) {
-        return self->field_settingsview_376.item_geometry(index - 0);
+        return self->field_settingsview_391.item_geometry(index - 0);
     } else return {};
 }
 
-auto Component_settingsview_376::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+auto Component_settingsview_391::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_settingsview_376.accessible_role(0);
+        return self->field_settingsview_391.accessible_role(0);
     } else if (index >= 1 && index < 31) {
-        return self->field_settingsview_376.accessible_role(index - 0);
+        return self->field_settingsview_391.accessible_role(index - 0);
     } else return {};
 }
 
-auto Component_settingsview_376::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+auto Component_settingsview_391::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(what)) {
     }
     if (index == 0) {
-        return self->field_settingsview_376.accessible_string_property(0, what);
+        return self->field_settingsview_391.accessible_string_property(0, what);
     } else if (index >= 1 && index < 31) {
-        return self->field_settingsview_376.accessible_string_property(index - 0, what);
+        return self->field_settingsview_391.accessible_string_property(index - 0, what);
     } else return {};
 }
 
-auto Component_settingsview_376::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+auto Component_settingsview_391::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(action.tag)) {
     }
     if (index == 0) {
-        return self->field_settingsview_376.accessibility_action(0, action);
+        return self->field_settingsview_391.accessibility_action(0, action);
     } else if (index >= 1 && index < 31) {
-        return self->field_settingsview_376.accessibility_action(index - 0, action);
+        return self->field_settingsview_391.accessibility_action(index - 0, action);
     } else return ;
 }
 
-auto Component_settingsview_376::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+auto Component_settingsview_391::supported_accessibility_actions (uint32_t index) const -> uint32_t{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_settingsview_376.supported_accessibility_actions(0);
+        return self->field_settingsview_391.supported_accessibility_actions(0);
     } else if (index >= 1 && index < 31) {
-        return self->field_settingsview_376.supported_accessibility_actions(index - 0);
+        return self->field_settingsview_391.supported_accessibility_actions(index - 0);
     } else return {};
 }
 
-auto Component_settingsview_376::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+auto Component_settingsview_391::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_settingsview_376.element_infos(0);
+        return self->field_settingsview_391.element_infos(0);
     } else if (index >= 1 && index < 31) {
-        return self->field_settingsview_376.element_infos(index - 0);
+        return self->field_settingsview_391.element_infos(index - 0);
     } else return {};
 }
 
-auto Component_settingsview_376::ensure_instantiated () const -> bool{
+auto Component_settingsview_391::ensure_instantiated () const -> bool{
     [[maybe_unused]] auto self = this;
     bool _changed = false;
     return _changed;
 }
 
-auto Component_settingsview_376::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+auto Component_settingsview_391::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
     static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
-        [[maybe_unused]] auto self = reinterpret_cast<const Component_settingsview_376*>(base);
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_settingsview_391*>(base);
         std::abort();
     };
-    auto self_rc = reinterpret_cast<const Component_settingsview_376*>(component.instance)->self_weak.lock()->into_dyn();
+    auto self_rc = reinterpret_cast<const Component_settingsview_391*>(component.instance)->self_weak.lock()->into_dyn();
     return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
 }
 
-auto Component_settingsview_376::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+auto Component_settingsview_391::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
     return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
 }
 
-auto Component_settingsview_376::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+auto Component_settingsview_391::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
         std::abort();
 }
 
-auto Component_settingsview_376::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+auto Component_settingsview_391::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
         std::abort();
 }
 
-auto Component_settingsview_376::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_settingsview_391::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     return item_tree();
 }
 
-auto Component_settingsview_376::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
-    auto self = reinterpret_cast<const Component_settingsview_376*>(component.instance);
+auto Component_settingsview_391::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_settingsview_391*>(component.instance);
     auto parent = self->parent.lock().value();
     *result = { parent->self_weak, parent->tree_index_of_first_child + 2 };
 }
 
-auto Component_settingsview_376::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+auto Component_settingsview_391::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
     return false; /* todo! */
 }
 
-auto Component_settingsview_376::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+auto Component_settingsview_391::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
     return std::numeric_limits<uintptr_t>::max();
 }
 
-auto Component_settingsview_376::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_settingsview_391::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     static const slint::private_api::ItemTreeNode children[] {
         slint::private_api::make_item_node(2, 1, 0, 0, false), 
 slint::private_api::make_item_node(2, 3, 0, 1, false), 
@@ -15563,299 +16472,299 @@ slint::private_api::make_item_node(0, 31, 26, 30, true) };
     return slint::private_api::make_slice(std::span(children));
 }
 
-auto Component_settingsview_376::item_array () -> const slint::private_api::ItemArray{
+auto Component_settingsview_391::item_array () -> const slint::private_api::ItemArray{
     static const slint::private_api::ItemArrayEntry items[] {
-        { SLINT_GET_ITEM_VTABLE(RectangleVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_root_258) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_rectangle_260) }, 
-{ SLINT_GET_ITEM_VTABLE(FlickableVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_flickable_273) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_262) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_269) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_263) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_266) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_rectangle_264) }, 
-{ SLINT_GET_ITEM_VTABLE(ImageItemVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_image_265) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_267) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_268) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_rectangle_270) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_back_ta_271) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_272) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field__viewport_274) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_276) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_277) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_278) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_rectangle_280) }, 
-{ SLINT_GET_ITEM_VTABLE(ComplexTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_279) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_282) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_283) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_empty_286) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_284) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_285) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_rectangle_287) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_rectangle_291) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_light_ta_288) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_290) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_dark_ta_292) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_376, field_settingsview_376) +  offsetof(SettingsView_root_258, field_text_294) } };
+        { SLINT_GET_ITEM_VTABLE(RectangleVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_root_258) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_rectangle_260) }, 
+{ SLINT_GET_ITEM_VTABLE(FlickableVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_flickable_273) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_262) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_269) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_263) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_266) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_rectangle_264) }, 
+{ SLINT_GET_ITEM_VTABLE(ImageItemVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_image_265) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_267) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_268) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_rectangle_270) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_back_ta_271) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_272) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field__viewport_274) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_276) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_277) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_278) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_rectangle_280) }, 
+{ SLINT_GET_ITEM_VTABLE(ComplexTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_279) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_282) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_283) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_empty_286) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_284) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_285) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_rectangle_287) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_rectangle_291) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_light_ta_288) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_290) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_dark_ta_292) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_settingsview_391, field_settingsview_391) +  offsetof(SettingsView_root_258, field_text_294) } };
     return slint::private_api::make_slice(std::span(items));
 }
 
-auto Component_settingsview_376::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
-    return reinterpret_cast<const Component_settingsview_376*>(component.instance)->layout_info(o);
+auto Component_settingsview_391::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_settingsview_391*>(component.instance)->layout_info(o);
 }
 
-auto Component_settingsview_376::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
-    return reinterpret_cast<const Component_settingsview_376*>(component.instance)->ensure_instantiated();
+auto Component_settingsview_391::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_settingsview_391*>(component.instance)->ensure_instantiated();
 }
 
-auto Component_settingsview_376::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
-    return reinterpret_cast<const Component_settingsview_376*>(component.instance)->item_geometry(index);
+auto Component_settingsview_391::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_settingsview_391*>(component.instance)->item_geometry(index);
 }
 
-auto Component_settingsview_376::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
-    return reinterpret_cast<const Component_settingsview_376*>(component.instance)->accessible_role(index);
+auto Component_settingsview_391::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_settingsview_391*>(component.instance)->accessible_role(index);
 }
 
-auto Component_settingsview_376::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
-    if (auto r = reinterpret_cast<const Component_settingsview_376*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+auto Component_settingsview_391::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_settingsview_391*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
 }
 
-auto Component_settingsview_376::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
-    reinterpret_cast<const Component_settingsview_376*>(component.instance)->accessibility_action(index, *action);
+auto Component_settingsview_391::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_settingsview_391*>(component.instance)->accessibility_action(index, *action);
 }
 
-auto Component_settingsview_376::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
-    return reinterpret_cast<const Component_settingsview_376*>(component.instance)->supported_accessibility_actions(index);
+auto Component_settingsview_391::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_settingsview_391*>(component.instance)->supported_accessibility_actions(index);
 }
 
-auto Component_settingsview_376::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+auto Component_settingsview_391::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
     return false;
 }
 
-auto Component_settingsview_376::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
-    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_settingsview_376*>(component.instance)->globals->window().window_handle();
+auto Component_settingsview_391::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_settingsview_391*>(component.instance)->globals->window().window_handle();
 }
 
-auto Component_settingsview_376::create (class MainWindow const * parent) -> slint::ComponentHandle<Component_settingsview_376>{
-    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_settingsview_376>::make();
-    auto self = const_cast<Component_settingsview_376 *>(&*self_rc);
+auto Component_settingsview_391::create (class MainWindow const * parent) -> slint::ComponentHandle<Component_settingsview_391>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_settingsview_391>::make();
+    auto self = const_cast<Component_settingsview_391 *>(&*self_rc);
     self->self_weak = vtable::VWeak(self_rc).into_dyn();
     slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
     self->init(parent->globals, self->self_weak, 0, 1 , parent);
-    return slint::ComponentHandle<Component_settingsview_376>{ self_rc };
+    return slint::ComponentHandle<Component_settingsview_391>{ self_rc };
 }
 
-Component_settingsview_376::~Component_settingsview_376 (){
+Component_settingsview_391::~Component_settingsview_391 (){
     if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
 }
 
-auto Component_settingsview_376::init () -> void{
+auto Component_settingsview_391::init () -> void{
     user_init();
 }
 
-auto Component_settingsview_376::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+auto Component_settingsview_391::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
     return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
 }
 
-auto Component_settingsview_376::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+auto Component_settingsview_391::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
-const slint::private_api::ItemTreeVTable Component_addonsstore_378::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_addonsstore_378>, slint::private_api::dealloc };
+const slint::private_api::ItemTreeVTable Component_addonsstore_393::static_vtable = { visit_children, get_item_ref, get_subtree_range, get_subtree, get_item_tree, parent_node, embed_component, subtree_index, layout_info, ensure_instantiated, item_geometry, accessible_role, accessible_string_property, accessibility_action, supported_accessibility_actions, element_infos, window_adapter, slint::private_api::drop_in_place<Component_addonsstore_393>, slint::private_api::dealloc };
 
-auto Component_addonsstore_378::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void{
+auto Component_addonsstore_393::init (const class SharedGlobals* globals,slint::cbindgen_private::ItemTreeWeak enclosing_component,uint32_t tree_index,uint32_t tree_index_of_first_child,class MainWindow const *parent) -> void{
     auto self = this;
     self->self_weak = enclosing_component;
     self->globals = globals;
     this->tree_index_of_first_child = tree_index_of_first_child;
     self->tree_index = tree_index;
     self->parent = vtable::VRcMapped<slint::private_api::ItemTreeVTable, const MainWindow>(parent->self_weak.lock().value(), parent);
-    this->field_addonsstore_378.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
-    self->field_addonsstore_378.field_root_295_app_clicked.set_handler(
+    this->field_addonsstore_393.init(globals, self_weak.into_dyn(), tree_index, tree_index_of_first_child + 1 - 1);
+    self->field_addonsstore_393.field_root_295_app_clicked.set_handler(
                 [this]([[maybe_unused]] UiPackage arg_0) {
                     [[maybe_unused]] auto self = this;
                     [&]{ slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_is_showing_addons_store.set(false); });slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_app_clicked.call(arg_0); }); }();
                 });
-    self->field_addonsstore_378.field_root_295_back_clicked.set_handler(
+    self->field_addonsstore_393.field_root_295_back_clicked.set_handler(
                 [this]() {
                     [[maybe_unused]] auto self = this;
                     slint::private_api::optional_then(self->parent.lock(), [&](auto&&x) { x->field_root_317_is_showing_addons_store.set(false); });
                 });
-    self->field_addonsstore_378.field_root_295_height.set_binding([this]() {
+    self->field_addonsstore_393.field_root_295_height.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.height.get(); }));
                         });
-    self->field_addonsstore_378.field_root_295_packages.set_binding([this]() {
+    self->field_addonsstore_393.field_root_295_packages.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_addons_store_packages.get(); }));
                         });
-    self->field_addonsstore_378.field_root_295_store_title.set_binding([this]() {
+    self->field_addonsstore_393.field_root_295_store_title.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return ((slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_special_case.get(); })).type_name + slint::SharedString(u8" for ")) + slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317_current_package.get(); })).pretty_name);
                         });
-    self->field_addonsstore_378.field_root_295_width.set_binding([this]() {
+    self->field_addonsstore_393.field_root_295_width.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
                             return slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.width.get(); }));
                         });
-    self->field_addonsstore_378.field_root_295_empty_300_alignment.set_constant();
-    self->field_addonsstore_378.field_root_295_rectangle_297_height.set_constant();
-    self->field_addonsstore_378.field_root_295_rectangle_301_height.set_constant();
-    self->field_addonsstore_378.field_root_295_rectangle_310_height.set_constant();
+    self->field_addonsstore_393.field_root_295_empty_300_alignment.set_constant();
+    self->field_addonsstore_393.field_root_295_rectangle_297_height.set_constant();
+    self->field_addonsstore_393.field_root_295_rectangle_301_height.set_constant();
+    self->field_addonsstore_393.field_root_295_rectangle_310_height.set_constant();
 }
 
-auto Component_addonsstore_378::user_init () -> void{
+auto Component_addonsstore_393::user_init () -> void{
     [[maybe_unused]] auto self = this;
-    this->field_addonsstore_378.user_init();
+    this->field_addonsstore_393.user_init();
 }
 
-auto Component_addonsstore_378::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
+auto Component_addonsstore_393::layout_info (slint::cbindgen_private::Orientation o) const -> slint::cbindgen_private::LayoutInfo{
     [[maybe_unused]] auto self = this;
-    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_addonsstore_378.field_root_295_empty_296_layoutinfo_h.get()) : ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_addonsstore_378.field_root_295_empty_296_layoutinfo_v.get());
+    return o == slint::cbindgen_private::Orientation::Horizontal ? ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_addonsstore_393.field_root_295_empty_296_layoutinfo_h.get()) : ([&](const auto &a_0, const auto &a_1, const auto &a_2, const auto &a_3, const auto &a_4, const auto &a_5){ slint::cbindgen_private::LayoutInfo o{}; o.max = a_0; o.max_percent = a_1; o.min = a_2; o.min_percent = a_3; o.preferred = a_4; o.stretch = a_5; return o; }(+3.4028234663852886e38, 100, 0, 0, 0, 1) + self->field_addonsstore_393.field_root_295_empty_296_layoutinfo_v.get());
 }
 
-auto Component_addonsstore_378::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
+auto Component_addonsstore_393::item_geometry (uint32_t index) const -> slint::cbindgen_private::Rect{
     [[maybe_unused]] auto self = this;
     switch (index) {
         case 0: return slint::private_api::convert_anonymous_rect(std::make_tuple(float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.height.get(); }))), float(slint::private_api::optional_or_default(slint::private_api::optional_transform(self->parent.lock(), [&](auto&&x) { return x->field_root_317.width.get(); }))), float(0), float(0)));
     }
     if (index == 0) {
-        return self->field_addonsstore_378.item_geometry(0);
+        return self->field_addonsstore_393.item_geometry(0);
     } else if (index >= 1 && index < 18) {
-        return self->field_addonsstore_378.item_geometry(index - 0);
+        return self->field_addonsstore_393.item_geometry(index - 0);
     } else return {};
 }
 
-auto Component_addonsstore_378::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
+auto Component_addonsstore_393::accessible_role (uint32_t index) const -> slint::cbindgen_private::AccessibleRole{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_addonsstore_378.accessible_role(0);
+        return self->field_addonsstore_393.accessible_role(0);
     } else if (index >= 1 && index < 18) {
-        return self->field_addonsstore_378.accessible_role(index - 0);
+        return self->field_addonsstore_393.accessible_role(index - 0);
     } else return {};
 }
 
-auto Component_addonsstore_378::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
+auto Component_addonsstore_393::accessible_string_property (uint32_t index, slint::cbindgen_private::AccessibleStringProperty what) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(what)) {
     }
     if (index == 0) {
-        return self->field_addonsstore_378.accessible_string_property(0, what);
+        return self->field_addonsstore_393.accessible_string_property(0, what);
     } else if (index >= 1 && index < 18) {
-        return self->field_addonsstore_378.accessible_string_property(index - 0, what);
+        return self->field_addonsstore_393.accessible_string_property(index - 0, what);
     } else return {};
 }
 
-auto Component_addonsstore_378::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
+auto Component_addonsstore_393::accessibility_action (uint32_t index, const slint::cbindgen_private::AccessibilityAction &action) const -> void{
     [[maybe_unused]] auto self = this;
     switch ((index << 8) | uintptr_t(action.tag)) {
     }
     if (index == 0) {
-        return self->field_addonsstore_378.accessibility_action(0, action);
+        return self->field_addonsstore_393.accessibility_action(0, action);
     } else if (index >= 1 && index < 18) {
-        return self->field_addonsstore_378.accessibility_action(index - 0, action);
+        return self->field_addonsstore_393.accessibility_action(index - 0, action);
     } else return ;
 }
 
-auto Component_addonsstore_378::supported_accessibility_actions (uint32_t index) const -> uint32_t{
+auto Component_addonsstore_393::supported_accessibility_actions (uint32_t index) const -> uint32_t{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_addonsstore_378.supported_accessibility_actions(0);
+        return self->field_addonsstore_393.supported_accessibility_actions(0);
     } else if (index >= 1 && index < 18) {
-        return self->field_addonsstore_378.supported_accessibility_actions(index - 0);
+        return self->field_addonsstore_393.supported_accessibility_actions(index - 0);
     } else return {};
 }
 
-auto Component_addonsstore_378::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
+auto Component_addonsstore_393::element_infos (uint32_t index) const -> std::optional<slint::SharedString>{
     [[maybe_unused]] auto self = this;
     switch (index) {
     }
     if (index == 0) {
-        return self->field_addonsstore_378.element_infos(0);
+        return self->field_addonsstore_393.element_infos(0);
     } else if (index >= 1 && index < 18) {
-        return self->field_addonsstore_378.element_infos(index - 0);
+        return self->field_addonsstore_393.element_infos(index - 0);
     } else return {};
 }
 
-auto Component_addonsstore_378::ensure_instantiated () const -> bool{
+auto Component_addonsstore_393::ensure_instantiated () const -> bool{
     [[maybe_unused]] auto self = this;
     bool _changed = false;
-    _changed |= self->field_addonsstore_378.ensure_instantiated();
+    _changed |= self->field_addonsstore_393.ensure_instantiated();
     return _changed;
 }
 
-auto Component_addonsstore_378::visit_dynamic_children (uint32_t dyn_index, [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor) const -> uint64_t{
+auto Component_addonsstore_393::visit_dynamic_children (uint32_t dyn_index, [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor) const -> uint64_t{
         auto self = this;
         switch(dyn_index) { 
         case 0:  {
-                        return self->field_addonsstore_378.visit_dynamic_children(dyn_index - 0, order, visitor);
+                        return self->field_addonsstore_393.visit_dynamic_children(dyn_index - 0, order, visitor);
                     } };
         std::abort();
 }
 
-auto Component_addonsstore_378::subtree_range (uintptr_t dyn_index) const -> slint::private_api::IndexRange{
+auto Component_addonsstore_393::subtree_range (uintptr_t dyn_index) const -> slint::private_api::IndexRange{
     [[maybe_unused]] auto self = this;
         switch(dyn_index) { 
         case 0:  {
-                        return self->field_addonsstore_378.subtree_range(dyn_index - 0);
+                        return self->field_addonsstore_393.subtree_range(dyn_index - 0);
                     } };
         std::abort();
 }
 
-auto Component_addonsstore_378::subtree_component (uintptr_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) const -> void{
+auto Component_addonsstore_393::subtree_component (uintptr_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) const -> void{
     [[maybe_unused]] auto self = this;
         switch(dyn_index) { 
         case 0:  {
-                        self->field_addonsstore_378.subtree_component(dyn_index - 0, subtree_index, result);
+                        self->field_addonsstore_393.subtree_component(dyn_index - 0, subtree_index, result);
                         return;
                     } };
         std::abort();
 }
 
-auto Component_addonsstore_378::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
+auto Component_addonsstore_393::visit_children (slint::private_api::ItemTreeRef component, intptr_t index, slint::private_api::TraversalOrder order, slint::private_api::ItemVisitorRefMut visitor) -> uint64_t{
     static const auto dyn_visit = [] (const void *base,  [[maybe_unused]] slint::private_api::TraversalOrder order, [[maybe_unused]] slint::private_api::ItemVisitorRefMut visitor, [[maybe_unused]] uint32_t dyn_index) -> uint64_t {
-        [[maybe_unused]] auto self = reinterpret_cast<const Component_addonsstore_378*>(base);
+        [[maybe_unused]] auto self = reinterpret_cast<const Component_addonsstore_393*>(base);
         return self->visit_dynamic_children(dyn_index, order, visitor);
     };
-    auto self_rc = reinterpret_cast<const Component_addonsstore_378*>(component.instance)->self_weak.lock()->into_dyn();
+    auto self_rc = reinterpret_cast<const Component_addonsstore_393*>(component.instance)->self_weak.lock()->into_dyn();
     return slint::cbindgen_private::slint_visit_item_tree(&self_rc, get_item_tree(component) , index, order, visitor, dyn_visit);
 }
 
-auto Component_addonsstore_378::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
+auto Component_addonsstore_393::get_item_ref (slint::private_api::ItemTreeRef component, uint32_t index) -> slint::private_api::ItemRef{
     return slint::private_api::get_item_ref(component, get_item_tree(component), item_array(), index);
 }
 
-auto Component_addonsstore_378::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
-    auto self = reinterpret_cast<const Component_addonsstore_378*>(component.instance);
+auto Component_addonsstore_393::get_subtree_range ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index) -> slint::private_api::IndexRange{
+    auto self = reinterpret_cast<const Component_addonsstore_393*>(component.instance);
     return self->subtree_range(dyn_index);
 }
 
-auto Component_addonsstore_378::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
-    auto self = reinterpret_cast<const Component_addonsstore_378*>(component.instance);
+auto Component_addonsstore_393::get_subtree ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t dyn_index, [[maybe_unused]] uintptr_t subtree_index, [[maybe_unused]] slint::private_api::ItemTreeWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_addonsstore_393*>(component.instance);
     self->subtree_component(dyn_index, subtree_index, result);
 }
 
-auto Component_addonsstore_378::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_addonsstore_393::get_item_tree (slint::private_api::ItemTreeRef) -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     return item_tree();
 }
 
-auto Component_addonsstore_378::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
-    auto self = reinterpret_cast<const Component_addonsstore_378*>(component.instance);
+auto Component_addonsstore_393::parent_node ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] slint::private_api::ItemWeak *result) -> void{
+    auto self = reinterpret_cast<const Component_addonsstore_393*>(component.instance);
     auto parent = self->parent.lock().value();
     *result = { parent->self_weak, parent->tree_index_of_first_child + 3 };
 }
 
-auto Component_addonsstore_378::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
+auto Component_addonsstore_393::embed_component ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] const slint::private_api::ItemTreeWeak *parent_component, [[maybe_unused]] const uint32_t parent_index) -> bool{
     return false; /* todo! */
 }
 
-auto Component_addonsstore_378::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
+auto Component_addonsstore_393::subtree_index ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> uintptr_t{
     return std::numeric_limits<uintptr_t>::max();
 }
 
-auto Component_addonsstore_378::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
+auto Component_addonsstore_393::item_tree () -> slint::cbindgen_private::Slice<slint::private_api::ItemTreeNode>{
     static const slint::private_api::ItemTreeNode children[] {
         slint::private_api::make_item_node(3, 1, 0, 0, false), 
 slint::private_api::make_item_node(2, 4, 0, 1, false), 
@@ -15878,86 +16787,86 @@ slint::private_api::make_dyn_node(0, 16) };
     return slint::private_api::make_slice(std::span(children));
 }
 
-auto Component_addonsstore_378::item_array () -> const slint::private_api::ItemArray{
+auto Component_addonsstore_393::item_array () -> const slint::private_api::ItemArray{
     static const slint::private_api::ItemArrayEntry items[] {
-        { SLINT_GET_ITEM_VTABLE(RectangleVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_root_295) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_rectangle_297) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_rectangle_310) }, 
-{ SLINT_GET_ITEM_VTABLE(FlickableVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_flickable_313) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_empty_299) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_empty_306) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_empty_300) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_empty_303) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_rectangle_301) }, 
-{ SLINT_GET_ITEM_VTABLE(ImageItemVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_image_302) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_text_304) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_text_305) }, 
-{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_rectangle_307) }, 
-{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_back_ta_308) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_text_309) }, 
-{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field_text_312) }, 
-{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_378, field_addonsstore_378) +  offsetof(AddonsStore_root_295, field__viewport_314) } };
+        { SLINT_GET_ITEM_VTABLE(RectangleVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_root_295) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_rectangle_297) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_rectangle_310) }, 
+{ SLINT_GET_ITEM_VTABLE(FlickableVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_flickable_313) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_empty_299) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_empty_306) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_empty_300) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_empty_303) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_rectangle_301) }, 
+{ SLINT_GET_ITEM_VTABLE(ImageItemVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_image_302) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_text_304) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_text_305) }, 
+{ SLINT_GET_ITEM_VTABLE(BasicBorderRectangleVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_rectangle_307) }, 
+{ SLINT_GET_ITEM_VTABLE(TouchAreaVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_back_ta_308) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_text_309) }, 
+{ SLINT_GET_ITEM_VTABLE(SimpleTextVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field_text_312) }, 
+{ SLINT_GET_ITEM_VTABLE(EmptyVTable), offsetof(Component_addonsstore_393, field_addonsstore_393) +  offsetof(AddonsStore_root_295, field__viewport_314) } };
     return slint::private_api::make_slice(std::span(items));
 }
 
-auto Component_addonsstore_378::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
-    return reinterpret_cast<const Component_addonsstore_378*>(component.instance)->layout_info(o);
+auto Component_addonsstore_393::layout_info ([[maybe_unused]] slint::private_api::ItemTreeRef component, slint::cbindgen_private::Orientation o) -> slint::cbindgen_private::LayoutInfo{
+    return reinterpret_cast<const Component_addonsstore_393*>(component.instance)->layout_info(o);
 }
 
-auto Component_addonsstore_378::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
-    return reinterpret_cast<const Component_addonsstore_378*>(component.instance)->ensure_instantiated();
+auto Component_addonsstore_393::ensure_instantiated ([[maybe_unused]] slint::private_api::ItemTreeRef component) -> bool{
+    return reinterpret_cast<const Component_addonsstore_393*>(component.instance)->ensure_instantiated();
 }
 
-auto Component_addonsstore_378::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
-    return reinterpret_cast<const Component_addonsstore_378*>(component.instance)->item_geometry(index);
+auto Component_addonsstore_393::item_geometry ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::LogicalRect{
+    return reinterpret_cast<const Component_addonsstore_393*>(component.instance)->item_geometry(index);
 }
 
-auto Component_addonsstore_378::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
-    return reinterpret_cast<const Component_addonsstore_378*>(component.instance)->accessible_role(index);
+auto Component_addonsstore_393::accessible_role ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> slint::cbindgen_private::AccessibleRole{
+    return reinterpret_cast<const Component_addonsstore_393*>(component.instance)->accessible_role(index);
 }
 
-auto Component_addonsstore_378::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
-    if (auto r = reinterpret_cast<const Component_addonsstore_378*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
+auto Component_addonsstore_393::accessible_string_property ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, slint::cbindgen_private::AccessibleStringProperty what, slint::SharedString *result) -> bool{
+    if (auto r = reinterpret_cast<const Component_addonsstore_393*>(component.instance)->accessible_string_property(index, what)) { *result = *r; return true; } else { return false; }
 }
 
-auto Component_addonsstore_378::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
-    reinterpret_cast<const Component_addonsstore_378*>(component.instance)->accessibility_action(index, *action);
+auto Component_addonsstore_393::accessibility_action ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index, const slint::cbindgen_private::AccessibilityAction *action) -> void{
+    reinterpret_cast<const Component_addonsstore_393*>(component.instance)->accessibility_action(index, *action);
 }
 
-auto Component_addonsstore_378::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
-    return reinterpret_cast<const Component_addonsstore_378*>(component.instance)->supported_accessibility_actions(index);
+auto Component_addonsstore_393::supported_accessibility_actions ([[maybe_unused]] slint::private_api::ItemTreeRef component, uint32_t index) -> uint32_t{
+    return reinterpret_cast<const Component_addonsstore_393*>(component.instance)->supported_accessibility_actions(index);
 }
 
-auto Component_addonsstore_378::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
+auto Component_addonsstore_393::element_infos ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] uint32_t index, [[maybe_unused]] slint::SharedString *result) -> bool{
     return false;
 }
 
-auto Component_addonsstore_378::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
-    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_addonsstore_378*>(component.instance)->globals->window().window_handle();
+auto Component_addonsstore_393::window_adapter ([[maybe_unused]] slint::private_api::ItemTreeRef component, [[maybe_unused]] bool do_create, [[maybe_unused]] slint::cbindgen_private::Option<slint::private_api::WindowAdapterRc>* result) -> void{
+    *reinterpret_cast<slint::private_api::WindowAdapterRc*>(result) = reinterpret_cast<const Component_addonsstore_393*>(component.instance)->globals->window().window_handle();
 }
 
-auto Component_addonsstore_378::create (class MainWindow const * parent) -> slint::ComponentHandle<Component_addonsstore_378>{
-    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_addonsstore_378>::make();
-    auto self = const_cast<Component_addonsstore_378 *>(&*self_rc);
+auto Component_addonsstore_393::create (class MainWindow const * parent) -> slint::ComponentHandle<Component_addonsstore_393>{
+    auto self_rc = vtable::VRc<slint::private_api::ItemTreeVTable, Component_addonsstore_393>::make();
+    auto self = const_cast<Component_addonsstore_393 *>(&*self_rc);
     self->self_weak = vtable::VWeak(self_rc).into_dyn();
     slint::private_api::register_item_tree(&self_rc.into_dyn(), parent->globals->m_window);
     self->init(parent->globals, self->self_weak, 0, 1 , parent);
-    return slint::ComponentHandle<Component_addonsstore_378>{ self_rc };
+    return slint::ComponentHandle<Component_addonsstore_393>{ self_rc };
 }
 
-Component_addonsstore_378::~Component_addonsstore_378 (){
+Component_addonsstore_393::~Component_addonsstore_393 (){
     if (auto &window = globals->m_window) window->window_handle().unregister_item_tree(this, item_array());
 }
 
-auto Component_addonsstore_378::init () -> void{
+auto Component_addonsstore_393::init () -> void{
     user_init();
 }
 
-auto Component_addonsstore_378::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
+auto Component_addonsstore_393::layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::LayoutItemInfo{
     return { layout_info({&static_vtable, const_cast<void *>(static_cast<const void *>(this))}, o) };
 }
 
-auto Component_addonsstore_378::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
+auto Component_addonsstore_393::flexbox_layout_item_info (slint::cbindgen_private::Orientation o, [[maybe_unused]] std::optional<size_t> child_index) const -> slint::cbindgen_private::FlexboxLayoutItemInfo{
     auto base = layout_item_info(o, child_index); return { base.constraint, 0.0f, 0.0f, -1.0f, slint::cbindgen_private::FlexboxLayoutAlignSelf::Auto, 0 };
 }
 
@@ -15976,7 +16885,7 @@ auto MainWindow::init (const class SharedGlobals* globals,slint::cbindgen_privat
                         });
     self->field_root_317.background.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
-                            return slint::Brush((self->globals->global_Theme_380->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
+                            return slint::Brush((self->globals->global_Theme_395->field_is_dark.get() ? slint::Color::from_argb_encoded(+4.280163886e9) : slint::Color::from_argb_encoded(+4.293915125e9)));
                         });
     self->field_root_317_browsers.set_binding([this]() {
                             [[maybe_unused]] auto self = this;
@@ -16332,6 +17241,18 @@ auto MainWindow::invoke_copy_to_clipboard (slint::SharedString arg_0) const -> v
     return self->field_root_317_copy_to_clipboard.call(arg_0);
 }
 
+auto MainWindow::get_covers () const -> std::shared_ptr<slint::Model<UiCoverCard>>{
+    slint::private_api::assert_main_thread();
+    [[maybe_unused]] auto self = this;
+    return self->field_root_317_covers.get();
+}
+
+auto MainWindow::set_covers (const std::shared_ptr<slint::Model<UiCoverCard>> &value) const -> void{
+    slint::private_api::assert_main_thread();
+    [[maybe_unused]] auto self = this;
+    self->field_root_317_covers.set(value);
+}
+
 auto MainWindow::get_current_details () const -> UiPackageDetails{
     slint::private_api::assert_main_thread();
     [[maybe_unused]] auto self = this;
@@ -16480,6 +17401,12 @@ auto MainWindow::invoke_remove_clicked (UiPackage arg_0, slint::SharedString arg
     slint::private_api::assert_main_thread();
     [[maybe_unused]] auto self = this;
     return self->field_root_317_remove_clicked.call(arg_0, arg_1);
+}
+
+auto MainWindow::invoke_request_randomize_cover (int arg_0) const -> void{
+    slint::private_api::assert_main_thread();
+    [[maybe_unused]] auto self = this;
+    return self->field_root_317_request_randomize_cover.call(arg_0);
 }
 
 auto MainWindow::invoke_search_changed (slint::SharedString arg_0) const -> void{
