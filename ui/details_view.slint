@@ -17,6 +17,7 @@ export component DetailsView inherits Rectangle {
     callback suggestion_clicked(UiPackage);
     callback open_url(string, string);
     callback addon_clicked(string);
+    callback view_all_addons_clicked();
     callback copy_to_clipboard(string);
 
     property <color> accent: Theme.accents[mod(root.accent_idx, Theme.accents.length)];
@@ -526,36 +527,69 @@ export component DetailsView inherits Rectangle {
                     padding: 26px;
                     spacing: 12px;
 
-                    Text {
-                        text: special_case.type_name;
-                        color: Theme.text;
-                        font-size: 16px;
-                        font-weight: 700;
-                    }
-                    
-                    for item in special_case.items : Rectangle {
-                        height: 38px;
-                        background: ta-addon.has-hover ? Theme.surface0 : transparent;
-                        border-radius: 8px;
-                        ta-addon := TouchArea {
-                            mouse-cursor: pointer;
-                            clicked => { root.addon_clicked(item.pkg_name); }
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text {
+                            text: special_case.type_name;
+                            color: Theme.text;
+                            font-size: 16px;
+                            font-weight: 700;
+                            vertical-alignment: center;
                         }
-                        HorizontalLayout {
-                            padding-left: 12px;
-                            padding-right: 12px;
-                            alignment: space-between;
-                            Text {
-                                text: item.name;
-                                color: Theme.text;
-                                font-size: 14px;
-                                vertical-alignment: center;
+                        if special_case.items.length > 6 : Rectangle {
+                            width: 100px;
+                            height: 32px;
+                            border-radius: 8px;
+                            background: view-more-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                            view-more-ta := TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { root.view_all_addons_clicked(); }
                             }
                             Text {
-                                text: item.pkg_name;
-                                color: Theme.subtext0;
-                                font-size: 12px;
+                                text: "View more";
+                                color: Theme.text;
+                                font-size: 13px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
                                 vertical-alignment: center;
+                            }
+                        }
+                    }
+                    
+                    VerticalLayout {
+                        spacing: 0px;
+                        for item[idx] in special_case.items : Rectangle {
+                            visible: idx < 6;
+                            height: self.visible ? 50px : 0px; // 38px + 12px spacing
+                            
+                            VerticalLayout {
+                                alignment: start;
+                                Rectangle {
+                                    height: 38px;
+                                    background: ta-addon.has-hover ? Theme.surface0 : transparent;
+                                    border-radius: 8px;
+                                    ta-addon := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => { root.addon_clicked(item.pkg_name); }
+                                    }
+                                    HorizontalLayout {
+                                        padding-left: 12px;
+                                        padding-right: 12px;
+                                        alignment: space-between;
+                                        Text {
+                                            text: item.name;
+                                            color: Theme.text;
+                                            font-size: 14px;
+                                            vertical-alignment: center;
+                                        }
+                                        Text {
+                                            text: item.pkg_name;
+                                            color: Theme.subtext0;
+                                            font-size: 12px;
+                                            vertical-alignment: center;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
