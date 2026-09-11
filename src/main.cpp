@@ -91,6 +91,52 @@ int main(int argc, char *argv[])
     auto communicationModel = std::make_shared<slint::VectorModel<UiPackage>>();
     auto addonsStoreModel = std::make_shared<slint::VectorModel<UiPackage>>();
     
+    
+    struct CoverData {
+        slint::SharedString name;
+        std::vector<QString> images;
+    };
+    std::vector<CoverData> coverDataList;
+    auto coversModel = std::make_shared<slint::VectorModel<UiCoverCard>>();
+
+    QDir coversDir("images/cover");
+    if (coversDir.exists()) {
+        for (const QFileInfo &fi : coversDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            CoverData cd;
+            cd.name = slint::SharedString(fi.fileName().toStdString());
+            QDir subDir(fi.absoluteFilePath());
+            for (const QFileInfo &imgFi : subDir.entryInfoList({"*.png", "*.jpg", "*.jpeg"}, QDir::Files)) {
+                cd.images.push_back(imgFi.absoluteFilePath());
+            }
+            if (!cd.images.empty()) {
+                coverDataList.push_back(cd);
+                UiCoverCard card;
+                card.name = cd.name;
+                static std::mt19937 rng(std::random_device{}());
+                std::uniform_int_distribution<size_t> dist(0, cd.images.size() - 1);
+                QString imgPath = cd.images[dist(rng)];
+                card.image = slint::Image::load_from_path(slint::SharedString(imgPath.toStdString()));
+                coversModel->push_back(card);
+            }
+        }
+    }
+    
+    ui->set_covers(coversModel);
+
+    ui->on_request_randomize_cover([coversModel, coverDataList](int idx) {
+        if (idx >= 0 && static_cast<size_t>(idx) < coverDataList.size()) {
+            auto &cd = coverDataList[idx];
+            static std::mt19937 rng(std::random_device{}());
+            std::uniform_int_distribution<size_t> dist(0, cd.images.size() - 1);
+            QString imgPath = cd.images[dist(rng)];
+            
+            UiCoverCard card;
+            card.name = cd.name;
+            card.image = slint::Image::load_from_path(slint::SharedString(imgPath.toStdString()));
+            coversModel->set_row_data(idx, card);
+        }
+    });
+
     ui->set_packages(pkgModel);
     ui->set_for_you(forYouModel);
     ui->set_browsers(browsersModel);
