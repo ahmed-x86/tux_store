@@ -1,5 +1,5 @@
 import { Theme } from "theme.slint";
-import { UiPackage, UiPackageDependency, UiPackageDetails, UiInstallState, UiSpecialCase, UiAddon } from "types.slint";
+import { UiPackage, UiPackageDependency, UiCoverCard, UiPackageDetails, UiInstallState, UiSpecialCase, UiAddon } from "types.slint";
 import { SettingsView } from "settings_view.slint";
 import { DetailsView } from "details_view.slint";
 import { HomeTab } from "home_tab.slint";
@@ -16,6 +16,8 @@ export component MainWindow inherits Window {
     preferred-height: 800px;
     background: Theme.base;
 
+    in property <[UiCoverCard]> covers;
+    callback request_randomize_cover(int);
     in property <[UiPackage]> packages: [];
     in property <[UiPackage]> for_you: [];
     in property <[UiPackage]> browsers: [];
@@ -245,6 +247,8 @@ export component MainWindow inherits Window {
                 app_clicked(pkg) => { root.app_clicked(pkg); }
             }
             if root.submitted_search == "" : HomeTab {
+                covers: root.covers;
+                request_randomize_cover(idx) => { root.request_randomize_cover(idx); }
                 for_you: root.for_you;
                 browsers: root.browsers;
                 communication: root.communication;
