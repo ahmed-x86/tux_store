@@ -1,7 +1,8 @@
-import { UiPackage } from "types.slint";
-import { AppRow } from "components.slint";
+import { UiPackage, UiCoverCard } from "types.slint";
+import { AppRow, CoverCarousel } from "components.slint";
 
 export component HomeTab inherits Flickable {
+    in property <[UiCoverCard]> covers;
     in property <[UiPackage]> for_you;
     in property <[UiPackage]> browsers;
     in property <[UiPackage]> communication;
@@ -10,12 +11,19 @@ export component HomeTab inherits Flickable {
     in property <[UiPackage]> dev;
     in property <[UiPackage]> utilities;
     callback app_clicked(UiPackage);
+    callback request_randomize_cover(int);
 
     viewport-height: feed-layout.preferred-height + 48px;
     feed-layout := VerticalLayout {
         y: 24px;
         spacing: 32px;
         alignment: start;
+        
+        CoverCarousel {
+            covers: root.covers;
+            request_randomize(idx) => { root.request_randomize_cover(idx); }
+        }
+
         AppRow { title: "For You"; pkgs: root.for_you; row_idx: 0; clicked(pkg) => { root.app_clicked(pkg); } }
         AppRow { title: "Browsers"; pkgs: root.browsers; row_idx: 1; clicked(pkg) => { root.app_clicked(pkg); } }
         AppRow { title: "Communication"; pkgs: root.communication; row_idx: 2; clicked(pkg) => { root.app_clicked(pkg); } }
