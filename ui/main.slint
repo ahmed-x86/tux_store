@@ -6,6 +6,7 @@ import { HomeTab } from "home_tab.slint";
 import { SearchTab } from "search_tab.slint";
 import { UpdateTab } from "update_tab.slint";
 import { InstalledTab } from "installed_tab.slint";
+import { AddonsStore } from "addons_store.slint";
 
 export { UiPackage, UiPackageDependency, UiPackageDetails, UiInstallState, UiSpecialCase, UiAddon }
 
@@ -23,8 +24,10 @@ export component MainWindow inherits Window {
     in property <[UiPackage]> dev: [];
     in property <[UiPackage]> office: [];
     in property <[UiPackage]> communication: [];
+    in property <[UiPackage]> addons_store_packages: [];
     in-out property <bool> is_showing_details: false;
     property <bool> is_showing_settings: false;
+    property <bool> is_showing_addons_store: false;
     in property <UiPackage> current_package;
     in-out property <UiPackageDetails> current_details;
     in-out property <UiInstallState> current_install;
@@ -41,9 +44,10 @@ export component MainWindow inherits Window {
     callback remove_clicked(UiPackage, string);
     callback open_url(string, string);
     callback addon_clicked(string);
+    callback view_all_addons_clicked();
     callback copy_to_clipboard(string);
 
-    if !is_showing_details && !is_showing_settings : VerticalLayout {
+    if !is_showing_details && !is_showing_settings && !is_showing_addons_store : VerticalLayout {
         // Header bar
         Rectangle {
             height: 64px;
@@ -271,6 +275,10 @@ export component MainWindow inherits Window {
         addon_clicked(pkg_name) => {
             root.addon_clicked(pkg_name);
         }
+        view_all_addons_clicked => {
+            root.is_showing_addons_store = true;
+            root.view_all_addons_clicked();
+        }
         copy_to_clipboard(text) => {
             root.copy_to_clipboard(text);
         }
@@ -278,5 +286,15 @@ export component MainWindow inherits Window {
 
     if is_showing_settings : SettingsView {
         back_clicked => { root.is_showing_settings = false; }
+    }
+
+    if is_showing_addons_store : AddonsStore {
+        packages: root.addons_store_packages;
+        store_title: root.current_special_case.type_name + " for " + root.current_package.pretty_name;
+        back_clicked => { root.is_showing_addons_store = false; }
+        app_clicked(pkg) => { 
+            root.is_showing_addons_store = false;
+            root.app_clicked(pkg); 
+        }
     }
 }
