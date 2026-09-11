@@ -1,5 +1,102 @@
+export component CoverCarousel inherits Rectangle {
+    in property <[UiCoverCard]> covers;
+    out property <int> active_idx: 0;
+    callback request_randomize(int);
+
+    width: 100%;
+    property <length> banner_width: min(root.width - 64px, 1000px);
+    height: banner_width * 9 / 16;
+    
+    if covers.length > 0: Rectangle {
+        width: root.banner_width;
+        height: root.height;
+        x: (parent.width - self.width) / 2;
+        border-radius: 20px;
+        clip: true;
+
+        Image {
+            width: 100%;
+            height: 100%;
+            source: covers[root.active_idx].image;
+            image-fit: cover;
+        }
+
+        // Gradient overlay for text at the bottom
+        Rectangle {
+            y: parent.height - self.height;
+            width: 100%;
+            height: 120px;
+            background: @linear-gradient(180deg, #00000000 0%, #000000cc 100%);
+            
+            Text {
+                x: 32px;
+                y: parent.height - 70px;
+                text: covers[root.active_idx].name;
+                color: white;
+                font-size: 36px;
+                font-weight: 800;
+            }
+        }
+
+        if covers.length > 1: Rectangle {
+            x: 16px;
+            y: (parent.height - self.height) / 2;
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: ta_left.has-hover ? #ffffffcc : #ffffff88;
+            Text {
+                text: "<";
+                color: black;
+                font-size: 24px;
+                font-weight: 800;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                width: 100%; height: 100%;
+            }
+            ta_left := TouchArea {
+                clicked => {
+                    if (root.active_idx > 0) {
+                        root.active_idx -= 1;
+                    } else {
+                        root.active_idx = covers.length - 1;
+                    }
+                    root.request_randomize(root.active_idx);
+                }
+            }
+        }
+
+        if covers.length > 1: Rectangle {
+            x: parent.width - self.width - 16px;
+            y: (parent.height - self.height) / 2;
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: ta_right.has-hover ? #ffffffcc : #ffffff88;
+            Text {
+                text: ">";
+                color: black;
+                font-size: 24px;
+                font-weight: 800;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                width: 100%; height: 100%;
+            }
+            ta_right := TouchArea {
+                clicked => {
+                    if (root.active_idx < covers.length - 1) {
+                        root.active_idx += 1;
+                    } else {
+                        root.active_idx = 0;
+                    }
+                    root.request_randomize(root.active_idx);
+                }
+            }
+        }
+    }
+}
 import { Theme } from "theme.slint";
-import { UiPackage, UiPackageDependency } from "types.slint";
+import { UiPackage, UiPackageDependency, UiCoverCard } from "types.slint";
 
 export component AppCard inherits Rectangle {
     in property <UiPackage> pkg;
