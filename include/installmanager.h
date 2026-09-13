@@ -36,9 +36,22 @@ private:
     QString m_currentDownloading;
     QByteArray m_lineBuffer;
 
+    // Name of the package this transaction targets (used to recognise the
+    // "removing <pkg>" line during uninstall, which has no size data).
+    QString m_targetPkg;
+
+    // Monotonically-increasing progress floor driven by recognising pacman's
+    // fixed transaction milestones (checking keys, loading files, etc). This
+    // is what makes the bar move even before/without any byte-weighted
+    // download or install credit.
+    double m_milestoneFloor = 0.0;
+
     QString matchKnownPackage(const QString &text) const;
     void feed(const QByteArray &chunk);
     void processLine(const QString &line);
+    void applyMilestones(const QString &line, bool isUninstall);
     void creditPackage(const QString &pkg, long long bytes);
     void emitProgress();
+    static QString shellQuote(const QString &s);
+    void startPacman(const QStringList &pacmanArgs);
 };
