@@ -30,13 +30,50 @@ A lightweight, native GUI package manager for **Arch Linux**. The entire graphic
 
 ## Screenshots
 
-![image1](image1.png)
-![image2](image2.png)
-![image3](image3.png)
-![image4](image4.png)
-![image5](image5.png)
-![image6](image6.png)
-
+<table>
+  <tr>
+    <td align="center">
+      <div>
+        <img src="image1.png" alt="Home Page" width="100%">
+        <div><strong>Home Page</strong></div>
+      </div>
+    </td>
+    <td align="center">
+      <div>
+        <img src="image2.png" alt="Package Details" width="100%">
+        <div><strong>Package Details</strong></div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <div>
+        <img src="image3.png" alt="Package with Language Add-ons" width="100%">
+        <div><strong>Package with Language Add-ons</strong></div>
+      </div>
+    </td>
+    <td align="center">
+      <div>
+        <img src="image4.png" alt="Search for a Package" width="100%">
+        <div><strong>Search for a Package</strong></div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <div>
+        <img src="image5.png" alt="Settings" width="100%">
+        <div><strong>Settings</strong></div>
+      </div>
+    </td>
+    <td align="center">
+      <div>
+        <img src="image6.png" alt="Categories" width="100%">
+        <div><strong>Categories</strong></div>
+      </div>
+    </td>
+  </tr>
+</table>
 ## Requirements
 
 - **Arch Linux** (or an Arch-based distro) with `pacman` and (optionally) `pkexec`/Polkit installed.
