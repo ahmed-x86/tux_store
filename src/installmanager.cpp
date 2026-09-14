@@ -116,10 +116,11 @@ void InstallManager::install(const QString &pkgName, const QHash<QString, long l
     m_lineBuffer.clear();
     m_totalBytes = 0;
     m_milestoneFloor = 0.0;
+    m_progressTimer.invalidate();
     m_targetPkg = pkgName;
     for (auto v : m_sizes.values()) m_totalBytes += v;
 
-    startPacman({"-S", "--noconfirm", "--noprogressbar", "--color=never", pkgName});
+    startPacman({"-S", "--noconfirm", "--color=never", pkgName});
 }
 
 void InstallManager::uninstall(const QString &pkgName, const QString &mode)
@@ -130,6 +131,7 @@ void InstallManager::uninstall(const QString &pkgName, const QString &mode)
     m_lineBuffer.clear();
     m_totalBytes = 0;
     m_milestoneFloor = 0.0;
+    m_progressTimer.invalidate();
     m_targetPkg = pkgName;
 
     startPacman({mode, "--noconfirm", "--color=never", pkgName});
@@ -224,14 +226,26 @@ void InstallManager::processLine(const QString &lineIn)
         }
     }
 
-    if (!m_currentDownloading.isEmpty()) {
+    // Pacman's progress bar format (without --noprogressbar) is:
+    //   <pkg-ver-rel-arch>  <downloaded>  <speed>  <eta>  [###...]  <pct>%
+    // There is no "downloading " prefix. Try to extract a trailing percentage
+    // from any line, then identify the package from the line start.
+    {
         static const QRegularExpression rePercent(QStringLiteral("(\\d{1,3})\\s*%\\s*$"));
         const auto m = rePercent.match(line);
         if (m.hasMatch()) {
-            const int pct = qBound(0, m.captured(1).toInt(), 100);
-            const long long weight = m_sizes.value(m_currentDownloading, 0);
-            creditPackage(m_currentDownloading, weight * pct / 100);
-            return;
+            // Identify the package: either we already know it from a previous
+            // "downloading ..." header, or we recognise the line start itself.
+            QString pkg = m_currentDownloading;
+            if (pkg.isEmpty())
+                pkg = matchKnownPackage(line);
+            if (!pkg.isEmpty()) {
+                m_currentDownloading = pkg;
+                const int pct = qBound(0, m.captured(1).toInt(), 100);
+                const long long weight = m_sizes.value(pkg, 0);
+                creditPackage(pkg, weight * pct / 100);
+                return;
+            }
         }
     }
 
@@ -275,5 +289,14 @@ void InstallManager::emitProgress()
     // emit 1.0 once the real process has exited (see the QProcess::finished
     // handler in startPacman()), so the UI can't show "Installed
     // successfully" while pacman is still doing work under the hood.
-    emit progressChanged(qBound(0.0, m_milestoneFloor, 0.98));
+    const double value = qBound(0.0, m_milestoneFloor, 0.98);
+
+    // Throttle: emit at most once every 16ms (~60fps) to avoid overwhelming
+    // the UI thread with redundant property updates.
+    if (m_progressTimer.isValid() && m_progressTimer.elapsed() < 16) {
+        return;  // skip this update, next one will catch up
+    }
+    m_progressTimer.start();
+
+    emit progressChanged(value);
 }
