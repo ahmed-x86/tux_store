@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QString>
 #include <QByteArray>
+#include <QElapsedTimer>
 
 // Runs `pacman -S <pkg>` (elevated via pkexec unless already root), streams
 // raw output for a console view, and estimates weighted progress (0..1)
@@ -45,6 +46,8 @@ private:
     // is what makes the bar move even before/without any byte-weighted
     // download or install credit.
     double m_milestoneFloor = 0.0;
+
+    QElapsedTimer m_progressTimer;
 
     QString matchKnownPackage(const QString &text) const;
     void feed(const QByteArray &chunk);
