@@ -30,12 +30,50 @@
 
 ## صور من داخل البرنامج (Screenshots)
 
-![image1](image1.png)
-![image2](image2.png)
-![image3](image3.png)
-![image4](image4.png)
-![image5](image5.png)
-![image6](image6.png)
+<table>
+  <tr>
+    <td align="center">
+      <div>
+        <img src="image1.png" alt="الصفحة الرئيسية" width="100%">
+        <div><strong>الصفحة الرئيسية</strong></div>
+      </div>
+    </td>
+    <td align="center">
+      <div>
+        <img src="image2.png" alt="تفاصيل الباكيدج" width="100%">
+        <div><strong>تفاصيل الباكيدج</strong></div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <div>
+        <img src="image3.png" alt="باكيدج مع إضافات لغة" width="100%">
+        <div><strong>باكيدج مع إضافات لغة</strong></div>
+      </div>
+    </td>
+    <td align="center">
+      <div>
+        <img src="image4.png" alt="البحث عن باكيدج" width="100%">
+        <div><strong>البحث عن باكيدج</strong></div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <div>
+        <img src="image5.png" alt="الإعدادات" width="100%">
+        <div><strong>الإعدادات</strong></div>
+      </div>
+    </td>
+    <td align="center">
+      <div>
+        <img src="image6.png" alt="الفئات" width="100%">
+        <div><strong>الفئات</strong></div>
+      </div>
+    </td>
+  </tr>
+</table>
 
 ## المتطلبات
 
