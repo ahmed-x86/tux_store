@@ -10,16 +10,22 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Network Concurrent Gui)
 find_package(Slint REQUIRED)
 
+# ── thumbnail.so — icon / thumbnail resolution library ──────────────────────
+# Must be added before the main executable so CMake knows the target when
+# target_link_libraries(tuxstore … thumbnail) is evaluated below.
+add_subdirectory(libs/thumbnail)
+
+# ── Main executable ──────────────────────────────────────────────────────────
+# iconfetcher.cpp/.h are now compiled exclusively inside libs/thumbnail;
+# they are intentionally omitted here.
 add_executable(tuxstore
     src/main.cpp
     src/package.cpp
     src/pacmanmanager.cpp
-    src/iconfetcher.cpp
     src/log.cpp
     src/installmanager.cpp
     include/package.h
     include/pacmanmanager.h
-    include/iconfetcher.h
     include/log.h
     include/installmanager.h
 )
@@ -32,6 +38,18 @@ target_link_libraries(tuxstore PRIVATE
     Qt6::Network
     Qt6::Concurrent
     Slint::Slint
+    thumbnail          # libthumbnail.so — icon/thumbnail resolution
+)
+
+# Place the main binary in the same software/ directory as libthumbnail.so so
+# the runtime linker resolves the library via $ORIGIN without any extra setup.
+set_target_properties(tuxstore PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/software"
+    # $ORIGIN tells the dynamic linker to look in the same directory as
+    # the executable first — picks up libthumbnail.so from software/.
+    INSTALL_RPATH            "$ORIGIN"
+    BUILD_RPATH              "$ORIGIN/../libs/thumbnail;${CMAKE_BINARY_DIR}/software"
+    BUILD_WITH_INSTALL_RPATH OFF
 )
 
 slint_target_sources(tuxstore ui/main.slint)
