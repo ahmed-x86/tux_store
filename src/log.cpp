@@ -20,7 +20,7 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &ctx, const 
     const QString ts = QDateTime::currentDateTime().toString("HH:mm:ss.zzz");
     const QByteArray cat = ctx.category ? ctx.category : "default";
 
-    fprintf(stderr, "[%s] %-5s %-16s %s\n",
+    fprintf(stderr, "[%s] %-5s %-20s %s\n",
             qPrintable(ts), level, cat.constData(), qPrintable(msg));
     fflush(stderr);
 
@@ -30,9 +30,14 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &ctx, const 
 void installLogHandler()
 {
     qInstallMessageHandler(messageHandler);
-    // Enable debug-level output for our own categories by default.
     QLoggingCategory::setFilterRules(
-        "tuxstore.*.debug=true\n"
+        // Show all levels for app, pacman, and UI categories.
+        "tuxstore.app.debug=true\n"
+        "tuxstore.pacman.debug=true\n"
+        "tuxstore.ui.debug=true\n"
+        // Thumbnail debug is very noisy (queued/GET/globalInFlight per package).
+        // Set QT_LOGGING_RULES=tuxstore.thumbnail.debug=true to re-enable.
+        "tuxstore.thumbnail.debug=false\n"
         "qt.*.debug=false\n"
     );
 }
