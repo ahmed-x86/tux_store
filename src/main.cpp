@@ -1,8 +1,8 @@
 #include "pacmanmanager.h"
-#include "iconfetcher.h"
 #include "installmanager.h"
 #include "log.h"
 #include "package.h"
+#include "thumbnailservice.h"  // libthumbnail — async icon resolution service
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QStandardPaths>
@@ -18,9 +18,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QDir>
 #include <map>
 #include "main.h"
+
 
 struct SpecialCaseInfo {
     bool has_addons = false;
@@ -70,7 +70,11 @@ int main(int argc, char *argv[])
     }
 
     QDir cacheDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/icons");
-    auto *iconFetcher = new IconFetcher(cacheDir, &app);
+    // ThumbnailService manages its own worker thread internally.
+    // All icon resolution (disk cache, system theme, HTTP) runs off the main
+    // thread, keeping the UI fully responsive even under burst loads of 20+
+    // simultaneous icon requests.
+    auto *iconFetcher = new ThumbnailService(cacheDir.absolutePath(), &app);
     auto *pacman = new PacmanManager(&app);
     auto *installManager = new InstallManager(&app);
 
@@ -467,7 +471,7 @@ int main(int argc, char *argv[])
         ui->set_current_details(sd);
     });
 
-    QObject::connect(iconFetcher, &IconFetcher::iconReady, [ui, pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel, addonsStoreModel](QString appName, QString diskPath) {
+    QObject::connect(iconFetcher, &ThumbnailService::iconReady, [ui, pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel, addonsStoreModel](QString appName, QString diskPath) {
         auto img = slint::Image::load_from_path(slint::SharedString(diskPath.toStdString()));
         auto nameStr = slint::SharedString(appName.toStdString());
 
