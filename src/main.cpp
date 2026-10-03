@@ -1,4 +1,4 @@
-#include "pacmanmanager.h"
+#include "searchengine.h"
 #include "installmanager.h"
 #include "log.h"
 #include "package.h"
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     // thread, keeping the UI fully responsive even under burst loads of 20+
     // simultaneous icon requests.
     auto *iconFetcher = new ThumbnailService(cacheDir.absolutePath(), &app);
-    auto *pacman = new PacmanManager(&app);
+    auto *pacman = new SearchEngine(&app);
     auto *installManager = new InstallManager(&app);
 
     // Kept around so the install click handler can compute per-package
@@ -151,21 +151,17 @@ int main(int argc, char *argv[])
     ui->set_communication(communicationModel);
     ui->set_addons_store_packages(addonsStoreModel);
 
-    auto refreshGrid = [ui, iconFetcher, cacheDir, pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel](const QVector<Package> &pkgs) {
-        while (pkgModel->row_count() > 0) pkgModel->erase(0);
-        
-        bool isDefault = ui->get_search_query().empty();
-        if (isDefault) {
-            while (forYouModel->row_count() > 0) forYouModel->erase(0);
-            while (browsersModel->row_count() > 0) browsersModel->erase(0);
-            while (designModel->row_count() > 0) designModel->erase(0);
-            while (utilitiesModel->row_count() > 0) utilitiesModel->erase(0);
-            while (devModel->row_count() > 0) devModel->erase(0);
-            while (officeModel->row_count() > 0) officeModel->erase(0);
-            while (communicationModel->row_count() > 0) communicationModel->erase(0);
-        }
+    auto allSearchResults = std::make_shared<QVector<Package>>();
+    auto searchCursor = std::make_shared<size_t>(0);
+    constexpr size_t kInitialPageSize = 35;
+    constexpr size_t kPageSize = 20;
 
-        for (const auto &p : pkgs) {
+    auto appendPage = [ui, iconFetcher, cacheDir, pkgModel, allSearchResults, searchCursor](size_t limit) {
+        if (!allSearchResults || *searchCursor >= (size_t)allSearchResults->size()) return;
+        
+        size_t end = std::min((size_t)allSearchResults->size(), *searchCursor + limit);
+        for (size_t i = *searchCursor; i < end; ++i) {
+            const auto &p = (*allSearchResults)[i];
             UiPackage sp;
             sp.name = slint::SharedString(p.name.toStdString());
             sp.pretty_name = slint::SharedString(prettifyName(p.name).toStdString());
@@ -182,22 +178,56 @@ int main(int argc, char *argv[])
                 sp.icon = slint::Image::load_from_path(slint::SharedString(cachedPath.toStdString()));
             }
 
-            // IMPORTANT: push into the model BEFORE requesting the icon.
-            // IconFetcher::request() resolves bundled/local and system-theme
-            // icons SYNCHRONOUSLY and emits iconReady() immediately (direct
-            // connection, same thread) — before this call even returns. If
-            // we requested first, the iconReady handler would search
-            // pkgModel for a row that isn't inserted yet, find nothing, and
-            // silently drop the icon (the package would then be pushed with
-            // no icon at all). Pushing first guarantees the row already
-            // exists by the time any iconReady (sync or async) fires.
             pkgModel->push_back(sp);
 
             if (!hasNetworkCache) {
                 iconFetcher->request(QString::fromStdString(std::string(sp.name)), 64);
             }
+        }
+        *searchCursor = end;
+        ui->set_has_more_results(*searchCursor < (size_t)allSearchResults->size());
+    };
+
+    ui->on_request_more_results([appendPage]() {
+        appendPage(kPageSize);
+    });
+
+    auto refreshGrid = [ui, iconFetcher, cacheDir, pkgModel, forYouModel, browsersModel, designModel, utilitiesModel, devModel, officeModel, communicationModel, allSearchResults, searchCursor, appendPage](const QVector<Package> &pkgs) {
+        while (pkgModel->row_count() > 0) pkgModel->erase(0);
+        
+        bool isDefault = ui->get_search_query().empty();
+        if (isDefault) {
+            while (forYouModel->row_count() > 0) forYouModel->erase(0);
+            while (browsersModel->row_count() > 0) browsersModel->erase(0);
+            while (designModel->row_count() > 0) designModel->erase(0);
+            while (utilitiesModel->row_count() > 0) utilitiesModel->erase(0);
+            while (devModel->row_count() > 0) devModel->erase(0);
+            while (officeModel->row_count() > 0) officeModel->erase(0);
+            while (communicationModel->row_count() > 0) communicationModel->erase(0);
             
-            if (isDefault) {
+            for (const auto &p : pkgs) {
+                UiPackage sp;
+                sp.name = slint::SharedString(p.name.toStdString());
+                sp.pretty_name = slint::SharedString(prettifyName(p.name).toStdString());
+                sp.repo = slint::SharedString(p.repo.toStdString());
+                sp.version = slint::SharedString(p.version.toStdString());
+                sp.description = slint::SharedString(p.description.toStdString());
+                sp.installed = p.installed;
+                sp.is_same_name = (QString::fromStdString(std::string(sp.pretty_name)).toLower() == p.name.toLower());
+
+                QString cachedPath = cacheDir.filePath(p.name + ".svg");
+                if (!QFile::exists(cachedPath)) cachedPath = cacheDir.filePath(p.name + ".png");
+                const bool hasNetworkCache = QFile::exists(cachedPath);
+                if (hasNetworkCache) {
+                    sp.icon = slint::Image::load_from_path(slint::SharedString(cachedPath.toStdString()));
+                }
+
+                pkgModel->push_back(sp);
+
+                if (!hasNetworkCache) {
+                    iconFetcher->request(QString::fromStdString(std::string(sp.name)), 64);
+                }
+                
                 QString n = p.name.toLower();
                 if (n == "firefox" || n == "chromium" || n == "epiphany" || n == "falkon" || n == "qutebrowser" || n == "midori" || n == "brave-browser" || n == "torbrowser-launcher" || n == "vivaldi" || n == "opera") {
                     browsersModel->push_back(sp);
@@ -215,10 +245,15 @@ int main(int argc, char *argv[])
                     forYouModel->push_back(sp);
                 }
             }
+            ui->set_has_more_results(false);
+        } else {
+            *allSearchResults = pkgs;
+            *searchCursor = 0;
+            appendPage(kInitialPageSize);
         }
     };
 
-    QObject::connect(pacman, &PacmanManager::resultsReady, refreshGrid);
+    QObject::connect(pacman, &SearchEngine::resultsReady, refreshGrid);
     pacman->fetchDefaults();
 
     ui->on_search_changed([ui, pacman, pkgModel](slint::SharedString q) {
@@ -314,7 +349,7 @@ int main(int argc, char *argv[])
             watcher->deleteLater();
         });
         watcher->setFuture(QtConcurrent::run([pkgName]() {
-            return PacmanManager::getPackageExact(pkgName);
+            return SearchEngine::getPackageExact(pkgName);
         }));
     });
 
@@ -426,7 +461,7 @@ int main(int argc, char *argv[])
         QDesktopServices::openUrl(QUrl(url));
     });
 
-    QObject::connect(pacman, &PacmanManager::detailsReady, [ui, lastDetails](::PackageDetails cxxDetails) {
+    QObject::connect(pacman, &SearchEngine::detailsReady, [ui, lastDetails](::PackageDetails cxxDetails) {
         *lastDetails = cxxDetails; // remember for the install click handler
 
         UiPackageDetails sd;
