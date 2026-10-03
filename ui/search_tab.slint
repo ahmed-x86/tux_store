@@ -1,9 +1,12 @@
 import { UiPackage } from "types.slint";
 import { AppCard } from "components.slint";
+import { Theme } from "theme.slint";
 
 export component SearchTab inherits Flickable {
     in property <[UiPackage]> packages;
+    in property <bool> has_more_results: false;
     callback app_clicked(UiPackage);
+    callback request_more_results();
 
     property <length> card-w: 200px;
     property <length> card-h: 180px;
@@ -11,7 +14,9 @@ export component SearchTab inherits Flickable {
     property <length> pad: 24px;
     property <int> cols: max(1, floor((self.width - pad * 2 + gap) / (card-w + gap)));
     property <int> total-rows: packages.length > 0 ? floor((packages.length + cols - 1) / cols) : 0;
-    viewport-height: max(self.height, pad + total-rows * (card-h + gap));
+    // Extra height for the "Show more" button row when there are more results.
+    property <length> button-row-height: root.has_more_results ? 72px : 0px;
+    viewport-height: max(self.height, pad + total-rows * (card-h + gap) + button-row-height);
 
     for pkg[idx] in root.packages : AppCard {
         x: root.pad + mod(idx, root.cols) * (root.card-w + root.gap);
@@ -21,5 +26,47 @@ export component SearchTab inherits Flickable {
         pkg: pkg;
         accent_idx: idx;
         clicked => { root.app_clicked(pkg); }
+    }
+
+    // ── "Show more" button ──────────────────────────────────────────────
+    // Conditionally visible when there are more results beyond the current
+    // page. Placed at the bottom of the grid, full-width.
+    if root.has_more_results : Rectangle {
+        x: root.pad;
+        y: root.pad + root.total-rows * (root.card-h + root.gap) + 8px;
+        width: parent.width - root.pad * 2;
+        height: 48px;
+        border-radius: 12px;
+        background: show-more-ta.has-hover ? Theme.surface1 : Theme.surface0;
+        border-color: show-more-ta.has-hover ? Theme.blue : Theme.surface1;
+        border-width: 1px;
+        animate background { duration: 150ms; }
+        animate border-color { duration: 150ms; }
+
+        show-more-ta := TouchArea {
+            clicked => { root.request_more_results(); }
+        }
+
+        HorizontalLayout {
+            alignment: center;
+            spacing: 8px;
+
+            Text {
+                text: "Show more";
+                color: show-more-ta.has-hover ? Theme.blue : Theme.text;
+                font-size: 14px;
+                font-weight: 700;
+                vertical-alignment: center;
+                animate color { duration: 150ms; }
+            }
+            Text {
+                text: "↓";
+                color: show-more-ta.has-hover ? Theme.blue : Theme.overlay1;
+                font-size: 16px;
+                font-weight: 700;
+                vertical-alignment: center;
+                animate color { duration: 150ms; }
+            }
+        }
     }
 }
