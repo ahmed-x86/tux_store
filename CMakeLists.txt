@@ -14,6 +14,7 @@ find_package(Slint REQUIRED)
 # Must be added before the main executable so CMake knows the target when
 # target_link_libraries(tuxstore … thumbnail) is evaluated below.
 add_subdirectory(libs/thumbnail)
+add_subdirectory(libs/searchengine)
 
 # ── Main executable ──────────────────────────────────────────────────────────
 # iconfetcher.cpp/.h are now compiled exclusively inside libs/thumbnail;
@@ -21,11 +22,9 @@ add_subdirectory(libs/thumbnail)
 add_executable(tuxstore
     src/main.cpp
     src/package.cpp
-    src/pacmanmanager.cpp
     src/log.cpp
     src/installmanager.cpp
     include/package.h
-    include/pacmanmanager.h
     include/log.h
     include/installmanager.h
 )
@@ -39,6 +38,7 @@ target_link_libraries(tuxstore PRIVATE
     Qt6::Concurrent
     Slint::Slint
     thumbnail          # libthumbnail.so — icon/thumbnail resolution
+    searchengine       # libsearchengine.so — package search/query
 )
 
 # Place the main binary in the same software/ directory as libthumbnail.so so
@@ -48,7 +48,7 @@ set_target_properties(tuxstore PROPERTIES
     # $ORIGIN tells the dynamic linker to look in the same directory as
     # the executable first — picks up libthumbnail.so from software/.
     INSTALL_RPATH            "$ORIGIN"
-    BUILD_RPATH              "$ORIGIN/../libs/thumbnail;${CMAKE_BINARY_DIR}/software"
+    BUILD_RPATH              "$ORIGIN/../libs/thumbnail;$ORIGIN/../libs/searchengine;${CMAKE_BINARY_DIR}/software"
     BUILD_WITH_INSTALL_RPATH OFF
 )
 
