@@ -48,6 +48,9 @@ export component MainWindow inherits Window {
     callback addon_clicked(string);
     callback view_all_addons_clicked();
     callback copy_to_clipboard(string);
+    // Pagination: lazy-load more search results in chunks.
+    in-out property <bool> has_more_results: false;
+    callback request_more_results();
 
     if !is_showing_details && !is_showing_settings && !is_showing_addons_store : VerticalLayout {
         // Header bar
@@ -244,7 +247,9 @@ export component MainWindow inherits Window {
         if root.active_tab == 0 : Rectangle {
             if root.submitted_search != "" : SearchTab {
                 packages: root.packages;
+                has_more_results: root.has_more_results;
                 app_clicked(pkg) => { root.app_clicked(pkg); }
+                request_more_results => { root.request_more_results(); }
             }
             if root.submitted_search == "" : HomeTab {
                 covers: root.covers;
