@@ -34,4 +34,5 @@ struct PackageDetails {
 
 QString formatSize(long long bytes);
 QString prettifyName(const QString &raw);
-QString sanitizeName(const QString &name);
+// sanitizeName() is provided by libthumbnail (libs/thumbnail/src/thumbnail_utils.h).
+// Do not redeclare it here to avoid ODR issues.
