@@ -1,0 +1,72 @@
+// Plain data shared between Rust (tux-ui/src) and the .slint views.
+
+export enum AppView { main, details, settings, addons }
+export enum OpPhase { idle, running, done }
+export enum OpKind { install, remove, upgrade }
+
+export struct UiPackage {
+    name: string,
+    pretty-name: string,
+    repo: string,
+    version: string,
+    description: string,
+    installed: bool,
+    icon: image,
+    is-same-name: bool,
+}
+
+export struct UiSection {
+    title: string,
+    packages: [UiPackage],
+}
+
+export struct UiPackageDependency {
+    name: string,
+    size-str: string,
+    installed: bool,
+}
+
+export struct UiPackageDetails {
+    app-size-str: string,
+    dependencies: [UiPackageDependency],
+    installed-deps-size-str: string,
+    new-deps-size-str: string,
+    download-size-str: string,
+    // Proportions of the breakdown bar, each in [0, 1], summing to ~1.
+    installed-ratio: float,
+    new-ratio: float,
+    app-ratio: float,
+    // Mirrors pacman's own transaction summary.
+    total-download-str: string,
+    total-installed-str: string,
+    net-upgrade-str: string,
+    is-loading: bool,
+    plan-ok: bool,
+}
+
+export struct UiInstallState {
+    phase: OpPhase,
+    kind: OpKind,
+    success: bool,
+    progress: float,    // 0..1 overall weighted progress
+    deps-ratio: float,  // fraction of the bar that belongs to new deps
+    target: string,     // package name, or "@upgrade" for a system upgrade
+}
+
+export struct UiAddon {
+    name: string,
+    pkg-name: string,
+}
+
+export struct UiSpecialCase {
+    is-special: bool,
+    type-name: string,  // "Language Packs" or "Addons"
+    items: [UiAddon],
+    is-addon-for: string,
+}
+
+export struct UiUpdate {
+    name: string,
+    old-version: string,
+    new-version: string,
+}
