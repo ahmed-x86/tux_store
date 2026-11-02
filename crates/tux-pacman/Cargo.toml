@@ -1,0 +1,10 @@
+[package]
+name = "tux-pacman"
+description = "Everything Tux Store knows about pacman: runner, parsers, local db, queries, progress model"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tux-abi.workspace = true
+log.workspace = true
