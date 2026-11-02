@@ -1,19 +1,28 @@
 # Uninstall Engine
 
-An advanced uninstallation engine has been added to the project, designed to abstract away the complexity of `pacman` commands and provide a simplified, user-friendly interface for non-technical users.
+Removal hides pacman's flags behind five plain-language choices.
 
-## 1. Graphical User Interface (UI - Slint)
-When the user clicks the "Remove" button on the app details page, a popup window (Modal) appears, offering uninstallation options in very simple terms rather than terminal commands:
-- **Basic Uninstall**: Uninstalls the program only (`pacman -R`).
-- **Uninstall and Reset**: Uninstalls the program and deletes its configuration files to avoid leaving `.pacsave` files behind (`pacman -Rn`).
-- **Uninstall and Clean Shared Files**: Uninstalls the program along with unused dependencies (`pacman -Rs`).
-- **Force Uninstall**: Forces the uninstallation, ignoring broken dependencies for other programs (`pacman -Rdd`).
-- **Complete Uninstall**: A complete uninstallation (Program + Dependencies + Configuration files) (`pacman -Rns`).
+## UI
 
-The UI passes the selected command (as a String, e.g., `-R` or `-Rns`) to the C++ backend.
+The **Remove** button on an installed package opens a dialog:
 
-## 2. Backend (C++)
-The function `uninstall(const QString &pkgName, const QString &mode)` has been added to the `InstallManager` class.
-- This function uses `QProcess` to execute the command `pkexec pacman <mode> --noconfirm <pkg>`.
-- The function runs asynchronously and updates the UI state (`is_uninstalling`) to prevent the user from performing overlapping operations.
-- The Package Model is automatically updated upon successful execution to reflect that the application is no longer installed (`cur.installed = false`).
+| Option | pacman | `RemoveMode` |
+|---|---|---|
+| Basic Uninstall — keeps settings and shared files | `-R` | `Basic` |
+| Uninstall and Reset — also deletes settings (no `.pacsave`) | `-Rn` | `Reset` |
+| Uninstall and Clean Shared Files — also unused dependencies | `-Rs` | `Clean` |
+| Force Uninstall (Advanced) — ignores broken dependencies | `-Rdd` | `Force` |
+| Complete Uninstall (Recommended) — program + dependencies + settings | `-Rns` | `Complete` |
+
+The dialog is the `RemoveOption` component; *Force* is outlined red, *Complete* is outlined green and emphasised.
+
+## Flow
+
+1. Slint calls `remove-clicked("-Rns")`.
+2. Rust maps the string with `RemoveMode::from_flag`; an unknown string is ignored, so the backend can never forward an arbitrary argument to a root command.
+3. `State::begin_operation` switches `current-install` to `{phase: Running, kind: Remove, target: <pkg>}` and refuses if something is already running.
+4. `RemoveRequested{name, mode}` → `tux-install` runs `pacman <flag> --noconfirm --color=never -- <pkg>` through `pkexec` + `script` (see [INSTALL_MANAGER.md](INSTALL_MANAGER.md)).
+5. Progress uses the removal bands (dependency check → `(n/m) removing` → hooks).
+6. On success the UI sets `installed = false` for that package in every list and reloads the Installed tab if it is open; search drops its caches.
+
+The progress card shows "Uninstalling…", "Uninstalled successfully" or "Uninstallation failed" from `kind == remove`.
