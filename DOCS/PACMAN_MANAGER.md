@@ -1,142 +1,69 @@
-# PacmanManager
+# Pacman Layer (`tux-pacman` + `tux-search`)
 
-Files: `include/pacmanmanager.h`, `src/pacmanmanager.cpp`
+Files: `crates/tux-pacman/src/{runner,info,localdb,queries}.rs`, `crates/tux-search/src/{lib,catalog}.rs`
 
-`PacmanManager` is the read-only query layer: it never mutates system state, only asks `pacman` questions. All three of its operations run off the UI thread via `QtConcurrent::run` + `QFutureWatcher`, so the UI never blocks waiting on a `pacman` subprocess.
+`tux-pacman` is a plain library (no bus, no FFI) so it can be unit-tested; `tux-search` is the module that turns bus requests into calls on it. Everything here is **read-only**: it only asks pacman questions.
 
-## Public API
+## `runner.rs`
 
-```cpp
-void fetchDefaults();                    // -> resultsReady(QVector<Package>)
-void search(const QString &query);       // -> resultsReady(QVector<Package>)
-void fetchDetails(const QString &pkg);   // -> detailsReady(PackageDetails)
+`run(program, args, timeout) -> Captured { stdout, stderr, code, timed_out }`
 
-static const QStringList &defaultApps(); // curated home-grid list
-static QString normalize(const QString &s);
-```
+- Forces `LC_ALL=C` so output is always English and parseable.
+- stdout and stderr are drained on separate threads, so a chatty process can never deadlock on a full pipe.
+- The child is polled with an adaptive sleep (1 ms doubling to 20 ms) and **killed when the timeout expires**.
+- `in_path(name)` checks `$PATH` for an executable.
 
-## 1. `fetchDefaults()` / `runDefaults()`
+## `localdb.rs` — the local database, read directly
 
-Populates the home grid from a hardcoded curated list (`defaultApps()` — firefox, chromium, vlc, gimp, etc.).
+`/var/lib/pacman/local/<name>-<version>-<release>/desc` (override with `TUX_PACMAN_DBPATH`).
 
-**How installed-status is determined:** a single `pacman -Q <name1> <name2> ...` call, batching *all* curated app names into one invocation (rather than one call per app) to keep it fast. Output lines are split on whitespace; the first token of each line is the installed package name, collected into a `QSet<QString>` for O(1) membership checks.
+- `installed_names()` is one `readdir`; the package name is everything before the last two dashes of the directory name.
+- `read_all()` / `read_one()` parse `desc` for `%VERSION%`, `%DESC%`, `%SIZE%` and `%REASON%` (`1` = installed as a dependency, absent = explicit).
 
-```cpp
-QProcess proc;
-proc.start("pacman", {"-Q", "firefox", "chromium", ...});
-proc.waitForFinished(5000);  // 5s timeout, then kill()
-```
+This replaces every `pacman -Q` call of the C++ version.
 
-Every curated app becomes a `Package` with `repo = "extra"` and `version = "latest"` — **these are placeholder values**, not queried from the sync DB, since the goal of this call is just fast installed/not-installed status for the grid. Real version/repo/size info is fetched lazily per-package in `fetchDetails()`.
+## `info.rs`
 
-> **Timeout handling:** if `pacman -Q` doesn't finish in 5 seconds, the process is force-killed rather than left to hang indefinitely. This is a recurring pattern in this file — every blocking `QProcess::waitForFinished()` call has an explicit timeout and kill fallback.
+`parse_info()` splits `pacman -Si/-Qi` output into one `key → value` map per package. Indented continuation lines are joined with a space. `parse_size("12.34 MiB")` returns bytes (`B`, `KiB`, `MiB`, `GiB`, `TiB`).
 
-## 2. `search(query)` / `runSearch(query)`
+## `queries.rs`
 
-Runs `pacman -Ss <query words>` (an 8s timeout) and parses pacman's two-line-per-result search output format:
+| Function | pacman calls | Notes |
+|---|---|---|
+| `packages_by_name(names)` | one `-Si -- …` | one result per requested name, in order; unknown names become an `aur` stub (or the local data when installed) |
+| `exact(name)` | via the above | |
+| `search(query, limit)` | one `-Ss -- <words>` | see below |
+| `details(name)` | `-Sp --print-format "%n\|%s"`, then one `-Si` for the planned packages | see below |
+| `installed_packages()` | one `-Sl` (repo labels) + local db | explicit packages only, sorted |
+| `updates()` | `checkupdates`, or `pacman -Qu` when pacman-contrib is missing | |
 
-```
-extra/firefox 128.0-1 [installed]
-    Fast, private and secure web browser
-```
+Timeouts: info 10 s, plan 20 s, search 8 s, `-Sl` 15 s, `checkupdates` 60 s.
 
-Parsing logic:
-- A line **not** starting with a space begins a new result: split on whitespace, the first token is `repo/name`, the second is the version, and the presence of the literal substring `"[installed]"` anywhere on the line sets `installed = true`.
-- A line starting with 4 spaces is the description continuation for the *current* result.
-- A `flush()` helper commits the current result to the output vector when a new result starts (or at EOF) — but **only if** `PacmanManager::normalize(current.name)` contains `normalize(query)`.
+### Search
 
-### Why the extra normalize-and-filter step?
+- Each word is escaped for pacman's POSIX regex engine (`c++` no longer breaks), and `--` stops a query like `-x` from being read as an option.
+- A result is kept only if the **normalised name** (lower-case, without spaces, `-`, `_`, `.`) contains the normalised query — the same rule as the C++ version.
+- Results are de-duplicated and ranked: exact match, then prefix match, then shorter names first. The cap is **200** (the C++ version cut at 60 *before* ranking); the UI paginates.
+- The `installed` flag comes from the local database, not from `[installed]` in the output.
 
-`pacman -Ss` already does substring matching against names *and* descriptions, so a query can match a result whose *name* doesn't actually contain the query text (e.g. it matched only in the description). The `normalize()`-based post-filter narrows results down to ones where the **package name itself** is a case/separator-insensitive match, which produces more relevant, less noisy search results in a small grid UI. `normalize()` strips spaces, dashes, underscores, and dots, and lowercases everything, so `"vs-code"`, `"vs_code"`, and `"VS Code"` are all treated the same for matching purposes.
+### Details
 
-There's also a hard cap of **60 results** (`pkgs.size() < 60`) to keep the grid from becoming huge on broad queries.
+1. `pacman -Sp --print-format "%n|%s" -- <pkg>` runs pacman's real resolver and returns the plan (names + download sizes).
+2. If the plan is empty (foreign/AUR package) the details fall back to the size recorded in the local db and `plan_ok = false`.
+3. One `pacman -Si -- <all planned>` supplies the installed size of every planned package.
+4. For each planned package: add to `total_installed`; if it is **not** installed also add to `total_download` and `net_upgrade`; the target itself becomes `app_size`; other packages become dependencies, split into `installed_deps` / `new_deps`.
+5. Dependencies are sorted installed-first (stable).
 
-Passing an empty/whitespace-only query to `search()` redirects to `fetchDefaults()` instead of hitting `pacman -Ss` with nothing.
+That is 2 processes instead of the C++ version's 4 (`-Si`, `-Sp`, `-Q`, `-Si`).
 
-## 3. `fetchDetails(pkgName)` / `runFetchDetails(pkgName)`
+### Updates
 
-The most involved method in the file — this is what powers the "What you'll download" card, the dependency list, and the size numbers used to weight the install progress bar. It runs several `pacman` subprocess calls in sequence, entirely on a worker thread:
+`checkupdates` (from `pacman-contrib`) syncs a private copy of the databases without root and cannot cause a partial upgrade, so it is preferred. Its exit code 2 means "no updates". The fallback `pacman -Qu` only reports what the last sync already knows (exit 1 = none).
 
-### Step 1 — Basic info about the target package
+## `tux-search` (the module)
 
-```
-pacman -Si <pkg>     # sync DB info (repo package)
-```
-If that returns empty output (e.g. an AUR/foreign package that's already installed and thus absent from any sync DB), it falls back to:
-```
-pacman -Qi <pkg>     # local DB info
-```
-Either output is parsed into a `QMap<QString, QString>` of field → value (handling pacman's info-block format, where continuation lines start with two spaces). `Installed Size` becomes `details.appSizeBytes` via `parseSize()`.
-
-A local `inSyncDb` bool records whether the sync-DB path succeeded — this gates Step 2, since dependency-transaction planning only makes sense for a package that's actually installable from a sync repo.
-
-### Step 2 — Ask pacman's real resolver for the transaction plan
-
-```
-pacman -Sp --print-format "%n|%s" <pkg>
-```
-
-`-Sp` performs pacman's full dependency resolution — exactly as `pacman -S <pkg>` would — but only *prints* the plan (package names + download size) instead of downloading/installing. This is the load-bearing call of the whole method: **the UI's numbers come from pacman's actual resolver, not a hand-rolled dependency walk.**
-
-Output is parsed into:
-- `plannedNames` — every package name in the transaction (target + all dependencies)
-- `plannedDownloadBytes` — download size per name, straight from `%s`
-
-Given `plannedNames`, two more batched calls fill in the rest:
-
-```
-pacman -Q <plannedNames...>     # which of these are ALREADY installed?
-pacman -Si <plannedNames...>    # Installed Size for EACH planned package
-```
-
-The `-Si` output here is multi-package, so it's split on blank lines (`"\n\n"`) into per-package info blocks and parsed the same field-map way as Step 1.
-
-### Step 3 — Classify and accumulate
-
-For every planned package name:
-
-```cpp
-details.totalDownloadBytes += alreadyInstalled ? 0 : downloadSize;
-details.totalInstalledBytes += installedSize;
-```
-
-- If `name == pkgName` (the target itself) → skip (already counted in `appSizeBytes`).
-- Else, build a `PackageDependency` and route it into `installedDeps` or `newDeps` depending on whether `pacman -Q` found it locally, accumulating `installedDepsBytes` / `newDepsBytes` respectively.
-
-Finally:
-
-```cpp
-details.netUpgradeBytes = details.totalInstalledBytes;
-```
-
-For a fresh install (no existing version of the target already on the system, which is the only case Tux Store currently drives an install for), the net upgrade size equals the full installed footprint of everything newly added — there's no "replace an older version" delta to subtract here.
-
-### Dependency ordering
-
-```cpp
-details.dependencies = installedDeps;
-details.dependencies += newDeps;
-```
-
-Already-installed dependencies are listed **first**, followed by new ones — this ordering is intentional so the UI can put a visual divider or simply let the "already have this" items sit at the top of the list.
-
-### `parseSize(sizeStr)`
-
-Parses pacman's human-readable size strings (`"12.34 MiB"`, `"512 B"`, etc.) back into raw bytes. Recognizes `B`, `KiB`, `MiB`, `GiB` (case-insensitive); anything unrecognized falls through to treating the numeric part as raw bytes.
-
-## Timeouts Used in This File
-
-| Call | Timeout |
-|---|---|
-| `pacman -Q` (defaults) | 5s |
-| `pacman -Ss` (search) | 8s |
-| `pacman -Si` / `-Qi` (single target) | 5s |
-| `pacman -Sp --print-format` (transaction plan) | 15s |
-| `pacman -Q` (planned names) | 5s |
-| `pacman -Si` (planned names, batched) | 15s |
-
-Dependency resolution and batched `-Si` calls get the longest timeouts since they can touch many packages and may need to sync/read larger sync databases.
-
-## Logging
-
-Uses the `logPacman` category (see [LOGGING.md](LOGGING.md)). Each method logs entry parameters, an `QElapsedTimer`-measured duration, and a result-count summary — useful for diagnosing slow searches or unexpectedly-timing-out queries in the field.
+- **Catalog** — see [ADDONS_SYSTEM.md](ADDONS_SYSTEM.md) and [Home_Page_Categorization.md](Home_Page_Categorization.md).
+- **One thread per request.** Searches carry a generation number: if a newer search started, the older one does not publish its results.
+- **Home cache** — built once with a single `-Si` for the whole curated list; later requests only refresh the installed flags.
+- **Details cache** — up to 32 entries, 60 s TTL.
+- Both caches are dropped when `OperationFinished` is heard.
