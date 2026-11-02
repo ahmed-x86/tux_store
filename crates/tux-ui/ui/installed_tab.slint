@@ -1,0 +1,48 @@
+import { Theme } from "theme.slint";
+import { UiPackage } from "types.slint";
+import { PackageGrid, SearchBox } from "components.slint";
+
+export component InstalledTab inherits Rectangle {
+    in property <[UiPackage]> packages;
+    in property <bool> loading;
+    in property <bool> has-more;
+    in property <int> total;
+    in-out property <string> filter;
+    callback filter-edited(string);
+    callback app-clicked(UiPackage);
+    callback more-clicked();
+
+    vertical-stretch: 1;
+
+    VerticalLayout {
+        HorizontalLayout {
+            padding: 24px;
+            padding-bottom: 8px;
+            spacing: 12px;
+            Text {
+                text: root.loading ? "Loading installed apps…" : ("Installed apps (" + root.total + ")");
+                color: Theme.text;
+                font-size: 20px;
+                font-weight: 800;
+                vertical-alignment: center;
+            }
+            Rectangle { horizontal-stretch: 1; }
+            VerticalLayout {
+                alignment: center;
+                SearchBox {
+                    text <=> root.filter;
+                    placeholder: "Filter installed apps…";
+                    edited(t) => { root.filter-edited(t); }
+                }
+            }
+        }
+        PackageGrid {
+            vertical-stretch: 1;
+            packages: root.packages;
+            has-more: root.has-more;
+            empty-text: root.loading ? "" : "Nothing to show";
+            app-clicked(p) => { root.app-clicked(p); }
+            more-clicked => { root.more-clicked(); }
+        }
+    }
+}
