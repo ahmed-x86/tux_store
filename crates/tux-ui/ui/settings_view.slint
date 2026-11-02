@@ -83,61 +83,70 @@ export component SettingsView inherits Rectangle {
         }
 
         Flickable {
-            viewport-height: main-layout.preferred-height;
+            content-height: main-layout.preferred-height;
 
-            main-layout := VerticalLayout {
-                padding-left: max(32px, (parent.width - 800px) / 2);
-                padding-right: max(32px, (parent.width - 800px) / 2);
-                padding-top: 40px;
-                padding-bottom: 64px;
-                spacing: 32px;
-                alignment: start;
+            HorizontalLayout {
+                padding-left: 32px;
+                padding-right: 32px;
 
-                Text { text: "Settings"; color: Theme.text; font-size: 28px; font-weight: 800; }
+                Rectangle { horizontal-stretch: 1; }
 
-                VerticalLayout {
-                    spacing: 12px;
-                    SectionLabel { text: "APPEARANCE"; }
-                    SettingCard {
-                        SettingRow {
-                            title: "App Theme";
-                            subtitle: "Select your preferred color scheme";
-                            ChoiceButton {
-                                label: "Light";
-                                selected: !Theme.is-dark;
-                                clicked => { Theme.is-dark = false; root.theme-selected(false); }
+                main-layout := VerticalLayout {
+                    horizontal-stretch: 1000;
+                    max-width: 800px;
+                    padding-top: 40px;
+                    padding-bottom: 64px;
+                    spacing: 32px;
+                    alignment: start;
+
+                    Text { text: "Settings"; color: Theme.text; font-size: 28px; font-weight: 800; }
+
+                    VerticalLayout {
+                        spacing: 12px;
+                        SectionLabel { text: "APPEARANCE"; }
+                        SettingCard {
+                            SettingRow {
+                                title: "App Theme";
+                                subtitle: "Select your preferred color scheme";
+                                ChoiceButton {
+                                    label: "Light";
+                                    selected: !Theme.is-dark;
+                                    clicked => { Theme.is-dark = false; root.theme-selected(false); }
+                                }
+                                ChoiceButton {
+                                    label: "Dark";
+                                    selected: Theme.is-dark;
+                                    clicked => { Theme.is-dark = true; root.theme-selected(true); }
+                                }
                             }
-                            ChoiceButton {
-                                label: "Dark";
-                                selected: Theme.is-dark;
-                                clicked => { Theme.is-dark = true; root.theme-selected(true); }
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: 12px;
+                        SectionLabel { text: "STORAGE"; }
+                        SettingCard {
+                            SettingRow {
+                                title: "Icon cache";
+                                subtitle: root.cache-status == "" ? "Downloaded app icons are kept so they load instantly next time" : root.cache-status;
+                                PillButton { text: "Clear cache"; clicked => { root.clear-cache-clicked(); } }
+                            }
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: 12px;
+                        SectionLabel { text: "ABOUT"; }
+                        SettingCard {
+                            SettingRow {
+                                title: "Tux Store";
+                                subtitle: "Version " + root.app-version + " — a native package store for Arch Linux";
                             }
                         }
                     }
                 }
 
-                VerticalLayout {
-                    spacing: 12px;
-                    SectionLabel { text: "STORAGE"; }
-                    SettingCard {
-                        SettingRow {
-                            title: "Icon cache";
-                            subtitle: root.cache-status == "" ? "Downloaded app icons are kept so they load instantly next time" : root.cache-status;
-                            PillButton { text: "Clear cache"; clicked => { root.clear-cache-clicked(); } }
-                        }
-                    }
-                }
-
-                VerticalLayout {
-                    spacing: 12px;
-                    SectionLabel { text: "ABOUT"; }
-                    SettingCard {
-                        SettingRow {
-                            title: "Tux Store";
-                            subtitle: "Version " + root.app-version + " — a native package store for Arch Linux";
-                        }
-                    }
-                }
+                Rectangle { horizontal-stretch: 1; }
             }
         }
     }

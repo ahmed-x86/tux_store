@@ -426,7 +426,7 @@ export component DetailsView inherits Rectangle {
                     Text { text: "You might also like"; color: Theme.text; font-size: 18px; font-weight: 700; }
                     sug-flick := Flickable {
                         height: 190px;
-                        viewport-width: root.suggestions.length * 184px;
+                        content-width: root.suggestions.length * 184px;
                         interactive: true;
                         HorizontalLayout {
                             spacing: 16px;
@@ -438,9 +438,9 @@ export component DetailsView inherits Rectangle {
                         }
                     }
                     HScrollBar {
-                        content-width: sug-flick.viewport-width;
+                        content-width: sug-flick.content-width;
                         visible-width: sug-flick.width;
-                        offset <=> sug-flick.viewport-x;
+                        offset <=> sug-flick.content-x;
                         accent: root.accent;
                     }
                 }

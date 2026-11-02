@@ -308,7 +308,7 @@ impl State {
     }
 
     fn on_updates(&mut self, updates: Vec<UpdateEntry>, error: Option<String>) {
-        self.updates.set_vec(updates.iter().map(convert::update).collect());
+        self.updates.set_vec(updates.iter().map(convert::update).collect::<Vec<_>>());
         if let Some(ui) = self.ui.upgrade() {
             ui.set_updates_loading(false);
             ui.set_updates_status(error.unwrap_or_default().into());
