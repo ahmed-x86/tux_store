@@ -1,0 +1,34 @@
+import { Theme } from "theme.slint";
+import { UiPackage } from "types.slint";
+import { PackageGrid, PillButton, TopBar } from "components.slint";
+
+export component AddonsStore inherits Rectangle {
+    in property <[UiPackage]> packages;
+    in property <string> store-title: "Addons Store";
+    callback back-clicked();
+    callback app-clicked(UiPackage);
+
+    background: Theme.base;
+
+    VerticalLayout {
+        TopBar {
+            PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
+        }
+
+        Rectangle {
+            height: 80px;
+            HorizontalLayout {
+                padding-left: 24px;
+                alignment: start;
+                Text { text: root.store-title; color: Theme.text; font-size: 24px; font-weight: 800; vertical-alignment: center; }
+            }
+        }
+
+        PackageGrid {
+            vertical-stretch: 1;
+            packages: root.packages;
+            empty-text: "Loading…";
+            app-clicked(p) => { root.app-clicked(p); }
+        }
+    }
+}
