@@ -1,0 +1,144 @@
+import { Theme } from "theme.slint";
+import { PillButton, TopBar } from "components.slint";
+
+component ChoiceButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> selected;
+    callback clicked();
+
+    width: 110px;
+    height: 36px;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: root.selected ? Theme.blue : Theme.surface2;
+    background: root.selected ? Theme.blue.transparentize(0.85) : Theme.surface1;
+    animate border-color { duration: 150ms; }
+    animate background { duration: 150ms; }
+
+    TouchArea { mouse-cursor: pointer; clicked => { root.clicked(); } }
+    Text {
+        text: root.label;
+        color: root.selected ? Theme.blue : Theme.text;
+        font-weight: root.selected ? 700 : 500;
+        font-size: 14px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+component SectionLabel inherits Rectangle {
+    in property <string> text;
+    HorizontalLayout {
+        padding-left: 8px;
+        Text { text: root.text; color: Theme.overlay1; font-size: 12px; font-weight: 800; letter-spacing: 1px; }
+    }
+}
+
+component SettingCard inherits Rectangle {
+    background: Theme.surface0;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: Theme.surface1;
+    VerticalLayout {
+        padding: 20px;
+        spacing: 16px;
+        @children
+    }
+}
+
+component SettingRow inherits Rectangle {
+    in property <string> title;
+    in property <string> subtitle;
+    HorizontalLayout {
+        alignment: space-between;
+        spacing: 16px;
+        VerticalLayout {
+            alignment: center;
+            spacing: 4px;
+            Text { text: root.title; color: Theme.text; font-size: 16px; font-weight: 600; }
+            Text { text: root.subtitle; color: Theme.overlay0; font-size: 13px; wrap: word-wrap; }
+        }
+        VerticalLayout {
+            alignment: center;
+            HorizontalLayout {
+                spacing: 12px;
+                @children
+            }
+        }
+    }
+}
+
+export component SettingsView inherits Rectangle {
+    in property <string> app-version;
+    in property <string> cache-status;
+    callback back-clicked();
+    callback theme-selected(bool);
+    callback clear-cache-clicked();
+
+    background: Theme.base;
+
+    VerticalLayout {
+        TopBar {
+            PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
+        }
+
+        Flickable {
+            viewport-height: main-layout.preferred-height;
+
+            main-layout := VerticalLayout {
+                padding-left: max(32px, (parent.width - 800px) / 2);
+                padding-right: max(32px, (parent.width - 800px) / 2);
+                padding-top: 40px;
+                padding-bottom: 64px;
+                spacing: 32px;
+                alignment: start;
+
+                Text { text: "Settings"; color: Theme.text; font-size: 28px; font-weight: 800; }
+
+                VerticalLayout {
+                    spacing: 12px;
+                    SectionLabel { text: "APPEARANCE"; }
+                    SettingCard {
+                        SettingRow {
+                            title: "App Theme";
+                            subtitle: "Select your preferred color scheme";
+                            ChoiceButton {
+                                label: "Light";
+                                selected: !Theme.is-dark;
+                                clicked => { Theme.is-dark = false; root.theme-selected(false); }
+                            }
+                            ChoiceButton {
+                                label: "Dark";
+                                selected: Theme.is-dark;
+                                clicked => { Theme.is-dark = true; root.theme-selected(true); }
+                            }
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: 12px;
+                    SectionLabel { text: "STORAGE"; }
+                    SettingCard {
+                        SettingRow {
+                            title: "Icon cache";
+                            subtitle: root.cache-status == "" ? "Downloaded app icons are kept so they load instantly next time" : root.cache-status;
+                            PillButton { text: "Clear cache"; clicked => { root.clear-cache-clicked(); } }
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: 12px;
+                    SectionLabel { text: "ABOUT"; }
+                    SettingCard {
+                        SettingRow {
+                            title: "Tux Store";
+                            subtitle: "Version " + root.app-version + " — a native package store for Arch Linux";
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
