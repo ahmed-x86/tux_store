@@ -1,6 +1,8 @@
 //! Where things live. Works from a cargo build tree and from an installed
 //! prefix such as `/usr`.
 
+use std::ffi::{c_char, CStr, OsStr};
+use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
@@ -14,10 +16,29 @@ pub fn exe_dir() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."))
 }
 
+/// The user's home directory: `$HOME`, else the passwd entry of the current
+/// user. (Never a temp directory — caches must land in the user's `~/.cache`.)
 pub fn home() -> PathBuf {
-    std::env::var_os("HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("/tmp"))
+    if let Some(h) = std::env::var_os("HOME").filter(|h| !h.is_empty()) {
+        return PathBuf::from(h);
+    }
+    passwd_home().unwrap_or_else(|| PathBuf::from("/tmp"))
+}
+
+fn passwd_home() -> Option<PathBuf> {
+    let mut buf = vec![0u8; 4096];
+    // SAFETY: all pointers are valid for the duration of the call; `pw_dir`
+    // points into `buf`, which outlives the copy made below.
+    unsafe {
+        let mut pwd: libc::passwd = std::mem::zeroed();
+        let mut res: *mut libc::passwd = std::ptr::null_mut();
+        let rc = libc::getpwuid_r(libc::getuid(), &mut pwd, buf.as_mut_ptr().cast::<c_char>(), buf.len(), &mut res);
+        if rc != 0 || res.is_null() || pwd.pw_dir.is_null() {
+            return None;
+        }
+        let dir = CStr::from_ptr(pwd.pw_dir).to_bytes();
+        (!dir.is_empty()).then(|| PathBuf::from(OsStr::from_bytes(dir)))
+    }
 }
 
 /// Read-only application data (`categories.json`, bundled icons, covers…).
@@ -45,13 +66,15 @@ pub fn data_dir() -> &'static Path {
 }
 
 fn xdg(var: &str, fallback: &str) -> PathBuf {
-    match std::env::var_os(var).filter(|p| !p.is_empty()) {
+    // The XDG spec says relative values must be ignored.
+    match std::env::var_os(var).filter(|p| Path::new(p).is_absolute()) {
         Some(p) => PathBuf::from(p).join(APP_DIR),
         None => home().join(fallback).join(APP_DIR),
     }
 }
 
-/// `~/.cache/tux-store`
+/// `~/.cache/tux-store` (or `$XDG_CACHE_HOME/tux-store`) — the one place the
+/// store caches anything. "Clear cache" wipes this whole directory.
 pub fn cache_dir() -> PathBuf {
     xdg("XDG_CACHE_HOME", ".cache")
 }

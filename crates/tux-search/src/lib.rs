@@ -51,7 +51,7 @@ impl Module for SearchModule {
             Message::AddonsRequested { package } => self.addons(package),
             Message::InstalledRequested => self.installed(),
             Message::UpdatesRequested => self.updates(),
-            Message::OperationFinished { .. } => {
+            Message::OperationFinished { .. } | Message::ClearIconCache => {
                 *lock(&self.home_cache) = None;
                 lock(&self.details_cache).clear();
             }

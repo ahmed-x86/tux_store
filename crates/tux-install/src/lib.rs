@@ -60,6 +60,7 @@ impl Module for InstallModule {
                 self.start(Operation::Remove { name, mode })
             }
             Message::SystemUpgradeRequested => self.start(Operation::SystemUpgrade),
+            Message::ClearIconCache => lock(&self.plans).clear(),
             _ => {}
         }
     }

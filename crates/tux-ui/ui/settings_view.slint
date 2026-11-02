@@ -127,8 +127,8 @@ export component SettingsView inherits Rectangle {
                         SectionLabel { text: "STORAGE"; }
                         SettingCard {
                             SettingRow {
-                                title: "Icon cache";
-                                subtitle: root.cache-status == "" ? "Downloaded app icons are kept so they load instantly next time" : root.cache-status;
+                                title: "Cache";
+                                subtitle: root.cache-status == "" ? "Downloaded icons and other cached data (~/.cache/tux-store). Clearing also re-reads your icon theme" : root.cache-status;
                                 PillButton { text: "Clear cache"; clicked => { root.clear-cache-clicked(); } }
                             }
                         }

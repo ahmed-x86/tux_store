@@ -1,9 +1,9 @@
 //! `libtux_thumbnail.so` — turns package names into icon files and lists the
 //! home-page cover images.
 //!
-//! Handles: `IconRequested`, `CoversRequested`, `ClearIconCache`, `UiReady`
-//! (warm-up). Answers: `IconReady`, `IconFailed`, `CoversReady`,
-//! `IconCacheCleared`.
+//! Handles: `IconRequested`, `CoversRequested`, `ClearIconCache` (wipes the
+//! whole `~/.cache/tux-store`), `UiReady` (warm-up). Answers: `IconReady`,
+//! `IconFailed`, `CoversReady`, `IconCacheCleared`.
 //!
 //! Pipeline: requests are coalesced per package, resolved offline by one
 //! "local" thread (cache / bundled / theme), and only true misses go to a pool
@@ -51,11 +51,14 @@ fn spawn_named<F: FnOnce() + Send + 'static>(name: String, f: F) {
 
 impl Module for ThumbnailModule {
     fn create(bus: Bus) -> Self {
-        let cache_dir = paths::cache_dir().join("icons");
-        if let Err(e) = fs::create_dir_all(&cache_dir) {
-            log::warn!("cannot create {}: {e}", cache_dir.display());
+        // Everything cached by the store lives under ~/.cache/tux-store
+        // (XDG_CACHE_HOME respected); icons are in its `icons/` sub-directory.
+        let cache_root = paths::cache_dir();
+        let icons_dir = cache_root.join("icons");
+        if let Err(e) = fs::create_dir_all(&icons_dir) {
+            log::warn!("cannot create {}: {e}", icons_dir.display());
         }
-        let resolver = Arc::new(Resolver::new(cache_dir));
+        let resolver = Arc::new(Resolver::new(cache_root));
         let inflight: Inflight = Arc::default();
         let (local_tx, local_rx) = unbounded::<String>();
         let (net_tx, net_rx) = unbounded::<String>();

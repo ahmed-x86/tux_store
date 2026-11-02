@@ -15,15 +15,16 @@ Emits `IconReady{name, path}`, `IconFailed{name}`, `CoversReady`, `IconCacheClea
 
 ```
 IconRequested ──► coalesce (one job per name) ──► stage 1: "thumb-local" (1 thread)
-                                                     │ disk cache hit?        ─► IconReady
+                                                     │ active system theme?   ─► IconReady
                                                      │ bundled icon?          ─► IconReady
-                                                     │ system theme icon?     ─► IconReady
+                                                     │ hicolor / pixmaps?     ─► IconReady
+                                                     │ downloaded (disk cache)? ─► IconReady
                                                      │ fresh negative marker? ─► IconFailed
                                                      └ otherwise ─► stage 2: "thumb-net-0..7"
                                                                       one HTTP request ─► IconReady / IconFailed
 ```
 
-Stage 1 is a single thread that never touches the network, so local hits are not delayed by a stalled download. Stage 2 is a pool of 8 workers sharing one `ureq::Agent` (keep-alive, 6 s timeout, 2 MiB cap).
+Stage 1 is a single thread that never touches the network, so local hits are not delayed by a stalled download. Stage 2 is a pool of 8 workers; each download runs the system `curl` (6 s timeout, 2 MiB cap, HTTPS only). No TLS library is linked into the module — statically linked `ring` was what made `libtux_thumbnail.so` fail to load (`undefined symbol: ring_core_…`) in LTO-enabled makepkg builds.
 
 Names failing `is_valid_package_name` are dropped, which also makes path traversal in cache file names impossible.
 
@@ -42,14 +43,17 @@ Only candidate **[0]** is requested over the network; stage 1 tries every candid
 
 ## Sources, in order
 
-1. **Disk cache** — `~/.cache/tux-store/icons/<name>.svg|png`, keyed by the original package name.
+1. **Active system icon theme** — the theme the desktop really uses plus everything it `Inherits=` (see below).
 2. **Bundled icons** — `data/images/icons/custom_icons.json` maps a name prefix to a sub-directory (used for the LibreOffice language packs).
-3. **System icon theme** — see below.
-4. **Network** — one request to the Papirus 64×64 SVG on `raw.githubusercontent.com`.
+3. **Fallback tier** — `hicolor` and `/usr/share/pixmaps`.
+4. **Disk cache** — icons downloaded earlier, `~/.cache/tux-store/icons/<name>.svg`. Consulted only when the theme has nothing, so a stale download can never shadow the current theme.
+5. **Network** — one request to the Papirus 64×64 SVG on `raw.githubusercontent.com` (via `curl`).
 
 ### System theme lookup (`themes.rs`)
 
-No Qt, no per-file index. On warm-up it collects the `…/apps` directories of every theme under `~/.local/share/icons`, `~/.icons` and `$XDG_DATA_DIRS/icons` (hicolor/Papirus layout `<theme>/<size>/apps` and Breeze layout `<theme>/apps/<size>`), sorted by closeness to 64 px (scalable first), plus `/usr/share/pixmaps`. A lookup is then a few `stat` calls for `<dir>/<candidate>.svg|png`.
+The theme name comes from, in order: `$TUX_ICON_THEME`; on KDE `~/.config/kdeglobals` `[Icons] Theme`; otherwise `gsettings org.gnome.desktop.interface icon-theme`, `gtk-4.0/settings.ini`, `gtk-3.0/settings.ini` (`gtk-icon-theme-name`), then `kdeglobals`. The first name that exists under an icon root wins. Its `index.theme` `Inherits=` chain is followed; installed-but-unselected themes are not searched. If nothing can be detected, every installed theme is used (old behaviour).
+
+No Qt, no per-file index: the `…/apps` directories of the chosen themes are collected once (hicolor/Papirus layout `<theme>/<size>/apps` and Breeze layout `<theme>/apps/<size>`), sorted by closeness to 64 px (scalable first). A lookup is a few `stat` calls for `<dir>/<candidate>.svg|png`.
 
 ## Validation
 
@@ -59,7 +63,7 @@ No Qt, no per-file index. On warm-up it collects the `…/apps` directories of e
 
 - Writes go to `<name>.svg.tmp` and are renamed, so a crash never leaves a half-written icon.
 - A failure writes `<name>.notfound`; it is trusted for **14 days**, then retried.
-- Settings → *Clear cache* sends `ClearIconCache`; the module removes every `svg/png/notfound/tmp` file and answers `IconCacheCleared{removed}`.
+- Settings → *Clear cache* sends `ClearIconCache`; the module deletes **everything** inside `~/.cache/tux-store` (guarded: only a directory literally named `tux-store`), forgets the detected icon theme, and answers `IconCacheCleared{removed}`. `tux-search` and `tux-install` also drop their in-memory caches on that message, and the UI reloads the icons on screen.
 
 ## Covers
 
@@ -67,4 +71,4 @@ No Qt, no per-file index. On warm-up it collects the `…/apps` directories of e
 
 ## Debugging
 
-`TUX_LOG=debug` prints the number of indexed theme directories; failed cache writes are warnings.
+`TUX_LOG=debug` prints the detected icon theme and the number of indexed directories; failed cache writes are warnings.

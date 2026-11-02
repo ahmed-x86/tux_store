@@ -6,8 +6,11 @@ pkgrel=1
 pkgdesc="Native Rust + Slint package store for Arch Linux (modular .so architecture)"
 arch=('x86_64')
 license=('GPL-3.0-or-later')
-depends=('pacman' 'polkit' 'util-linux' 'xdg-utils' 'fontconfig' 'libxkbcommon' 'libglvnd')
+depends=('pacman' 'curl' 'polkit' 'util-linux' 'xdg-utils' 'fontconfig' 'libxkbcommon' 'libglvnd')
 makedepends=('cargo' 'pkgconf')
+# makepkg's default LTO flags (-flto) are injected into the C/asm objects that
+# Rust build scripts compile, which breaks linking of the module .so files.
+options=('!lto')
 optdepends=('pacman-contrib: checkupdates, for a safe "Updates" tab')
 
 build() {

@@ -218,7 +218,7 @@ impl State {
             }
             Message::IconReady { name, path } => self.on_icon(name, path),
             Message::IconCacheCleared { removed } => {
-                self.icon_requested.clear();
+                self.reload_icons();
                 if let Some(ui) = self.ui.upgrade() {
                     ui.set_cache_status(format!("Cleared {removed} cached files").into());
                 }
@@ -362,6 +362,35 @@ impl State {
         {
             f(m);
         }
+    }
+
+    /// Forget every loaded icon and ask the thumbnail module again for the ones
+    /// on screen (after the cache was cleared / the icon theme changed).
+    fn reload_icons(&mut self) {
+        self.icons.clear();
+        self.icon_requested.clear();
+
+        let mut names: Vec<String> = Vec::new();
+        self.each_model(|m| {
+            for i in 0..m.row_count() {
+                if let Some(mut row) = m.row_data(i) {
+                    names.push(row.name.to_string());
+                    row.icon = Image::default();
+                    m.set_row_data(i, row);
+                }
+            }
+        });
+        if let Some(ui) = self.ui.upgrade() {
+            let mut cur = ui.get_current_package();
+            if !cur.name.is_empty() {
+                names.push(cur.name.to_string());
+                cur.icon = Image::default();
+                ui.set_current_package(cur);
+            }
+        }
+        names.sort();
+        names.dedup();
+        self.request_icons(names);
     }
 
     fn request_icons(&mut self, names: Vec<String>) {
