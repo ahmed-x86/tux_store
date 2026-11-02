@@ -1,0 +1,16 @@
+[package]
+name = "tux-search"
+description = "libtux_search.so — package catalog, search, details, installed & update lists"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+tux-abi.workspace = true
+tux-pacman.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
