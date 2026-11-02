@@ -1,0 +1,21 @@
+# Maintainer: you
+# Build from a local checkout:  cd packaging && makepkg -si
+pkgname=tux-store
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Native Rust + Slint package store for Arch Linux (modular .so architecture)"
+arch=('x86_64')
+license=('GPL-3.0-or-later')
+depends=('pacman' 'polkit' 'util-linux' 'xdg-utils' 'fontconfig' 'libxkbcommon' 'libglvnd')
+makedepends=('cargo' 'pkgconf')
+optdepends=('pacman-contrib: checkupdates, for a safe "Updates" tab')
+
+build() {
+  cd "$startdir/.."
+  cargo build --release
+}
+
+package() {
+  cd "$startdir/.."
+  make install DESTDIR="$pkgdir" PREFIX=/usr
+}
