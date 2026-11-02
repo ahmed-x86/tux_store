@@ -8,10 +8,15 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build in Arch Linux container
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     container:
       image: archlinux:latest
     defaults:
@@ -21,10 +26,11 @@ jobs:
     steps:
       - name: Install build dependencies
         run: |
+          # curl: runtime dependency (icon downloads). python: only for the dlopen check.
           pacman -Syu --noconfirm --needed \
             base-devel git rust pkgconf \
             fontconfig libxkbcommon libglvnd \
-            polkit util-linux xdg-utils
+            polkit util-linux xdg-utils curl python
 
       - name: Check out sources
         uses: actions/checkout@v4
@@ -45,16 +51,55 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "Building version $VERSION"
 
-          # The tag decides the package version.
-          sed -i "s/^pkgver=.*/pkgver=$VERSION/" packaging/PKGBUILD
+          # pkgver may not contain '-' (e.g. tag v1.0.0-rc1 -> 1.0.0_rc1).
+          PKGVER="${VERSION//-/_}"
+          sed -i "s/^pkgver=.*/pkgver=$PKGVER/" packaging/PKGBUILD
+
+          # Make the binary report the tag's version too (first `version =`
+          # line in Cargo.toml is [workspace.package]).
+          sed -i "0,/^version = \".*\"/s//version = \"$VERSION\"/" Cargo.toml
+          grep -m1 '^version' Cargo.toml
 
       - name: Build and package with makepkg (compiles the whole workspace once)
         run: |
           mkdir -p "$GITHUB_WORKSPACE/dist"
           chown builder:builder "$GITHUB_WORKSPACE/dist"
+          # PKGBUILD sets options=('!lto'): makepkg's default -flto breaks the
+          # C/asm objects of build scripts and leaves module .so files with
+          # undefined symbols.
           su builder -c "cd '$GITHUB_WORKSPACE/packaging' && \
             PKGDEST='$GITHUB_WORKSPACE/dist' makepkg --force --nodeps --noconfirm"
           ls -la dist
+
+      - name: Verify every module library is loadable
+        run: |
+          fail=0
+          for so in target/release/libtux_*.so; do
+            echo "== $so"
+            # No TLS/ring code may be linked into a module any more.
+            if nm -D --undefined-only "$so" | grep -q 'ring_core'; then
+              echo "::error::$so still references ring_core symbols"; fail=1
+            fi
+            # Every shared dependency must resolve in the container.
+            if ldd "$so" | grep -q 'not found'; then
+              ldd "$so" | grep 'not found'
+              echo "::error::$so has unresolved shared libraries"; fail=1
+            fi
+            # Undefined *Rust/C* symbols that nothing provides would make
+            # dlopen fail (rustc links with -z now).
+            if ! python3 - "$so" <<'PY'
+          import ctypes, sys
+          try:
+              ctypes.CDLL(sys.argv[1], mode=ctypes.RTLD_NOW)
+          except OSError as e:
+              if "undefined symbol" in str(e):
+                  print(e); sys.exit(1)
+          PY
+            then
+              echo "::error::$so fails to dlopen (undefined symbol)"; fail=1
+            fi
+          done
+          exit $fail
 
       - name: Assemble portable tar.gz from the finished build
         run: |
@@ -90,3 +135,4 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+          
