@@ -88,9 +88,9 @@ jobs:
             # Undefined *Rust/C* symbols that nothing provides would make
             # dlopen fail (rustc links with -z now).
             if ! python3 - "$so" <<'PY'
-          import ctypes, sys
+          import ctypes, os, sys
           try:
-              ctypes.CDLL(sys.argv[1], mode=ctypes.RTLD_NOW)
+              ctypes.CDLL(sys.argv[1], mode=os.RTLD_NOW)
           except OSError as e:
               if "undefined symbol" in str(e):
                   print(e); sys.exit(1)
