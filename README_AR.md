@@ -1,34 +1,19 @@
 [🇬🇧 English](README.md)
 
+<div dir="rtl">
+
 # Tux Store
 
-مدير حزم رسومي (GUI) خفيف وسريع مخصص لتوزيعة **Arch Linux**. واجهة المستخدم بالكامل مبنية باستخدام **Slint**، بينما تلعب مكتبة **Qt6** دور العقل المدبر وتدير العمليات في الخلفية. يقوم Tux Store بتغليف `pacman` في تجربة مستخدم سلسة تشبه متاجر التطبيقات: يمكنك تصفح التطبيقات المختارة، والبحث في المستودعات، وفحص الاعتماديات وأحجامها الفعلية قبل التثبيت، بالإضافة إلى مشاهدة شريط تقدم حي وحقيقي أثناء عمل `pacman`.
+متجر برمجيات خفيف وأصلي لنظام **Arch Linux**، مكتوب بلغة **Rust** وواجهته بـ **Slint**. يغلّف `pacman` بتجربة تشبه متاجر التطبيقات: تطبيقات مختارة، بحث، تفاصيل حقيقية للاعتماديات والأحجام قبل التثبيت، وشريط تقدّم حيّ يتبع مراحل pacman الفعلية.
 
 ![platform](https://img.shields.io/badge/platform-Arch%20Linux-1793d1)
-![language](https://img.shields.io/badge/language-C%2B%2B20-blue)
+![language](https://img.shields.io/badge/language-Rust-dea584)
 ![ui](https://img.shields.io/badge/UI-Slint-orange)
-![qt](https://img.shields.io/badge/backend-Qt6-41cd52)
+![release](https://img.shields.io/badge/package-pkg.tar.zst-1793d1)
 
----
+## لقطات الشاشة
 
-## الميزات
-
-- **شاشة رئيسية منتقاة** — قائمة بتطبيقات شهيرة ومختارة بعناية، مع حالة التثبيت الفعلية التي يتم سحبها من `pacman -Q`.
-- **بحث مرن (Fuzzy search)** — يبحث في قواعد بيانات المزامنة عبر `pacman -Ss`، مع تصفية ذكية تتجاهل المسافات، والحروف الكبيرة/الصغيرة، والشرطات، والنقاط.
-- **تحليل حقيقي للاعتماديات والأحجام** — قبل التثبيت، يسأل Tux Store مدير الحزم (`pacman -Sp --print-format`) عن خطة التثبيت *الفعلية*: الاعتماديات الجديدة، وتلك المثبتة مسبقاً، وحجم التحميل، وحجم الترقية النهائي.
-- **شريط تقدم حقيقي (Weighted install progress)** — يقرأ مخرجات `pacman` الحية من سطر الأوامر ويحولها إلى شريط تقدم سلس من 0 إلى 100٪، مع تقسيم مرئي بين "الاعتماديات الجديدة" و"التطبيق نفسه".
-- **مراقب سطر الأوامر (Console viewer)** — نافذة تراكب اختيارية تعرض مخرجات `pacman` الأصلية كما هي لمن يريد رؤية ما يحدث بالضبط في الخلفية.
-- **جلب ذكي للأيقونات** — يستخرج أيقونات التطبيقات من عدة مستودعات أيقونات شهيرة على GitHub (مثل Papirus, Tela, Fluent, WhiteSur, Qogir)، مع:
-  - فحص ثيم الأيقونات في النظام أولاً (سريع، وبدون إنترنت).
-  - إنشاء أسماء مرشحة بذكاء (عبر إزالة اللواحق، أو تقصير الأسماء).
-  - حد أقصى للاتصالات المتزامنة حتى لا تتسبب الشبكة الكبيرة بفتح عشرات الاتصالات في وقت واحد.
-  - حد زمني للطلبات مع نظام حماية للإلغاء الإجباري.
-  - تخزين مؤقت على القرص (Caching) بحيث يتم جلب الأيقونات مرة واحدة فقط.
-- **"ربما يعجبك أيضاً"** — رف اقتراحات عشوائية في صفحة التفاصيل لتشجيعك على اكتشاف برامج جديدة.
-- **تثبيت بصلاحيات الجذر** — يستخدم `pkexec` للحصول على الصلاحيات، أو يعمل مباشرة إذا كان المستخدم هو الجذر (root).
-- **الإضافات وحزم اللغات (Addons)** — يعمل بنظام إعدادات JSON محلي (في مجلد `special_case_packages/`) لربط الحزم بإضافاتها بسلاسة (مثل حزم لغات LibreOffice). الضغط على الإضافة يكتشف تلقائياً الحزمة الأصلية ويربطك بها!
-
-## صور من داخل البرنامج (Screenshots)
+</div>
 
 <table>
   <tr>
@@ -40,22 +25,22 @@
     </td>
     <td align="center">
       <div>
-        <img src="image2.png" alt="تفاصيل الباكيدج" width="100%">
-        <div><strong>تفاصيل الباكيدج</strong></div>
+        <img src="image2.png" alt="تفاصيل الحزمة" width="100%">
+        <div><strong>تفاصيل الحزمة</strong></div>
       </div>
     </td>
   </tr>
   <tr>
     <td align="center">
       <div>
-        <img src="image3.png" alt="باكيدج مع إضافات لغة" width="100%">
-        <div><strong>باكيدج مع إضافات لغة</strong></div>
+        <img src="image3.png" alt="حزمة مع إضافات اللغات" width="100%">
+        <div><strong>حزمة مع إضافات اللغات</strong></div>
       </div>
     </td>
     <td align="center">
       <div>
-        <img src="image4.png" alt="البحث عن باكيدج" width="100%">
-        <div><strong>البحث عن باكيدج</strong></div>
+        <img src="image4.png" alt="البحث عن حزمة" width="100%">
+        <div><strong>البحث عن حزمة</strong></div>
       </div>
     </td>
   </tr>
@@ -68,84 +53,114 @@
     </td>
     <td align="center">
       <div>
-        <img src="image6.png" alt="الفئات" width="100%">
-        <div><strong>الفئات</strong></div>
+        <img src="image6.png" alt="التصنيفات" width="100%">
+        <div><strong>التصنيفات</strong></div>
       </div>
     </td>
   </tr>
 </table>
 
+<div dir="rtl">
+
+## كيف يُبنى
+
+ناتج البناء ملف تنفيذي صغير حوله مكتبات مشتركة (`.so`). لا تنادي المكتبات بعضها مباشرة، بل تتخاطب عبر ناقل رسائل واحد:
+
+</div>
+
+```
+target/release/
+├── tux-store              الملف التنفيذي (بلا منطق تطبيق)
+├── libtux_ui.so           الواجهة (Slint)
+├── libtux_search.so       الكتالوج والبحث والتفاصيل وقوائم المثبّت والتحديثات
+├── libtux_thumbnail.so    الأيقونات وصور الأغلفة
+└── libtux_install.so      عمليات pacman بصلاحيات root
+```
+
+<div dir="rtl">
+
+التفاصيل في [DOCS/ARCHITECTURE.md](DOCS/ARCHITECTURE.md).
+
+## المميزات
+
+- **صفحة رئيسية منسّقة** — أقسام تُقرأ من `data/categories.json` مع شريط أغلفة في الأعلى.
+- **بحث فوري** أثناء الكتابة، مع ترتيب النتائج وتقسيمها إلى صفحات.
+- **تفاصيل حقيقية للأحجام** — الاعتماديات والأحجام تأتي من محلّل pacman نفسه (`pacman -Sp`).
+- **شريط تقدّم موزون** يتبع مراحل التنزيل ثم التحقق ثم التثبيت، ولا يعرض 100% قبل أن ينتهي pacman فعلاً.
+- **تبويب المثبّتة** — الحزم التي ثبّتّها صراحةً، مع فلتر.
+- **تبويب التحديثات** — قائمة الترقيات المعلّقة (عبر `checkupdates` إن وُجد) وزر **Update all**.
+- **خمسة أنماط للحذف** — من الحذف البسيط إلى التنظيف الكامل.
+- **إضافات وحزم لغات** من ملفات `data/special_case_packages/*.json`.
+- **أيقونات ذكية** — الكاش ثم الأيقونات المضمّنة ثم ثيم النظام ثم طلب واحد من Papirus، مع كاش للفشل.
+- **زر رجوع** يعيدك عبر الحزم التي فتحتها من الاقتراحات والإضافات.
+- **ثيم داكن/فاتح** يُحفظ بين التشغيلات.
+
 ## المتطلبات
 
-- **Arch Linux** (أو أي توزيعة مبنية عليها) مع `pacman` و (اختيارياً) `pkexec`/Polkit.
-- **CMake** ≥ 3.21
-- **مترجم C++20** (GCC أو Clang)
-- **Qt6** — `Core`, `Gui`, `Network`, `Concurrent`
-- **Slint** (C++ API) — راجع [slint.dev](https://slint.dev) لتعليمات التثبيت.
+- Arch Linux مع `pacman` و`polkit` (لـ `pkexec`) و`util-linux` (لأمر `script`).
+- اختياري: `pacman-contrib` لفحص التحديثات بأمان.
+- للبناء: `rust` و`base-devel` و`fontconfig` و`libxkbcommon` و`libglvnd`.
 
-في Arch Linux، يمكن تثبيت معظم المتطلبات عبر:
+## التثبيت
 
-```bash
-sudo pacman -S cmake qt6-base gcc
-```
+**من إصدار جاهز** (صفحة Releases):
 
-(ملاحظة: Slint ليس متوفراً حالياً كحزمة مبنية مسبقاً في المستودعات الرسمية لـ Arch؛ قم بتثبيته حسب [دليل Slint C++](https://releases.slint.dev/latest/docs/cpp/)).
-
-## البناء والتثبيت
+</div>
 
 ```bash
-cmake . && make -j$(nproc)
+sudo pacman -U tux-store-<version>-1-x86_64.pkg.tar.zst
+# أو النسخة المحمولة، تعمل من مكانها:
+tar xzf tux-store-<version>-x86_64-linux.tar.gz
+./tux-store-<version>/tux-store
 ```
 
-هذا سينتج ملف تنفيذي باسم `tuxstore` في المجلد الرئيسي.
+<div dir="rtl">
 
-لتشغيله:
+**من المصدر:**
+
+</div>
 
 ```bash
-./tuxstore
+cargo build --release          # يبني الملف التنفيذي وكل مكتبات libtux_*.so
+./target/release/tux-store
 ```
 
-> **ملاحظة:** تثبيت الحزم سيؤدي إلى ظهور نافذة مطالبة بكلمة المرور (`pkexec`/Polkit) ما لم يكن Tux Store يعمل بصلاحيات الجذر مسبقاً.
+<div dir="rtl">
 
-## هيكلة المشروع
+للتثبيت في النظام: `sudo make install` أو `cd packaging && makepkg -si`.
 
+> ملاحظة: الأمر `cargo run` وحده لا يكفي، لأنه يبني الملف التنفيذي فقط دون المكتبات. استخدم `cargo build --release` أولاً.
+
+## الاستخدام
+
+</div>
+
+```bash
+tux-store                          # تشغيل المتجر
+tux-store openpackage firefox      # فتح صفحة حزمة مباشرة
+TUX_LOG=debug tux-store            # سجل مفصّل (error|warn|info|debug|trace)
 ```
-├── include/                # ترويسات عامة لجميع أصناف الكواليس (backend)
-├── src/                    # كود التشغيل في الخلفية (Qt/C++) + main.cpp
-├── ui/                     # واجهة المستخدم Slint (صفحات، مكونات، ثيمات)
-├── special_case_packages/  # إعدادات JSON للإضافات وحزم اللغات
-├── DOCS/                   # توثيق موسع للمطورين
-├── CMakeLists.txt
-└── README.md
-```
+
+<div dir="rtl">
+
+| المتغيّر | الوظيفة |
+|---|---|
+| `TUX_LOG` | مستوى السجل |
+| `TUX_MODULE_DIR` | مكان البحث عن `libtux_*.so` |
+| `TUX_DATA_DIR` | مكان `categories.json` والأيقونات والأغلفة |
+
+الإعدادات والكاش: `~/.config/tux-store/` و`~/.cache/tux-store/`.
 
 ## التوثيق
 
-التوثيق الكامل للمطورين — الهيكلية، تفاصيل كل مكون، تدفق البيانات بين Qt و Slint، ودليل المساهمة — موجود في مجلد [`DOCS/`](DOCS/README.md). ابدأ من هناك إذا كنت تخطط للمساهمة أو تريد فهم كيفية عمل جزء معين.
-
-روابط سريعة:
-
-- [نظرة عامة على الهيكلية](DOCS/ARCHITECTURE.md)
-- [مدير باكمان](DOCS/PACMAN_MANAGER.md)
-- [مدير التثبيت](DOCS/INSTALL_MANAGER.md)
-- [أخذ الايقونات](DOCS/ICON_FETCHER.md)
-- [هيكلة الباكيدجات](DOCS/PACKAGE_MODEL.md)
-- [واجهة المستخدم (Slint)](DOCS/UI_LAYER.md)
-- [التسجيل (Logging)](DOCS/LOGGING.md)
-- [كيفية المساهمة](DOCS/CONTRIBUTING.md)
-
-## كيف يعمل؟ (باختصار)
-
-1. عند التشغيل، يقوم `PacmanManager::fetchDefaults()` بتشغيل `pacman -Q` على قائمة التطبيقات المختارة خارج مسار الواجهة (عبر `QtConcurrent`) ويملأ الشاشة الرئيسية.
-2. يتم جلب الأيقونات بشكل كسول لكل بطاقة عبر `IconFetcher`، والذي يتحقق من الذاكرة المؤقتة ثم ثيم النظام ثم مستودعات الأيقونات على GitHub.
-3. النقر على تطبيق يستدعي `PacmanManager::fetchDetails()`، والذي يستخدم مخطط `pacman` الفعلي لمعرفة الأحجام الدقيقة والاعتماديات الجديدة والمثبتة مسبقاً.
-4. النقر على **تثبيت (Install)** يمرر اسم الحزمة وأحجامها إلى `InstallManager`، الذي يشغل `pacman -S` (عبر `pkexec`)، ويقرأ المخرجات سطراً بسطر ليحسب نسبة التقدم الحقيقية.
-5. واجهة Slint (`ui/main.slint`) هي واجهة خفيفة وتفاعلية تعتمد على بيانات صريحة (`UiPackage`، `UiPackageDetails`، `UiInstallState`) يرسلها `main.cpp` لتبقى الواجهة متزامنة مع ما يحدث بالخلف.
-
-## الترخيص
-
-[GPL v3](./LICENSE)
+كل التفاصيل في مجلد [DOCS/](DOCS/README.md): البنية، وناقل الرسائل، وطبقة pacman، والمثبّت، والأيقونات، والواجهة، والإضافات، والإصدارات، والمساهمة.
 
 ## المساهمة
 
-نرحب بالمساهمات! يرجى قراءة [`DOCS/CONTRIBUTING.md`](DOCS/CONTRIBUTING.md) قبل فتح أي Pull Request — فهو يغطي أسلوب الكود، معايير التسجيل (logging)، وكيفية الحفاظ على الفصل بين Qt و Slint.
+اقرأ [DOCS/CONTRIBUTING.md](DOCS/CONTRIBUTING.md). الإصدارات يبنيها الملف `.github/workflows/release.yml` ([DOCS/RELEASING.md](DOCS/RELEASING.md)).
+
+## الرخصة
+
+GPL-3.0-or-later — انظر [LICENSE](LICENSE).
+
+</div>
