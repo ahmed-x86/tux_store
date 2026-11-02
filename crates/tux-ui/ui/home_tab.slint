@@ -1,0 +1,37 @@
+import { UiPackage, UiSection } from "types.slint";
+import { AppRow, CoverCarousel } from "components.slint";
+
+export component HomeTab inherits Flickable {
+    in property <string> cover-name;
+    in property <image> cover-image;
+    in property <int> cover-count;
+    in property <[UiSection]> sections;
+    callback app-clicked(UiPackage);
+    callback cover-prev();
+    callback cover-next();
+    callback cover-clicked();
+
+    viewport-height: feed.preferred-height + 48px;
+    feed := VerticalLayout {
+        y: 24px;
+        spacing: 32px;
+        alignment: start;
+
+        CoverCarousel {
+            caption: root.cover-name;
+            picture: root.cover-image;
+            count: root.cover-count;
+            prev => { root.cover-prev(); }
+            next => { root.cover-next(); }
+            clicked => { root.cover-clicked(); }
+        }
+
+        // One shelf per section sent by the search module (data-driven).
+        for section[i] in root.sections : AppRow {
+            title: section.title;
+            pkgs: section.packages;
+            row-idx: i;
+            clicked(pkg) => { root.app-clicked(pkg); }
+        }
+    }
+}
