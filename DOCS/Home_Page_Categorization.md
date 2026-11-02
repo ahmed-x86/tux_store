@@ -1,21 +1,30 @@
 # Home Feed & Categorization
 
-The home page has been completely redesigned to display applications in horizontally scrolling rows (categories), providing a modern app store experience.
+The Home tab shows horizontally scrolling shelves, one per category — a data-driven version of the original hard-coded model-per-category design.
 
-## 1. Data Engine (Backend - C++)
-A large list of default applications is fetched via `PacmanManager::defaultApps()`. Instead of pushing all of them into a single monolithic model, `main.cpp` filters these applications as soon as they are received and distributes them across multiple independent VectorModels:
-- `browsersModel`: For web browsers (Firefox, Chromium, Brave, ...).
-- `designModel`: For design and multimedia software (Blender, GIMP, Kdenlive, ...).
-- `officeModel`: For productivity and office suites (LibreOffice, OnlyOffice, ...).
-- `devModel`: For development tools (VS Code, Python, GCC, Rust, ...).
-- `communicationModel`: For messaging and VoIP apps (Telegram, Discord, Signal, ...).
-- `forYouModel`: For general and miscellaneous apps (Steam, qBittorrent, ...).
-- `pkgModel`: Specifically used for comprehensive search results.
+## Data: `data/categories.json`
 
-These models are then passed to the Slint UI via dedicated properties (e.g., `set_browsers`, `set_dev`, etc.).
+```json
+{ "sections": [
+  { "id": "browsers", "title": "Browsers", "packages": ["firefox", "chromium", "…"] }
+] }
+```
 
-## 2. Graphical User Interface (UI - Slint)
-- A custom component named `AppRow` was created.
-- `AppRow` accepts a category title (e.g., "Browsers") and a list of applications (`[UiPackage]`).
-- The component contains a horizontal `Flickable` area with a custom-built scrollbar that responds smoothly to both mouse dragging and touch.
-- If the user types into the top search bar, the `AppRow` sections immediately disappear, replaced by a responsive Grid view showing the search results. Once the search query is cleared, the store gracefully returns to the categorized row layout.
+Order in the file is order on screen. Sections shipped: For You, Browsers, Communication, Design & Multimedia, Office & Productivity, Development, Utilities.
+
+To add a category, add an object — no code changes. To add an app, add its pacman name to a `packages` list.
+
+## Backend
+
+`tux-search`:
+1. `Catalog::all_package_names()` — every curated name once, in display order.
+2. **One** `pacman -Si` for the whole list (`packages_by_name`). Names pacman does not know are shown as `aur` stubs instead of being hidden.
+3. The result is cached as `Vec<Section>` and published as `HomeReady`. Later requests reuse the cache and only refresh the *installed* flags from the local database; the cache is dropped after an install/remove.
+
+## UI
+
+`HomeTab` iterates the section model — `for section[i] in sections : AppRow { … }`. `AppRow` is a titled `Flickable` of `AppCard`s with the shared `HScrollBar` (drag or touch). The row index feeds the placeholder accent colour so neighbouring rows differ.
+
+While the search box has text, the shelves are replaced by the paginated search grid; clearing it brings the shelves back.
+
+The banner above the shelves is the cover carousel (`data/images/cover/<app>/*`): a random cover first, auto-advance every 8 s (paused on hover), arrows to step, click to open that app's page (`codium` maps to `vscodium`). Only the visible image is decoded.
