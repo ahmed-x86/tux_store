@@ -8,5 +8,5 @@
  <path style="fill:#ababab" d="M 36,11 47,22 H 36 Z"/>
  <path style="opacity:0.1;fill:#ffffff" d="M 42,4 43,5 H 54 V 4 Z"/>
  <path style="opacity:0.1;fill:#ffffff" d="M 18 4 C 13.568 4 10 7.568 10 12 L 10 13 C 10 8.568 13.568 5 18 5 L 38 5 L 54 21 L 54 20 L 38 4 L 18 4 z"/>
-  <text x="95%" y="95%" font-family="Cairo" font-weight="bold" font-size="20" fill="white" stroke="#2b2b2b" stroke-width="1.5" text-anchor="end">AM</text>
+  <path d="M40.76 60.8 39.54 57.28H34.3L33.08 60.8H30.19L35.21 47.04H38.61L43.61 60.8ZM36.91 49.16 36.85 49.37Q36.76 49.73 36.62 50.17Q36.48 50.62 34.94 55.12H38.9L37.54 51.16L37.12 49.83ZM56.9 60.8V52.46Q56.9 52.18 56.91 51.89Q56.91 51.61 57 49.46Q56.31 52.09 55.98 53.12L53.5 60.8H51.44L48.96 53.12L47.92 49.46Q48.04 51.73 48.04 52.46V60.8H45.48V47.04H49.34L51.8 54.74L52.01 55.48L52.48 57.32L53.09 55.12L55.62 47.04H59.46V60.8Z" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.50" stroke-linejoin="round" paint-order="stroke fill"/>
 </svg>
