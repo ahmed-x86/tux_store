@@ -1,100 +1,57 @@
 # Package / Data Model
 
-Files: `include/package.h`, `src/package.cpp`
+Files: `crates/tux-abi/src/message.rs`, `crates/tux-abi/src/text.rs`
 
-This module has no Qt-widget or network dependencies — it's pure data structures and small pure functions, shared by `PacmanManager`, `InstallManager`, and `main.cpp`.
+Pure data and pure helpers — no I/O, shared by every module.
 
 ## Structs
 
 ### `Package`
-
-Represents one browsable/searchable package as shown in the grid.
-
-```cpp
-struct Package {
-    QString repo;          // e.g. "extra", "core", "aur"
-    QString name;          // pacman package name, e.g. "libreoffice-fresh"
-    QString version;       // version string, or "latest" for curated defaults
-    QString description;   // short description shown on the card / details header
-    bool installed = false;
-};
+```rust
+pub struct Package {
+    pub name: String,         // pacman name, e.g. "libreoffice-fresh"
+    pub repo: String,         // "extra", "core", … or "aur" when pacman does not know it
+    pub version: String,
+    pub description: String,
+    pub installed: bool,
+}
 ```
+`repo = "aur"` is also used for packages that are installed but absent from the sync databases, and as the stub for curated entries pacman cannot find.
 
-Produced by `PacmanManager::runDefaults()` and `PacmanManager::runSearch()`.
-
-### `PackageDependency`
-
-One row in the dependency list on the details page.
-
-```cpp
-struct PackageDependency {
-    QString name;
-    long long sizeBytes = 0;   // Installed Size, from `pacman -Si`/`-Qi`
-    bool installed = false;    // already present on the system?
-};
-```
+### `Dependency`
+`{ name, size_bytes, installed }` — one row of the dependency list.
 
 ### `PackageDetails`
+The transaction plan as pacman's own resolver reports it.
 
-The full breakdown computed for the details page + install sizing. This is the richest struct in the codebase — see [PACMAN_MANAGER.md](PACMAN_MANAGER.md) for exactly how each field is derived.
-
-```cpp
-struct PackageDetails {
-    long long appSizeBytes = 0;              // Installed Size of the target package itself
-    QVector<PackageDependency> dependencies; // installed-first, then new deps
-    long long installedDepsBytes = 0;        // sum of already-installed deps' installed size
-    long long newDepsBytes = 0;              // sum of new deps' installed size
-    long long downloadBytes = 0;             // == totalDownloadBytes (kept for back-compat)
-    long long totalBytes = 0;                // appSizeBytes + installedDepsBytes + newDepsBytes
-
-    // Mirrors pacman's own transaction summary, computed from pacman's real
-    // dependency resolution rather than re-derived by us:
-    long long totalDownloadBytes = 0;   // sum of Download Size for everything pacman will fetch
-    long long totalInstalledBytes = 0;  // sum of Installed Size for the whole transaction
-    long long netUpgradeBytes = 0;      // net change to disk usage
-};
-```
-
-> **Field overlap note:** `downloadBytes` and `totalDownloadBytes` currently hold the same value — `downloadBytes` exists for backward compatibility and should be considered deprecated. New code should read `totalDownloadBytes`.
-
-## Free Functions
-
-### `QString formatSize(long long bytes)`
-
-Formats a byte count as a human-readable string with 2 decimal places, choosing the largest unit that keeps the number ≥ 1:
-
-| Range | Output example |
+| Field | Meaning |
 |---|---|
-| < 1024 B | `"512 B"` |
-| < 1024 KiB | `"3.42 KiB"` |
-| < 1024 MiB | `"128.00 MiB"` |
-| ≥ 1024 MiB | `"1.20 GiB"` |
+| `app_size` | installed size of the package itself |
+| `installed_deps` | planned dependencies that are already on disk |
+| `new_deps` | planned dependencies that still have to be installed |
+| `total_download` | download size of everything not yet installed |
+| `total_installed` | installed size of the whole plan |
+| `net_upgrade` | installed size of what is **not** already installed (0 when only a reinstall) |
+| `dependencies` | installed ones first, then new ones |
+| `plan_ok` | `false` when pacman produced no plan (AUR / foreign package) |
 
-Used everywhere a size is shown in the UI (`main.cpp` when building `UiPackageDetails`).
+`total_footprint()` = `app_size + installed_deps + new_deps`; the UI derives the three bar proportions from it.
 
-### `QString prettifyName(const QString &raw)`
+### Others
+`Addon { label, package }`, `SpecialCase { kind, items, addon_for }`, `Section { id, title, packages }`, `Cover { name, images }`, `UpdateEntry { name, old_version, new_version }`.
 
-Converts a pacman package name into a display-friendly title, by splitting on `-` and capitalizing each segment:
-
+### `RemoveMode` and `Operation`
+```rust
+enum RemoveMode { Basic, Reset, Clean, Force, Complete }   // -R -Rn -Rs -Rdd -Rns
+enum Operation  { Install{name}, Remove{name, mode}, SystemUpgrade }
 ```
-"telegram-desktop" -> "Telegram Desktop"
-"qbittorrent"       -> "Qbittorrent"
-```
+A typed `RemoveMode` replaces the raw flag string the C++ version passed around, so the backend never forwards arbitrary arguments to a privileged command.
 
-This is intentionally simple (no acronym dictionary, e.g. it won't render "vlc" as "VLC") — see [CONTRIBUTING.md](CONTRIBUTING.md) for notes on improving this.
+## Helpers (`text.rs`)
 
-### `QString sanitizeName(const QString &name)`
+- `format_size(bytes)` → `"512 B"`, `"3.42 KiB"`, `"128.00 MiB"`, `"1.20 GiB"`.
+- `prettify_name("telegram-desktop")` → `"Telegram Desktop"` (naive per-segment capitalisation; no acronym table).
+- `is_valid_package_name(name)` — allow-list: non-empty, ≤ 128 bytes, ASCII alphanumerics and `@ . _ + -`, must not start with `-` or `.`. Used before a name reaches a command line or a cache file name.
+- `strip_ansi(text)` — removes `ESC [ … final-byte` sequences.
 
-Iteratively strips known Arch packaging suffixes so a name resembles its "canonical" upstream project name — primarily used by `IconFetcher` to generate better icon-repo candidate names:
-
-```cpp
-static const QStringList suffixes = {"-git", "-bin", "-aur", "-patch", "-full", "-stable"};
-```
-
-Example: `"foo-bin-git"` → `"foo-bin"` → `"foo"` (applied repeatedly until no suffix matches).
-
-**Note:** this is a generic string transform, not an alias table. Package-specific renaming (e.g. `"neovim"` → `"nvim"`) lives separately in `IconFetcher`'s `aliasFor()`, not here — see [ICON_FETCHER.md](ICON_FETCHER.md).
-
-## Where This Data Comes From
-
-Nothing in `package.h`/`package.cpp` talks to `pacman` directly. All construction of these structs happens in `PacmanManager` (see [PACMAN_MANAGER.md](PACMAN_MANAGER.md)); this module only defines the shape and the small pure helpers.
+Sanitising AUR-style suffixes (`-git`, `-bin`, …) lives in `tux-thumbnail/src/names.rs`, because only icon guessing needs it.
