@@ -1,0 +1,270 @@
+import { Theme } from "theme.slint";
+import { AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate } from "types.slint";
+import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay } from "components.slint";
+import { HomeTab } from "home_tab.slint";
+import { InstalledTab } from "installed_tab.slint";
+import { UpdateTab } from "update_tab.slint";
+import { DetailsView } from "details_view.slint";
+import { SettingsView } from "settings_view.slint";
+import { AddonsStore } from "addons_store.slint";
+
+// Everything Rust needs to name must be re-exported from the main file.
+export { Theme, AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate }
+
+export component MainWindow inherits Window {
+    title: "Tux Store";
+    preferred-width: 1100px;
+    preferred-height: 800px;
+    min-width: 640px;
+    min-height: 480px;
+    background: Theme.base;
+
+    // ── navigation ──
+    in-out property <AppView> view: AppView.main;
+    in-out property <int> active-tab: 0;       // 0 Home · 1 Updates · 2 Installed
+    in-out property <string> search-query;
+    in-out property <string> installed-filter;
+    in-out property <bool> show-console: false;
+
+    // ── home ──
+    in property <string> cover-name;
+    in property <image> cover-image;
+    in property <int> cover-count;
+    in property <[UiSection]> sections;
+
+    // ── search / installed / updates ──
+    in property <[UiPackage]> search-results;
+    in property <bool> has-more-results;
+    in property <bool> search-busy;
+    in property <[UiPackage]> installed;
+    in property <int> installed-total;
+    in property <bool> installed-loading;
+    in property <bool> installed-has-more;
+    in property <[UiUpdate]> updates;
+    in property <bool> updates-loading;
+    in property <string> updates-status;
+
+    // ── details ──
+    in property <UiPackage> current-package;
+    in property <UiPackageDetails> current-details;
+    in property <[UiPackage]> current-suggestions;
+    in property <UiSpecialCase> current-special-case;
+    in property <[UiPackage]> addons-packages;
+    in property <int> accent-idx: 4;
+
+    // ── transaction ──
+    in-out property <UiInstallState> current-install;
+    in property <string> console-text;
+
+    // ── settings ──
+    in property <string> app-version;
+    in property <string> cache-status;
+
+    // ── Slint → Rust ──
+    callback search-edited(string);
+    callback search-submitted(string);
+    callback home-clicked();
+    callback tab-changed(int);
+    callback app-clicked(UiPackage);
+    callback back-clicked();
+    callback install-clicked();
+    callback remove-clicked(string);
+    callback open-url(string, string);
+    callback addon-clicked(string);
+    callback view-all-addons-clicked();
+    callback request-more-results();
+    callback request-more-installed();
+    callback installed-filter-edited(string);
+    callback refresh-updates();
+    callback upgrade-all();
+    callback cover-prev();
+    callback cover-next();
+    callback cover-clicked();
+    callback theme-changed(bool);
+    callback clear-icon-cache();
+
+    // Copy via a hidden, read-only TextInput: Slint's own clipboard support
+    // works on both X11 and Wayland without extra dependencies.
+    public function copy-text(t: string) {
+        copy-helper.text = t;
+        copy-helper.select-all();
+        copy-helper.copy();
+    }
+    copy-helper := TextInput {
+        x: -500px;
+        y: 0px;
+        width: 300px;
+        height: 24px;
+        opacity: 0.0;
+        read-only: true;
+    }
+
+    // ═════════════ main screen ═════════════
+    if root.view == AppView.main : VerticalLayout {
+        TopBar {
+            settings-clickable: true;
+            settings-clicked => { root.view = AppView.settings; }
+
+            Rectangle {
+                width: 40px;
+                height: 36px;
+                background: home-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                border-radius: 10px;
+                border-color: Theme.surface1;
+                border-width: 1px;
+                home-ta := TouchArea {
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.active-tab = 0;
+                        root.search-query = "";
+                        root.home-clicked();
+                    }
+                }
+                Image {
+                    source: @image-url("home.svg");
+                    width: 18px;
+                    height: 18px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: home-ta.has-hover ? Theme.blue : Theme.text;
+                    animate colorize { duration: 150ms; }
+                }
+            }
+
+            SearchBox {
+                text <=> root.search-query;
+                placeholder: "Search packages…";
+                edited(t) => { root.active-tab = 0; root.search-edited(t); }
+                accepted(t) => { root.active-tab = 0; root.search-submitted(t); }
+            }
+        }
+
+        // Floating tab bar
+        Rectangle {
+            height: 64px;
+            VerticalLayout {
+                alignment: center;
+                HorizontalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: min(480px, root.width - 48px);
+                        height: 44px;
+                        background: Theme.mantle;
+                        border-radius: 12px;
+                        border-color: Theme.surface0;
+                        border-width: 1px;
+                        HorizontalLayout {
+                            padding: 4px;
+                            spacing: 4px;
+                            TabButton {
+                                label: "Home";
+                                active: root.active-tab == 0;
+                                c1: #cba6f7;
+                                c2: #74c7ec;
+                                clicked => { root.active-tab = 0; root.tab-changed(0); }
+                            }
+                            TabButton {
+                                label: "Updates";
+                                active: root.active-tab == 1;
+                                c1: #89b4fa;
+                                c2: #b4befe;
+                                clicked => { root.active-tab = 1; root.tab-changed(1); }
+                            }
+                            TabButton {
+                                label: "Installed";
+                                active: root.active-tab == 2;
+                                c1: #74c7ec;
+                                c2: #89dceb;
+                                clicked => { root.active-tab = 2; root.tab-changed(2); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if root.active-tab == 0 : Rectangle {
+            vertical-stretch: 1;
+            if root.search-query != "" : PackageGrid {
+                packages: root.search-results;
+                has-more: root.has-more-results;
+                empty-text: root.search-busy ? "Searching…" : "No packages found";
+                app-clicked(p) => { root.app-clicked(p); }
+                more-clicked => { root.request-more-results(); }
+            }
+            if root.search-query == "" : HomeTab {
+                cover-name: root.cover-name;
+                cover-image: root.cover-image;
+                cover-count: root.cover-count;
+                sections: root.sections;
+                app-clicked(p) => { root.app-clicked(p); }
+                cover-prev => { root.cover-prev(); }
+                cover-next => { root.cover-next(); }
+                cover-clicked => { root.cover-clicked(); }
+            }
+        }
+
+        if root.active-tab == 1 : UpdateTab {
+            updates: root.updates;
+            loading: root.updates-loading;
+            status: root.updates-status;
+            install-state: root.current-install;
+            refresh => { root.refresh-updates(); }
+            upgrade-all => { root.upgrade-all(); }
+            show-console => { root.show-console = true; }
+        }
+
+        if root.active-tab == 2 : InstalledTab {
+            packages: root.installed;
+            total: root.installed-total;
+            loading: root.installed-loading;
+            has-more: root.installed-has-more;
+            filter <=> root.installed-filter;
+            filter-edited(t) => { root.installed-filter-edited(t); }
+            app-clicked(p) => { root.app-clicked(p); }
+            more-clicked => { root.request-more-installed(); }
+        }
+    }
+
+    // ═════════════ other screens ═════════════
+    if root.view == AppView.details : DetailsView {
+        pkg: root.current-package;
+        details: root.current-details;
+        install-state: root.current-install;
+        suggestions: root.current-suggestions;
+        special-case: root.current-special-case;
+        accent-idx: root.accent-idx;
+        back-clicked => { root.back-clicked(); }
+        install-clicked => { root.install-clicked(); }
+        remove-clicked(mode) => { root.remove-clicked(mode); }
+        suggestion-clicked(p) => { root.app-clicked(p); }
+        open-url(repo, name) => { root.open-url(repo, name); }
+        addon-clicked(n) => { root.addon-clicked(n); }
+        view-all-addons-clicked => { root.view = AppView.addons; root.view-all-addons-clicked(); }
+        copy-to-clipboard(t) => { root.copy-text(t); }
+        show-console => { root.show-console = true; }
+    }
+
+    if root.view == AppView.addons : AddonsStore {
+        packages: root.addons-packages;
+        store-title: root.current-special-case.type-name + " for " + root.current-package.pretty-name;
+        back-clicked => { root.view = AppView.details; }
+        app-clicked(p) => { root.app-clicked(p); }
+    }
+
+    if root.view == AppView.settings : SettingsView {
+        app-version: root.app-version;
+        cache-status: root.cache-status;
+        back-clicked => { root.view = AppView.main; }
+        theme-selected(dark) => { root.theme-changed(dark); }
+        clear-cache-clicked => { root.clear-icon-cache(); }
+    }
+
+    // The console overlay sits above every screen.
+    if root.show-console : ConsoleOverlay {
+        text: root.console-text;
+        close => { root.show-console = false; }
+    }
+}
