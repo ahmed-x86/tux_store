@@ -195,6 +195,8 @@ export component MainWindow inherits Window {
                 more-clicked => { root.request-more-results(); }
             }
             if root.search-query == "" : HomeTab {
+                width: parent.width;
+                height: parent.height;
                 cover-name: root.cover-name;
                 cover-image: root.cover-image;
                 cover-count: root.cover-count;

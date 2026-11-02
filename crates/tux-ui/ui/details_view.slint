@@ -94,14 +94,26 @@ export component DetailsView inherits Rectangle {
             PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
         }
 
-        Flickable {
-            VerticalLayout {
+        // A Flickable's own layout info is "as big as my content", so inside a
+        // layout it never grows past it. Wrap it and give it the wrapper's
+        // exact size instead.
+        Rectangle {
+          vertical-stretch: 1;
+          scroll := Flickable {
+            width: parent.width;
+            height: parent.height;
+            // Content fills the width, and is at least as tall as the window
+            // so the spacer below can push "You might also like" to the bottom.
+            content-width: self.width;
+            content-height: max(content.preferred-height, self.height);
+            content := VerticalLayout {
+                width: scroll.width;
+                height: max(self.preferred-height, scroll.height);
                 padding-left: 64px;
                 padding-right: 64px;
                 padding-top: 40px;
                 padding-bottom: 64px;
                 spacing: 32px;
-                alignment: start;
 
                 // ---- Header ------------------------------------------------
                 HorizontalLayout {
@@ -420,6 +432,11 @@ export component DetailsView inherits Rectangle {
                     Text { text: "No additional dependencies required."; color: Theme.subtext1; font-size: 13px; }
                 }
 
+                // Soaks up free space: with a short page the suggestions sit at
+                // the bottom of the window; with a long one they follow the
+                // content and the page scrolls.
+                Rectangle { vertical-stretch: 1; }
+
                 // ---- Suggestions -------------------------------------------
                 if root.suggestions.length > 0 : VerticalLayout {
                     spacing: 14px;
@@ -445,6 +462,7 @@ export component DetailsView inherits Rectangle {
                     }
                 }
             }
+          }
         }
     }
 

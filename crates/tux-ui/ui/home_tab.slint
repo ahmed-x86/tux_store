@@ -11,8 +11,12 @@ export component HomeTab inherits Flickable {
     callback cover-next();
     callback cover-clicked();
 
+    // Without this the content only gets its *preferred* width and stops short
+    // of the window edge on wide screens.
+    content-width: root.width;
     content-height: feed.preferred-height + 48px;
     feed := VerticalLayout {
+        width: root.width;
         y: 24px;
         spacing: 32px;
         alignment: start;

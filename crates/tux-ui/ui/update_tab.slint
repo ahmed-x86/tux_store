@@ -81,12 +81,18 @@ export component UpdateTab inherits Rectangle {
             console-clicked => { root.show-console(); }
         }
 
-        Flickable {
+        Rectangle {
             vertical-stretch: 1;
-            VerticalLayout {
-                spacing: 8px;
-                alignment: start;
-                for u in root.updates : UpdateRow { u: u; }
+            upd-scroll := Flickable {
+                width: parent.width;
+                height: parent.height;
+                content-width: self.width;
+                VerticalLayout {
+                    width: upd-scroll.width;
+                    spacing: 8px;
+                    alignment: start;
+                    for u in root.updates : UpdateRow { u: u; }
+                }
             }
         }
     }
