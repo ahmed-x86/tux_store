@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Tux Store
+Comment=A native package store for Arch Linux
+Exec=tux-store
+Icon=system-software-install
+Terminal=false
+Categories=System;PackageManager;Settings;
+Keywords=pacman;packages;software;store;arch;
