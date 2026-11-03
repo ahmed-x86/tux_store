@@ -83,3 +83,18 @@ pub fn cache_dir() -> PathBuf {
 pub fn config_dir() -> PathBuf {
     xdg("XDG_CONFIG_HOME", ".config")
 }
+
+/// Scripts shipped with the store (`<data>/scripts/*.json`, root-owned).
+pub fn system_scripts_dir() -> PathBuf {
+    data_dir().join("scripts")
+}
+
+/// Scripts written by the user (`~/.config/tux-store/scripts/*.json`).
+pub fn user_scripts_dir() -> PathBuf {
+    config_dir().join("scripts")
+}
+
+/// Packages to hide: shipped list and the user's own list.
+pub fn hidden_packages_files() -> Vec<PathBuf> {
+    vec![data_dir().join("hidden_packages.json"), config_dir().join("hidden_packages.json")]
+}
