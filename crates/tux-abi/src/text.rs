@@ -42,6 +42,11 @@ pub fn is_valid_package_name(name: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'@' | b'.' | b'_' | b'+' | b'-'))
 }
 
+/// Quote one word for `sh -c` (`it's` → `'it'\\''s'`).
+pub fn shell_quote(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "'\\''"))
+}
+
 /// Remove ANSI escape sequences (`ESC [ ... final-byte`) from terminal output.
 pub fn strip_ansi(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
@@ -86,6 +91,12 @@ mod tests {
         assert!(!is_valid_package_name("-Rns"));
         assert!(!is_valid_package_name("a b"));
         assert!(!is_valid_package_name("../x"));
+    }
+
+    #[test]
+    fn quoting() {
+        assert_eq!(shell_quote("a b"), "'a b'");
+        assert_eq!(shell_quote("it's"), "'it'\\''s'");
     }
 
     #[test]
