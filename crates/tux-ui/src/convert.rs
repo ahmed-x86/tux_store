@@ -1,12 +1,18 @@
 //! Bus types → Slint structs (and back).
 
-use crate::{UiAddon, UiPackage, UiPackageDependency, UiPackageDetails, UiSpecialCase, UiUpdate};
+use crate::{
+    UiAddon, UiPackage, UiPackageDependency, UiPackageDetails, UiScriptButton, UiScriptOption, UiScriptView,
+    UiSpecialCase, UiUpdate,
+};
 use slint::{Image, ModelRc, VecModel};
 use tux_abi::text::{format_size, prettify_name};
-use tux_abi::{Package, PackageDetails, SpecialCase, UpdateEntry};
+use tux_abi::script::{ButtonStyle, Tone};
+use tux_abi::{Package, PackageDetails, ScriptViewData, SpecialCase, UpdateEntry};
 
 pub fn to_ui(p: &Package, icon: Option<&Image>) -> UiPackage {
-    let pretty = prettify_name(&p.name);
+    // Scripts carry a real title; pacman packages get one derived from the name.
+    let has_title = !p.title.is_empty();
+    let pretty = if has_title { p.title.clone() } else { prettify_name(&p.name) };
     UiPackage {
         name: p.name.as_str().into(),
         pretty_name: pretty.as_str().into(),
@@ -15,7 +21,7 @@ pub fn to_ui(p: &Package, icon: Option<&Image>) -> UiPackage {
         description: p.description.as_str().into(),
         installed: p.installed,
         icon: icon.cloned().unwrap_or_default(),
-        is_same_name: pretty.to_lowercase() == p.name.to_lowercase(),
+        is_same_name: has_title || pretty.to_lowercase() == p.name.to_lowercase(),
     }
 }
 
@@ -26,6 +32,7 @@ pub fn from_ui(p: &UiPackage) -> Package {
         version: p.version.to_string(),
         description: p.description.to_string(),
         installed: p.installed,
+        title: String::new(),
     }
 }
 
@@ -88,5 +95,40 @@ pub fn update(u: &UpdateEntry) -> UiUpdate {
         name: u.name.as_str().into(),
         old_version: u.old_version.as_str().into(),
         new_version: u.new_version.as_str().into(),
+    }
+}
+
+pub fn script_view(v: &ScriptViewData) -> UiScriptView {
+    let options: Vec<UiScriptOption> = v
+        .options
+        .iter()
+        .map(|o| UiScriptOption { label: o.label.as_str().into(), hint: o.hint.as_str().into() })
+        .collect();
+    let buttons: Vec<UiScriptButton> = v
+        .buttons
+        .iter()
+        .map(|b| UiScriptButton {
+            label: b.label.as_str().into(),
+            style: match b.style {
+                ButtonStyle::Primary => 0,
+                ButtonStyle::Secondary => 1,
+                ButtonStyle::Danger => 2,
+            },
+            needs_selection: b.needs_selection,
+        })
+        .collect();
+    UiScriptView {
+        script_title: v.script_title.as_str().into(),
+        title: v.title.as_str().into(),
+        message: v.message.as_str().into(),
+        tone: match v.tone {
+            Tone::Info => 0,
+            Tone::Warning => 1,
+            Tone::Error => 2,
+            Tone::Success => 3,
+        },
+        options: ModelRc::new(VecModel::from(options)),
+        buttons: ModelRc::new(VecModel::from(buttons)),
+        busy: v.busy,
     }
 }
