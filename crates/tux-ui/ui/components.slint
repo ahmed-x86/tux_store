@@ -1,5 +1,5 @@
 import { Theme } from "theme.slint";
-import { UiPackage, UiPackageDependency, UiInstallState, OpPhase, OpKind } from "types.slint";
+import { UiPackage, UiPackageDependency, UiInstallState, OpPhase, OpKind, UiScriptView } from "types.slint";
 
 // ── Buttons ────────────────────────────────────────────────────────────────
 
@@ -267,8 +267,10 @@ export component AppCard inherits Rectangle {
                 overflow: elide;
             }
             Text {
-                text: root.pkg.installed ? "Installed" : "Not Installed";
-                color: root.pkg.installed ? Theme.green : Theme.overlay0;
+                text: root.pkg.repo == "script" ? "Interactive script"
+                    : (root.pkg.installed ? "Installed" : "Not Installed");
+                color: root.pkg.repo == "script" ? Theme.mauve
+                    : (root.pkg.installed ? Theme.green : Theme.overlay0);
                 font-size: 11px;
                 font-weight: 700;
                 horizontal-alignment: center;
@@ -321,8 +323,8 @@ export component SuggestionCard inherits Rectangle {
         Rectangle { vertical-stretch: 1; }
 
         Text {
-            text: root.pkg.installed ? "Installed" : "View details";
-            color: root.pkg.installed ? Theme.green : Theme.accents[mod(root.accent-idx, Theme.accents.length)];
+            text: root.pkg.repo == "script" ? "View script" : (root.pkg.installed ? "Installed" : "View details");
+            color: root.pkg.installed && root.pkg.repo != "script" ? Theme.green : Theme.accents[mod(root.accent-idx, Theme.accents.length)];
             font-size: 11px;
             font-weight: 700;
         }
@@ -678,6 +680,185 @@ export component ConsoleOverlay inherits Rectangle {
                         font-family: "monospace";
                         wrap: word-wrap;
                     }
+                }
+            }
+        }
+    }
+}
+
+
+// ── Interactive scripts ────────────────────────────────────────────────────
+
+component ScriptOptionCard inherits Rectangle {
+    in property <string> label;
+    in property <string> hint;
+    in property <bool> selected;
+    in property <color> accent;
+    callback clicked();
+
+    min-height: inner.min-height;
+    preferred-height: inner.preferred-height;
+    background: root.selected ? root.accent.transparentize(0.86) : (ta.has-hover ? Theme.surface1 : Theme.surface0);
+    border-color: root.selected ? root.accent : Theme.surface1;
+    border-width: root.selected ? 2px : 1px;
+    border-radius: 12px;
+    animate background { duration: 120ms; }
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    inner := HorizontalLayout {
+        padding: 14px;
+        spacing: 14px;
+        VerticalLayout {
+            alignment: start;
+            // radio dot
+            Rectangle {
+                width: 20px;
+                height: 20px;
+                border-radius: 10px;
+                border-width: 2px;
+                border-color: root.selected ? root.accent : Theme.overlay0;
+                Rectangle {
+                    x: 4px;
+                    y: 4px;
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: root.selected ? root.accent : transparent;
+                }
+            }
+        }
+        VerticalLayout {
+            spacing: 4px;
+            Text { text: root.label; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+            if root.hint != "" : Text { text: root.hint; color: Theme.subtext0; font-size: 12px; wrap: word-wrap; }
+        }
+    }
+}
+
+// Modal dialog that renders one screen of a running script. It is purely
+// presentational: Rust decides what to show and what a button does.
+export component ScriptDialog inherits Rectangle {
+    in property <UiScriptView> view;
+    in property <float> progress;
+    in property <string> progress-label;
+    in property <bool> has-output;
+    in-out property <int> selected: -1;
+    callback button-clicked(int);
+    callback details-clicked();
+
+    property <color> tone-color: root.view.tone == 1 ? #f9e2af
+        : (root.view.tone == 2 ? Theme.red
+        : (root.view.tone == 3 ? Theme.green : Theme.blue));
+
+    background: Theme.crust.transparentize(0.1);
+    TouchArea {} // swallows clicks behind the dialog
+
+    card := Rectangle {
+        width: min(680px, root.width - 48px);
+        height: min(root.height - 48px, lay.preferred-height);
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        background: Theme.mantle;
+        border-color: Theme.surface1;
+        border-width: 1px;
+        border-radius: 16px;
+        clip: true;
+
+        lay := VerticalLayout {
+            Rectangle { height: 4px; background: root.tone-color; }
+
+            VerticalLayout {
+                padding: 22px;
+                padding-bottom: 6px;
+                spacing: 4px;
+                Text { text: root.view.script-title; color: Theme.overlay1; font-size: 11px; font-weight: 700; }
+                Text { text: root.view.title; color: Theme.text; font-size: 21px; font-weight: 800; wrap: word-wrap; }
+            }
+
+            // Scrollable body
+            Rectangle {
+                vertical-stretch: 1;
+                min-height: 60px;
+                preferred-height: body.preferred-height;
+                scroll := Flickable {
+                    width: parent.width;
+                    height: parent.height;
+                    content-width: self.width;
+                    content-height: body.preferred-height;
+                    body := VerticalLayout {
+                        width: scroll.width;
+                        padding: 22px;
+                        padding-top: 10px;
+                        padding-bottom: 14px;
+                        spacing: 12px;
+
+                        if root.view.message != "" : Text {
+                            text: root.view.message;
+                            color: Theme.subtext1;
+                            font-size: 14px;
+                            wrap: word-wrap;
+                        }
+
+                        for opt[i] in root.view.options : ScriptOptionCard {
+                            label: opt.label;
+                            hint: opt.hint;
+                            selected: root.selected == i;
+                            accent: root.tone-color;
+                            clicked => { root.selected = i; }
+                        }
+
+                        if root.view.busy : VerticalLayout {
+                            spacing: 8px;
+                            padding-top: 6px;
+                            HorizontalLayout {
+                                spacing: 12px;
+                                Text {
+                                    horizontal-stretch: 1;
+                                    text: root.progress-label;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                    overflow: elide;
+                                }
+                                Text { text: round(root.progress * 100) + "%"; color: Theme.overlay1; font-size: 12px; }
+                            }
+                            Rectangle {
+                                height: 10px;
+                                border-radius: 5px;
+                                background: Theme.surface1;
+                                clip: true;
+                                Rectangle {
+                                    x: 0px;
+                                    width: parent.width * max(0.02, min(1.0, root.progress));
+                                    background: Theme.mauve;
+                                    animate width { duration: 350ms; easing: ease-out; }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Footer
+            HorizontalLayout {
+                padding: 18px;
+                padding-top: 8px;
+                spacing: 10px;
+                alignment: end;
+
+                if root.has-output : PillButton {
+                    text: "Show details";
+                    clicked => { root.details-clicked(); }
+                }
+                Rectangle { horizontal-stretch: 1; }
+                for b[i] in root.view.buttons : PillButton {
+                    text: b.label;
+                    primary: b.style == 0 || b.style == 2;
+                    accent: b.style == 2 ? Theme.red : Theme.blue;
+                    enabled: !b.needs-selection || root.selected >= 0;
+                    clicked => { root.button-clicked(i); }
                 }
             }
         }
