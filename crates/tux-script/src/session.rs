@@ -10,10 +10,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
+use tux_abi::receipt::{self, Receipt};
 use tux_abi::script::{
-    eval, interpolate, ButtonStyle, Button, CheckStep, ChoiceStep, CommandSpec, DialogStep, FinishStep, LoadedScript,
-    Origin, RunStep, Step, Tone, Vars,
+    eval, interpolate, Button, ButtonStyle, CheckStep, ChoiceStep, CommandSpec, DialogStep, FinishStep, LoadedScript,
+    Mark, Origin, RecordStep, RunStep, Step, Tone, Vars,
 };
+use tux_abi::text::is_valid_package_name;
 use tux_abi::{Bus, Message, ScriptButtonView, ScriptOptionView, ScriptViewData};
 
 /// Protection against endless `goto` loops in a faulty script.
@@ -26,8 +28,15 @@ pub struct Input {
     pub selected: Option<usize>,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Mode {
+    Install,
+    Uninstall,
+}
+
 pub struct Session {
     bus: Bus,
+    mode: Mode,
     loaded: LoadedScript,
     vars: Vars,
     rx: Receiver<Input>,
@@ -48,10 +57,20 @@ fn clip(s: &str, max: usize) -> String {
 }
 
 impl Session {
-    pub fn new(bus: Bus, loaded: LoadedScript, rx: Receiver<Input>) -> Self {
+    pub fn new(bus: Bus, loaded: LoadedScript, rx: Receiver<Input>, mode: Mode) -> Self {
         let mut vars = loaded.script.vars.clone();
+        if mode == Mode::Uninstall {
+            // The uninstall flow sees what the install chose and recorded.
+            if let Some(r) = receipt::load(&loaded.script.id) {
+                vars.extend(r.vars.clone());
+                vars.extend(r.values.clone());
+                vars.insert("installed_version".into(), r.installed_version.clone());
+                vars.insert("recorded_packages".into(), r.packages.join(" "));
+                vars.insert("recorded_files".into(), r.files.join("\n"));
+            }
+        }
         vars.insert("script_id".into(), loaded.script.id.clone());
-        Session { bus, loaded, vars, rx, seq: 0, progress: 0.0 }
+        Session { bus, mode, loaded, vars, rx, seq: 0, progress: 0.0 }
     }
 
     /// Runs to completion. `Some(success)`, or `None` when the host shut down.
@@ -59,7 +78,13 @@ impl Session {
         if self.loaded.origin == Origin::User && !self.trust_gate()? {
             return Some(false);
         }
-        let mut cur = self.loaded.script.start.clone();
+        let mut cur = match self.mode {
+            Mode::Install => self.loaded.script.start.clone(),
+            Mode::Uninstall => match self.loaded.script.uninstall.clone() {
+                Some(u) => u,
+                None => return self.fail_screen("Cannot uninstall", "This add-on package has no uninstall flow."),
+            },
+        };
         for _ in 0..MAX_HOPS {
             let Some(step) = self.loaded.script.steps.get(&cur).cloned() else {
                 return self.fail_screen("Script error", &format!("Unknown step “{cur}”."));
@@ -86,6 +111,10 @@ impl Session {
                     eprintln!("[add-on {}] {}", self.loaded.script.id, self.txt(&p.text.joined()));
                     Next::Goto(p.next)
                 }
+                Step::Record(r) => match self.record(&r) {
+                    Ok(()) => Next::Goto(r.next),
+                    Err(e) => return self.fail_screen("Could not save the install record", &e),
+                },
                 Step::Finish(f) => return self.finish(&f),
             };
             match next {
@@ -231,6 +260,13 @@ impl Session {
     }
 
     fn finish(&mut self, f: &FinishStep) -> Option<bool> {
+        if f.success {
+            if let Some(mark) = f.mark {
+                if let Err(e) = self.apply_mark(mark) {
+                    return self.fail_screen("Could not update the install record", &e);
+                }
+            }
+        }
         let tone = if f.success { Tone::Success } else { Tone::Error };
         if f.success {
             self.progress = 1.0;
@@ -245,6 +281,77 @@ impl Session {
         let seq = self.publish(v);
         self.wait(seq)?;
         Some(f.success)
+    }
+
+    // ───────────────────────── install record ─────────────────────────
+
+    /// The record of this add-on, or a fresh one.
+    fn receipt(&self) -> Receipt {
+        let s = &self.loaded.script;
+        receipt::load(&s.id).unwrap_or_else(|| Receipt { id: s.id.clone(), title: s.title.clone(), ..Default::default() })
+    }
+
+    /// Variables worth keeping: the user's choices, not engine bookkeeping.
+    fn snapshot_vars(&self) -> Vars {
+        self.vars
+            .iter()
+            .filter(|(k, _)| {
+                !k.starts_with("last_") && !k.starts_with("recorded_") && k.as_str() != "script_id" && k.as_str() != "installed_version"
+            })
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect()
+    }
+
+    fn record(&mut self, r: &RecordStep) -> Result<(), String> {
+        let mut rc = self.receipt();
+        rc.title = self.loaded.script.title.clone();
+        for (k, v) in &r.set {
+            let v = clip(&interpolate(v, &self.vars), MAX_VAR_LEN);
+            self.vars.insert(k.clone(), v.clone());
+            rc.values.insert(k.clone(), v);
+        }
+        for p in &r.packages {
+            for word in interpolate(p, &self.vars).split_whitespace() {
+                if !is_valid_package_name(word) {
+                    return Err(format!("“{word}” is not a valid package name."));
+                }
+                if !rc.packages.iter().any(|x| x == word) {
+                    rc.packages.push(word.to_string());
+                }
+            }
+        }
+        let home = tux_abi::paths::home();
+        for f in &r.files {
+            let raw = interpolate(f, &self.vars);
+            let clean = receipt::clean_recorded_path(&raw, &home).ok_or_else(|| format!("“{raw}” is not a usable absolute path."))?;
+            if !rc.files.contains(&clean) {
+                rc.files.push(clean);
+            }
+        }
+        rc.vars = self.snapshot_vars();
+        rc.script_version = self.loaded.script.version.fixed();
+        receipt::save(&rc).map_err(|e| e.to_string())
+    }
+
+    fn apply_mark(&mut self, mark: Mark) -> Result<(), String> {
+        match mark {
+            Mark::Installed => {
+                let mut rc = self.receipt();
+                rc.title = self.loaded.script.title.clone();
+                rc.complete = true;
+                rc.installed_at = receipt::now();
+                rc.script_version = self.loaded.script.version.fixed();
+                rc.installed_version = self
+                    .vars
+                    .get("installed_version")
+                    .cloned()
+                    .filter(|v| !v.is_empty())
+                    .unwrap_or_else(|| self.loaded.script.version.fixed());
+                rc.vars = self.snapshot_vars();
+                receipt::save(&rc).map_err(|e| e.to_string())
+            }
+            Mark::Uninstalled => receipt::remove(&self.loaded.script.id).map_err(|e| e.to_string()),
+        }
     }
 
     /// A one-button error screen that ends the script.
@@ -465,6 +572,10 @@ mod tests {
 
     /// Plays the UI: answers every screen with `answer(view) -> (button, selected)`.
     fn play(json: &str, origin: Origin, answer: impl Fn(&ScriptViewData) -> (usize, Option<usize>) + Send + 'static) -> (Option<bool>, Vec<Message>) {
+        play_mode(json, origin, Mode::Install, answer)
+    }
+
+    fn play_mode(json: &str, origin: Origin, mode: Mode, answer: impl Fn(&ScriptViewData) -> (usize, Option<usize>) + Send + 'static) -> (Option<bool>, Vec<Message>) {
         let log: &'static Log = Box::leak(Box::new(Mutex::new(Vec::new())));
         let api = HostApi { abi_version: 1, log_level: 0, ctx: log as *const Log as *mut c_void, publish, log: nolog };
         let script: Script = serde_json::from_str(json).unwrap();
@@ -490,7 +601,7 @@ mod tests {
                 }
             })
         };
-        let result = Session::new(Bus::new(api), loaded, rx).run();
+        let result = Session::new(Bus::new(api), loaded, rx, mode).run();
         done.store(true, Ordering::SeqCst);
         ui.join().unwrap();
         let msgs = log.lock().unwrap().clone();
@@ -552,6 +663,47 @@ mod tests {
         assert!(fr.iter().any(|f| (*f - 0.60).abs() < 1e-9), "{fr:?}");
         assert!(fr.windows(2).all(|w| w[1] + 1e-9 >= w[0]), "progress went backwards: {fr:?}");
         assert_eq!(*fr.last().unwrap(), 1.0);
+    }
+
+    #[test]
+    fn install_leaves_a_record_and_uninstall_uses_and_removes_it() {
+        let dir = std::env::temp_dir().join(format!("tux-engine-data-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::env::set_var("XDG_DATA_HOME", &dir);
+        let json = r#"{"schema":2,"id":"rec-test-1","title":"Rec","version":"1.0","start":"go","uninstall":"bye",
+          "vars":{"choice":"blue"},
+          "steps":{
+            "go":{"type":"record","set":{"launcher":"v7"},"packages":["pkg-a pkg-b","pkg-a"],"files":["~/games/rec"],"next":"fin"},
+            "fin":{"type":"finish","title":"Installed","mark":"installed"},
+            "bye":{"type":"check","command":{"shell":"printf '%s|%s|%s' \"$TUX_VAR_CHOICE\" \"$TUX_VAR_RECORDED_PACKAGES\" \"$TUX_VAR_LAUNCHER\""},"capture":"seen","on_success":"gone","on_failure":"gone"},
+            "gone":{"type":"finish","title":"Removed ${seen}","mark":"uninstalled"}
+          }}"#;
+        let (res, _) = play(json, Origin::System, |_| (0, None));
+        assert_eq!(res, Some(true));
+        let rc = tux_abi::receipt::load("rec-test-1").expect("a record was written");
+        assert!(rc.complete);
+        assert_eq!(rc.installed_version, "1.0");
+        assert_eq!(rc.packages, ["pkg-a", "pkg-b"], "deduplicated");
+        assert!(rc.files[0].ends_with("/games/rec"));
+        assert_eq!(rc.values.get("launcher").map(String::as_str), Some("v7"));
+        assert_eq!(rc.vars.get("choice").map(String::as_str), Some("blue"));
+
+        // the uninstall flow sees the choices and the recorded packages
+        let (res, msgs) = play_mode(json, Origin::System, Mode::Uninstall, |_| (0, None));
+        assert_eq!(res, Some(true));
+        assert_eq!(titles(&msgs), ["Removed blue|pkg-a pkg-b|v7"]);
+        assert!(tux_abi::receipt::load("rec-test-1").is_none(), "record removed after uninstall");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_bad_recorded_path_stops_the_script() {
+        let json = r#"{"schema":2,"id":"rec-test-2","title":"R","start":"go","steps":{
+          "go":{"type":"record","files":["relative/path"],"next":"fin"},
+          "fin":{"type":"finish","title":"ok"}}}"#;
+        let (res, msgs) = play(json, Origin::System, |_| (0, None));
+        assert_eq!(res, Some(false));
+        assert_eq!(titles(&msgs), ["Could not save the install record"]);
     }
 
     #[test]

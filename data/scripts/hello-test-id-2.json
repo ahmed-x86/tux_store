@@ -3,7 +3,10 @@
   "id": "hello-test-id-2",
   "title": "Hello test script",
   "description": "A tiny harmless script to try the script system. It only prints a few lines.",
-  "version": "1.0",
+  "version": {
+    "label": "Today's version",
+    "shell": "date +%Y.%m.%d"
+  },
   "author": "You",
   "keywords": [
     "hello",
@@ -67,19 +70,28 @@
           "percent": 40
         },
         {
+          "label": "Creating a small file",
+          "shell": [
+            "mkdir -p \"$HOME/.local/share/tux-hello\"",
+            "echo \"$TUX_VAR_GREETING from Tux Store\" > \"$HOME/.local/share/tux-hello/hello.txt\""
+          ],
+          "percent": 65
+        },
+        {
           "label": "Waiting a moment",
           "shell": "sleep 2; echo done",
           "expected_secs": 2,
           "percent": 90
         }
       ],
-      "on_success": "done",
+      "on_success": "remember",
       "echo": true
     },
     "done": {
       "type": "finish",
       "title": "All done",
-      "message": "${helper_msg}\n\nYou picked “${greeting}”. Nothing was changed."
+      "message": "${helper_msg}\n\nYou picked “${greeting}”. A small file was created in ~/.local/share/tux-hello (you can remove it with Uninstall).",
+      "mark": "installed"
     },
     "detect_helpers": {
       "type": "check",
@@ -174,13 +186,61 @@
       "type": "print",
       "text": "hello add-on: the user picked ${greeting}",
       "next": "run"
+    },
+    "remember": {
+      "type": "record",
+      "files": [
+        "~/.local/share/tux-hello"
+      ],
+      "next": "done"
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove the hello files?",
+      "message": "This deletes: ${recorded_files}",
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_run"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing…",
+      "message": "Please wait.",
+      "commands": [
+        {
+          "label": "Deleting the recorded files",
+          "percent": 100,
+          "shell": [
+            "printf '%s\\n' \"$TUX_VAR_RECORDED_FILES\" | while IFS= read -r f; do",
+            "  case \"$f\" in \"$HOME\"/*) rm -rf -- \"$f\"; echo \"removed $f\" ;; *) echo \"skipped $f\" ;; esac",
+            "done"
+          ]
+        }
+      ],
+      "on_success": "un_done"
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Removed",
+      "message": "The hello files were deleted.",
+      "mark": "uninstalled"
     }
   },
   "info": {
-    "download_mb": 0,
-    "extracted_mb": 0,
-    "installed_mb": 0,
-    "note": "This test add-on package downloads and installs nothing."
+    "download_mb": {
+      "shell": "echo 2"
+    },
+    "extracted_mb": 3,
+    "installed_mb": 1,
+    "note": "The version and the download size of this test are computed by commands."
   },
   "icon": [
     {
@@ -189,5 +249,6 @@
     {
       "theme": "face-smile"
     }
-  ]
+  ],
+  "uninstall": "un_confirm"
 }

@@ -3,7 +3,13 @@
   "id": "nvidia-drivers-id-1",
   "title": "Install NVIDIA drivers",
   "description": "Guided, checked installation of the right NVIDIA driver for your graphics card.",
-  "version": "1.1",
+  "version": {
+    "label": "Latest driver version",
+    "shell": [
+      "v=$(pacman -Si nvidia-utils 2>/dev/null | awk '/^Version/ {print $3; exit}')",
+      "printf '%s\\n' \"${v:-unknown}\""
+    ]
+  },
   "author": "Tux Store",
   "keywords": [
     "nvidia",
@@ -294,7 +300,8 @@
           "set": {
             "driver_label": "NVIDIA drivers — latest (nvidia-open-dkms)",
             "driver_source": "the official Arch repositories",
-            "driver_warning": ""
+            "driver_warning": "",
+            "driver_packages": "nvidia-open-dkms nvidia-utils nvidia-settings lib32-nvidia-utils"
           }
         },
         {
@@ -334,7 +341,8 @@
           "set": {
             "driver_label": "NVIDIA drivers 580.xx (nvidia-580xx-dkms)",
             "driver_source": "the AUR (community packages, built on your computer)",
-            "driver_warning": ""
+            "driver_warning": "",
+            "driver_packages": "nvidia-580xx-dkms nvidia-580xx-utils nvidia-580xx-settings lib32-nvidia-580xx-utils"
           }
         },
         {
@@ -374,7 +382,8 @@
           "set": {
             "driver_label": "NVIDIA drivers 470.xx (nvidia-470xx-dkms)",
             "driver_source": "the AUR (community packages, built on your computer)",
-            "driver_warning": "This driver is no longer maintained by NVIDIA. It may fail to build against the newest kernel (the linux-lts kernel is the safer choice), and on Intel 11th gen or newer CPUs it may need the kernel parameter ibt=off to boot."
+            "driver_warning": "This driver is no longer maintained by NVIDIA. It may fail to build against the newest kernel (the linux-lts kernel is the safer choice), and on Intel 11th gen or newer CPUs it may need the kernel parameter ibt=off to boot.",
+            "driver_packages": "nvidia-470xx-dkms nvidia-470xx-utils nvidia-470xx-settings lib32-nvidia-470xx-utils"
           }
         },
         {
@@ -414,7 +423,8 @@
           "set": {
             "driver_label": "NVIDIA drivers 390.xx (nvidia-390xx-dkms)",
             "driver_source": "the AUR (community packages, built on your computer)",
-            "driver_warning": "This driver is no longer maintained by NVIDIA and may fail to build against new kernels or Xorg versions. If it does, the open-source nouveau driver is the fallback."
+            "driver_warning": "This driver is no longer maintained by NVIDIA and may fail to build against new kernels or Xorg versions. If it does, the open-source nouveau driver is the fallback.",
+            "driver_packages": "nvidia-390xx-dkms nvidia-390xx-utils nvidia-390xx-settings lib32-nvidia-390xx-utils"
           }
         },
         {
@@ -454,7 +464,8 @@
           "set": {
             "driver_label": "NVIDIA drivers 340.xx (nvidia-340xx-dkms)",
             "driver_source": "the AUR (community packages, built on your computer)",
-            "driver_warning": "This driver is very old and unsupported. It will most likely fail on recent kernels and Xorg versions. Consider the open-source nouveau driver instead."
+            "driver_warning": "This driver is very old and unsupported. It will most likely fail on recent kernels and Xorg versions. Consider the open-source nouveau driver instead.",
+            "driver_packages": "nvidia-340xx-dkms nvidia-340xx-utils nvidia-340xx-settings lib32-nvidia-340xx-utils"
           }
         }
       ],
@@ -674,8 +685,8 @@
         ]
       },
       "capture": "kms_text",
-      "on_success": "family_gate",
-      "on_failure": "family_gate"
+      "on_success": "read_version",
+      "on_failure": "read_version"
     },
     "family_gate": {
       "type": "branch",
@@ -703,7 +714,8 @@
         "The driver was installed successfully. Please restart the computer.",
         "",
         "${kms_text}"
-      ]
+      ],
+      "mark": "installed"
     },
     "done_legacy": {
       "type": "finish",
@@ -716,7 +728,8 @@
         "If you use Wayland: this older driver needs the kernel parameter nvidia_drm.modeset=1 nvidia_drm.fbdev=1 in your bootloader (for GRUB: GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub, then regenerate the config). Add it BEFORE you restart, otherwise Wayland may show a black screen.",
         "",
         "${kms_text}"
-      ]
+      ],
+      "mark": "installed"
     },
     "install_failed": {
       "type": "dialog",
@@ -799,13 +812,153 @@
           "exit": true
         }
       ]
+    },
+    "read_version": {
+      "type": "check",
+      "command": {
+        "label": "Reading the installed version…",
+        "shell": [
+          "case \"$TUX_VAR_DRIVER\" in open) p=nvidia-utils ;; *) p=\"nvidia-$TUX_VAR_DRIVER-utils\" ;; esac",
+          "pacman -Q \"$p\" 2>/dev/null | awk '{print $2}'"
+        ]
+      },
+      "capture": "installed_version",
+      "on_success": "record_install",
+      "on_failure": "record_install"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_driver": "${driver}"
+      },
+      "packages": [
+        "${driver_packages}"
+      ],
+      "next": "family_gate"
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove the NVIDIA driver?",
+      "tone": "warning",
+      "message": [
+        "This removes: ${recorded_packages}",
+        "",
+        "Afterwards the computer uses the open-source nouveau driver. If the screen stays black after the restart, switch to a text console (Ctrl+Alt+F3) and reinstall from there.",
+        "",
+        "Do not turn off the computer while it is working."
+      ],
+      "buttons": [
+        {
+          "label": "Remove the driver",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "shell": [
+          "command -v pkexec >/dev/null 2>&1 || { echo \"The required tool 'pkexec' is missing.\"; exit 0; }",
+          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running.\"; exit 0; }",
+          "echo \"\""
+        ]
+      },
+      "capture": "preflight",
+      "on_success": "un_preflight_result",
+      "on_failure": "error_generic"
+    },
+    "un_preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing the driver…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing the NVIDIA packages",
+          "root": true,
+          "percent": 70,
+          "expected_secs": 30,
+          "shell": [
+            "inst=\"\"",
+            "for p in $TUX_VAR_RECORDED_PACKAGES; do",
+            "  pacman -Qq \"$p\" >/dev/null 2>&1 && inst=\"$inst $p\"",
+            "done",
+            "if [ -z \"$inst\" ]; then echo \"None of the recorded packages are installed any more.\"; exit 0; fi",
+            "echo \"Removing:$inst\"",
+            "pacman -Rns --noconfirm $inst"
+          ]
+        },
+        {
+          "label": "Rebuilding the boot images",
+          "root": true,
+          "percent": 95,
+          "expected_secs": 40,
+          "shell": [
+            "if command -v mkinitcpio >/dev/null 2>&1; then mkinitcpio -P; else echo \"mkinitcpio not found: skipping.\"; fi"
+          ]
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "Driver removed",
+      "message": "The NVIDIA driver was removed. Please restart the computer."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "The driver could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "Other programs may depend on one of these packages (for example Steam needs the 32-bit libraries). The driver is still installed, and so is its record, so you can try again later."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
     }
   },
   "info": {
-    "download_mb": 350,
+    "download_mb": {
+      "label": "Download size",
+      "shell": [
+        "pacman -Si nvidia-open-dkms nvidia-utils nvidia-settings 2>/dev/null | awk '/^Download Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      ]
+    },
     "extracted_mb": 1500,
-    "installed_mb": 700,
-    "note": "Estimates for the largest case (an AUR driver, which is built on your computer). The latest driver from the official repositories is smaller."
+    "installed_mb": {
+      "label": "Installed size",
+      "shell": [
+        "pacman -Si nvidia-open-dkms nvidia-utils nvidia-settings 2>/dev/null | awk '/^Installed Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      ]
+    },
+    "note": "Download and installed sizes are read from your package database for the latest driver. Older drivers from the AUR are built on your computer (about 350 MB download); the space needed while installing is an estimate."
   },
   "icon": [
     {
@@ -817,5 +970,6 @@
     {
       "url": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/nvidia.svg"
     }
-  ]
+  ],
+  "uninstall": "un_confirm"
 }

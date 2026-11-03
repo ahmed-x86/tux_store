@@ -7,11 +7,12 @@
 //! One session runs at a time, on its own thread; the UI only renders the
 //! screens the session publishes and reports button clicks.
 
+mod eval;
 mod runner;
 mod session;
 
 use crossbeam_channel::{unbounded, Sender};
-use session::{Input, Session};
+use session::{Input, Mode, Session};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -32,7 +33,12 @@ impl Module for ScriptModule {
 
     fn on_message(&self, msg: Message) {
         match msg {
-            Message::ScriptStartRequested { id } => self.start(id),
+            Message::ScriptStartRequested { id } => self.start(id, Mode::Install),
+            Message::ScriptUninstallRequested { id } => self.start(id, Mode::Uninstall),
+            Message::ScriptEvalRequested { id, confirmed } => {
+                let bus = self.bus;
+                thread::spawn(move || eval::run(bus, &id, confirmed));
+            }
             Message::ScriptAction { seq, button, selected } => {
                 if let Some(tx) = lock(&self.input).as_ref() {
                     let _ = tx.send(Input { seq, button, selected });
@@ -44,7 +50,7 @@ impl Module for ScriptModule {
 }
 
 impl ScriptModule {
-    fn start(&self, id: String) {
+    fn start(&self, id: String, mode: Mode) {
         if self.busy.swap(true, Ordering::SeqCst) {
             log::warn!("script {id}: another script is already running");
             return;
@@ -61,7 +67,7 @@ impl ScriptModule {
                 let outcome = match loaded {
                     Some(loaded) => {
                         log::info!("starting script {id} ({})", loaded.path.display());
-                        Session::new(bus, loaded, rx).run()
+                        Session::new(bus, loaded, rx, mode).run()
                     }
                     None => {
                         log::warn!("script {id} not found or invalid");

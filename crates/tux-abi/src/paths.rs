@@ -98,3 +98,13 @@ pub fn user_scripts_dir() -> PathBuf {
 pub fn hidden_packages_files() -> Vec<PathBuf> {
     vec![data_dir().join("hidden_packages.json"), config_dir().join("hidden_packages.json")]
 }
+
+/// Where install records ("receipts") of add-on packages are kept:
+/// `$XDG_DATA_HOME/tux-store/addons` (default `~/.local/share/tux-store/addons`).
+pub fn addons_state_dir() -> PathBuf {
+    let base = std::env::var_os("XDG_DATA_HOME")
+        .filter(|d| !d.is_empty())
+        .map(PathBuf::from)
+        .unwrap_or_else(|| home().join(".local/share"));
+    base.join(APP_DIR).join("addons")
+}

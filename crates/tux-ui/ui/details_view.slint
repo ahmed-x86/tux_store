@@ -77,6 +77,8 @@ export component DetailsView inherits Rectangle {
     in property <string> script-progress-label;
     in property <bool> script-minimized;
     callback run-script-clicked();
+    callback uninstall-script-clicked();
+    callback eval-script-clicked();
     callback show-script-clicked();
     callback back-clicked();
     callback install-clicked();
@@ -289,10 +291,13 @@ export component DetailsView inherits Rectangle {
 
                     if root.is-script : VerticalLayout {
                         alignment: center;
+                        spacing: 8px;
                         Rectangle {
                             width: 152px;
                             height: 44px;
-                            background: root.accent;
+                            background: root.script-info.installed ? Theme.surface0 : root.accent;
+                            border-color: root.accent;
+                            border-width: root.script-info.installed ? 1px : 0px;
                             border-radius: 10px;
                             opacity: root.busy ? 0.5 : 1.0;
                             TouchArea {
@@ -301,8 +306,30 @@ export component DetailsView inherits Rectangle {
                                 clicked => { root.run-script-clicked(); }
                             }
                             Text {
-                                text: "Run add-on";
-                                color: Theme.crust;
+                                text: root.script-info.installed ? "Run again" : "Run add-on";
+                                color: root.script-info.installed ? root.accent : Theme.crust;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                        if root.script-info.can-uninstall : Rectangle {
+                            width: 152px;
+                            height: 44px;
+                            background: Theme.surface0;
+                            border-color: Theme.red;
+                            border-width: 1px;
+                            border-radius: 10px;
+                            opacity: root.busy ? 0.5 : 1.0;
+                            TouchArea {
+                                enabled: !root.busy;
+                                mouse-cursor: pointer;
+                                clicked => { root.uninstall-script-clicked(); }
+                            }
+                            Text {
+                                text: "Uninstall";
+                                color: Theme.red;
                                 font-size: 14px;
                                 font-weight: 700;
                                 horizontal-alignment: center;
@@ -388,6 +415,22 @@ export component DetailsView inherits Rectangle {
                             }
                         }
 
+                        if root.script-info.needs-confirm : HorizontalLayout {
+                            spacing: 12px;
+                            Text {
+                                horizontal-stretch: 1;
+                                text: "These values come from commands in a script that is not part of Tux Store.";
+                                color: Theme.subtext0;
+                                font-size: 12px;
+                                wrap: word-wrap;
+                                vertical-alignment: center;
+                            }
+                            PillButton {
+                                text: "Calculate size and version";
+                                clicked => { root.eval-script-clicked(); }
+                            }
+                        }
+
                         if root.script-running : HorizontalLayout {
                             spacing: 12px;
                             Text {
@@ -416,7 +459,7 @@ export component DetailsView inherits Rectangle {
                             Rectangle { horizontal-stretch: 1; }
                             Stat { label: "Needed while installing"; value: root.script-info.extracted; align: TextHorizontalAlignment.center; }
                             Rectangle { horizontal-stretch: 1; }
-                            Stat { label: "Total Installed"; value: root.script-info.installed; value-color: root.accent; align: TextHorizontalAlignment.right; }
+                            Stat { label: "Total Installed"; value: root.script-info.installed-size; value-color: root.accent; align: TextHorizontalAlignment.right; }
                         }
 
                         if root.script-info.low-space : Text {
@@ -593,6 +636,7 @@ export component DetailsView inherits Rectangle {
                         Stat { label: "Source"; value: root.script-info.source; }
                         Stat { label: "Author"; value: root.script-info.author; }
                         Stat { label: "Administrator rights"; value: root.script-info.admin; }
+                        if root.script-info.installed : Stat { label: "Installed"; value: root.script-info.installed-text; value-color: Theme.green; }
                     }
                     Text {
                         text: "Running it opens a guided window. Nothing on your system changes until you confirm the steps shown there.";

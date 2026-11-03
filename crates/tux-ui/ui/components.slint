@@ -267,9 +267,9 @@ export component AppCard inherits Rectangle {
                 overflow: elide;
             }
             Text {
-                text: root.pkg.repo == "script" ? "Add-on package"
+                text: root.pkg.repo == "script" ? (root.pkg.installed ? "Installed add-on" : "Add-on package")
                     : (root.pkg.installed ? "Installed" : "Not Installed");
-                color: root.pkg.repo == "script" ? Theme.mauve
+                color: root.pkg.repo == "script" ? (root.pkg.installed ? Theme.green : Theme.mauve)
                     : (root.pkg.installed ? Theme.green : Theme.overlay0);
                 font-size: 11px;
                 font-weight: 700;

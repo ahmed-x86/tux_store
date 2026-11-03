@@ -48,20 +48,7 @@ impl Module for SearchModule {
             Message::SearchRequested { query } => self.search(query),
             Message::DetailsRequested { name } => self.details(name),
             Message::ScriptInfoRequested { id } => {
-                let info = self.catalog.scripts.iter().find(|l| l.script.id == id).map(|l| {
-                    let storage = l.script.info.clone().unwrap_or_default();
-                    ScriptInfo {
-                        author: l.script.author.clone(),
-                        user_script: l.origin == tux_abi::script::Origin::User,
-                        root_commands: l.script.root_command_summaries().len(),
-                        path: l.path.display().to_string(),
-                        download_mb: storage.download_mb,
-                        extracted_mb: storage.extracted_mb,
-                        installed_mb: storage.installed_mb,
-                        note: storage.note,
-                        free_bytes: free_bytes_on_root(),
-                    }
-                });
+                let info = self.catalog.scripts.iter().find(|l| l.script.id == id).map(script_info);
                 self.bus.publish(&Message::ScriptInfoReady { id, info });
             }
             Message::ExactRequested { name } => self.exact(name),
@@ -163,7 +150,8 @@ impl SearchModule {
     fn installed(&self) {
         let (bus, catalog) = (self.bus, self.catalog.clone());
         thread::spawn(move || {
-            let packages = catalog.filter_installed(queries::installed_packages());
+            let mut packages = catalog.filter_installed(queries::installed_packages());
+            packages.extend(catalog.installed_addons());
             bus.publish(&Message::InstalledReady { packages });
         });
     }
@@ -218,4 +206,32 @@ fn free_bytes_on_root() -> u64 {
         return 0;
     }
     (st.f_bavail as u64).saturating_mul(st.f_frsize as u64)
+}
+
+fn script_info(l: &tux_abi::script::LoadedScript) -> ScriptInfo {
+    let s = &l.script;
+    let storage = s.info.clone().unwrap_or_default();
+    let user = l.origin == tux_abi::script::Origin::User;
+    let rc = tux_abi::receipt::load(&s.id).filter(|r| r.complete);
+    ScriptInfo {
+        author: s.author.clone(),
+        user_script: user,
+        root_commands: s.root_command_summaries().len(),
+        path: l.path.display().to_string(),
+        download_mb: storage.download_mb.as_ref().and_then(|d| d.fixed()),
+        extracted_mb: storage.extracted_mb.as_ref().and_then(|d| d.fixed()),
+        installed_mb: storage.installed_mb.as_ref().and_then(|d| d.fixed()),
+        note: storage.note.clone(),
+        version: s.version.fixed(),
+        version_dynamic: s.version.command().is_some(),
+        download_dynamic: storage.download_mb.as_ref().is_some_and(|d| d.command().is_some()),
+        extracted_dynamic: storage.extracted_mb.as_ref().is_some_and(|d| d.command().is_some()),
+        installed_dynamic: storage.installed_mb.as_ref().is_some_and(|d| d.command().is_some()),
+        needs_confirm: user && s.has_dynamic_values(),
+        free_bytes: free_bytes_on_root(),
+        installed: rc.is_some(),
+        installed_version: rc.as_ref().map(|r| r.installed_version.clone()).unwrap_or_default(),
+        installed_at: rc.as_ref().map_or(0, |r| r.installed_at),
+        can_uninstall: rc.is_some() && s.uninstall.is_some(),
+    }
 }

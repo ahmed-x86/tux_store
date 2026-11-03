@@ -98,6 +98,8 @@ export component MainWindow inherits Window {
     callback clear-icon-cache();
     callback script-button-clicked(int);
     callback run-script-clicked();
+    callback uninstall-script-clicked();
+    callback eval-script-clicked();
 
     // Copy via a hidden, read-only TextInput: Slint's own clipboard support
     // works on both X11 and Wayland without extra dependencies.
@@ -258,6 +260,8 @@ export component MainWindow inherits Window {
         script-progress-label: root.script-progress-label;
         script-minimized: root.script-minimized;
         run-script-clicked => { root.run-script-clicked(); }
+        uninstall-script-clicked => { root.uninstall-script-clicked(); }
+        eval-script-clicked => { root.eval-script-clicked(); }
         show-script-clicked => { root.script-minimized = false; }
         back-clicked => { root.back-clicked(); }
         install-clicked => { root.install-clicked(); }

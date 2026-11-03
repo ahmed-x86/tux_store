@@ -166,9 +166,9 @@ impl Catalog {
             name: l.script.id.clone(),
             title: l.script.title.clone(),
             repo: "script".into(),
-            version: l.script.version.clone(),
+            version: l.script.version.fixed(),
             description: l.script.description.clone(),
-            installed: false,
+            installed: tux_abi::receipt::load(&l.script.id).is_some_and(|r| r.complete),
         }
     }
 
@@ -185,6 +185,24 @@ impl Catalog {
             .iter()
             .filter(|l| l.script.matches(&needle, norm))
             .map(Self::script_package)
+            .collect()
+    }
+
+    /// Add-on packages that were installed (they have an install record),
+    /// for the *Installed* tab. Records whose script file is gone still show,
+    /// so nothing installed can become invisible.
+    pub fn installed_addons(&self) -> Vec<Package> {
+        tux_abi::receipt::list()
+            .into_iter()
+            .filter(|r| r.complete)
+            .map(|r| Package {
+                title: if r.title.is_empty() { r.id.clone() } else { r.title.clone() },
+                name: r.id,
+                repo: "script".into(),
+                version: r.installed_version,
+                description: String::new(),
+                installed: true,
+            })
             .collect()
     }
 

@@ -16,8 +16,8 @@ use std::path::Path;
 use std::rc::Rc;
 use tux_abi::text::prettify_name;
 use tux_abi::{
-    Bus, Cover, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo, ScriptViewData, Section,
-    SpecialCase,
+    Bus, Cover, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo, ScriptValues, ScriptViewData,
+    Section, SpecialCase,
     UpdateEntry,
 };
 
@@ -165,6 +165,24 @@ pub struct State {
     /// running at all (blocks pacman transactions and a second script).
     script_seq: u64,
     script_running: bool,
+    /// The add-on package page on display: facts, computed values, status.
+    script_page: Option<ScriptPage>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ValuesState {
+    /// Nothing to compute (or already written in the JSON).
+    Static,
+    Calculating,
+    NeedsConfirm,
+    Done,
+}
+
+struct ScriptPage {
+    id: String,
+    info: ScriptInfo,
+    values: ScriptValues,
+    state: ValuesState,
 }
 
 impl State {
@@ -195,6 +213,7 @@ impl State {
             console_dirty: false,
             script_seq: 0,
             script_running: false,
+            script_page: None,
         }
     }
 
@@ -251,6 +270,7 @@ impl State {
             }
             Message::OperationFinished { op, success, .. } => self.on_finished(op, success),
             Message::ScriptInfoReady { id, info } => self.on_script_info(id, info),
+            Message::ScriptValuesReady { id, values } => self.on_script_values(id, values),
             Message::ScriptView { view } => self.on_script_view(view),
             Message::ScriptOutput { text } => {
                 self.console.push(&text);
@@ -399,6 +419,10 @@ impl State {
         ui.set_script_active(false);
         ui.set_script_minimized(false);
         ui.set_script_running_id("".into());
+        // The install record may have changed: refresh the open add-on page.
+        if let Some(cur) = self.current.clone().filter(|c| c.repo == "script") {
+            self.bus.publish(&Message::ScriptInfoRequested { id: cur.name });
+        }
         if success {
             // A script may have installed or removed packages.
             match ui.get_active_tab() {
@@ -422,46 +446,136 @@ impl State {
     }
 
     fn on_script_info(&mut self, id: String, info: Option<ScriptInfo>) {
-        let Some(ui) = self.ui.upgrade() else { return };
         if self.current.as_ref().map(|c| c.name.as_str()) != Some(id.as_str()) {
             return; // the user already moved on
         }
-        let mb = |v: Option<u64>| -> slint::SharedString {
-            match v {
-                None => "Not specified".into(),
-                Some(m) if m >= 1024 => format!("{:.1} GB", m as f64 / 1024.0).into(),
-                Some(m) => format!("{m} MB").into(),
+        let Some(info) = info else {
+            self.script_page = None;
+            if let Some(ui) = self.ui.upgrade() {
+                ui.set_current_script_info(UiScriptInfo { loaded: true, author: "—".into(), source: "File not found".into(), ..Default::default() });
+            }
+            return;
+        };
+        let dynamic = info.version_dynamic || info.download_dynamic || info.extracted_dynamic || info.installed_dynamic;
+        // Keep values already computed for this add-on (e.g. when the page is refreshed after a run).
+        let keep = self.script_page.take().filter(|p| p.id == id && p.state == ValuesState::Done);
+        let (values, state) = match keep {
+            Some(p) => (p.values, ValuesState::Done),
+            None if !dynamic => (ScriptValues::default(), ValuesState::Static),
+            None if info.needs_confirm => (ScriptValues::default(), ValuesState::NeedsConfirm),
+            None => {
+                // Shipped with the store: safe to compute right away.
+                self.bus.publish(&Message::ScriptEvalRequested { id: id.clone(), confirmed: false });
+                (ScriptValues::default(), ValuesState::Calculating)
             }
         };
-        let ui_info = match info {
-            Some(i) => {
-                let free_mb = i.free_bytes / (1024 * 1024);
-                let needed = i.extracted_mb.or(i.installed_mb).unwrap_or(0) + i.download_mb.unwrap_or(0);
-                UiScriptInfo {
-                    loaded: true,
-                    author: if i.author.is_empty() { "Unknown".into() } else { i.author.as_str().into() },
-                    source: if i.user_script { "Your own add-on package".into() } else { "Included with Tux Store".into() },
-                    admin: if i.root_commands == 0 {
-                        "Not required".into()
-                    } else {
-                        format!("Required ({} command{})", i.root_commands, if i.root_commands == 1 { "" } else { "s" }).into()
-                    },
-                    path: if i.user_script { i.path.as_str().into() } else { "".into() },
-                    download: mb(i.download_mb),
-                    extracted: mb(i.extracted_mb),
-                    installed: mb(i.installed_mb),
-                    free: if i.free_bytes == 0 { "Unknown".into() } else { mb(Some(free_mb)) },
-                    low_space: i.free_bytes != 0 && needed > 0 && free_mb < needed,
-                    space_ratio: if free_mb == 0 { 0.0 } else { (needed as f32 / free_mb as f32).min(1.0) },
-                    note: i.note.as_str().into(),
-                }
-            }
-            None => UiScriptInfo { loaded: true, author: "—".into(), source: "File not found".into(), ..Default::default() },
+        self.script_page = Some(ScriptPage { id, info, values, state });
+        self.show_script_page();
+    }
+
+    fn on_script_values(&mut self, id: String, values: ScriptValues) {
+        let Some(page) = self.script_page.as_mut().filter(|p| p.id == id) else { return };
+        page.values = values;
+        page.state = ValuesState::Done;
+        self.show_script_page();
+    }
+
+    /// "Calculate size and version" on a script from the user's own folder.
+    pub fn eval_current_script(&mut self) {
+        let Some(page) = self.script_page.as_mut() else { return };
+        page.state = ValuesState::Calculating;
+        let id = page.id.clone();
+        self.bus.publish(&Message::ScriptEvalRequested { id, confirmed: true });
+        self.show_script_page();
+    }
+
+    /// Put the page's facts on screen: sizes, version, installed state.
+    fn show_script_page(&mut self) {
+        let Some(ui) = self.ui.upgrade() else { return };
+        let Some(page) = self.script_page.as_ref() else { return };
+        let (i, v, st) = (&page.info, &page.values, page.state);
+
+        let mb = |m: u64| -> String {
+            if m >= 1024 { format!("{:.1} GB", m as f64 / 1024.0) } else { format!("{m} MB") }
         };
-        ui.set_current_script_info(ui_info);
+        // written value, or the computed one with a status text while it is missing
+        let field = |written: Option<u64>, dynamic: bool, computed: Option<u64>| -> (String, Option<u64>) {
+            if !dynamic {
+                return (written.map_or("Not specified".into(), mb), written);
+            }
+            match (st, computed) {
+                (ValuesState::Done, Some(m)) => (mb(m), Some(m)),
+                (ValuesState::Done, None) => ("Unavailable".into(), None),
+                (ValuesState::NeedsConfirm, _) => ("Not calculated".into(), None),
+                _ => ("Calculating…".into(), None),
+            }
+        };
+        let (download, dl) = field(i.download_mb, i.download_dynamic, v.download_mb);
+        let (extracted, ex) = field(i.extracted_mb, i.extracted_dynamic, v.extracted_mb);
+        let (installed, ins) = field(i.installed_mb, i.installed_dynamic, v.installed_mb);
+
+        let free_mb = i.free_bytes / (1024 * 1024);
+        let needed = ex.or(ins).unwrap_or(0) + dl.unwrap_or(0);
+        let version = if i.version_dynamic {
+            match (st, v.version.clone()) {
+                (ValuesState::Done, Some(x)) => x,
+                (ValuesState::Done, None) => "unknown".into(),
+                (ValuesState::NeedsConfirm, _) => "not calculated".into(),
+                _ => "calculating…".into(),
+            }
+        } else {
+            i.version.clone()
+        };
+
+        let installed_text = if i.installed {
+            let date = ymd(i.installed_at);
+            if i.installed_version.is_empty() { date } else { format!("{} · {date}", i.installed_version) }
+        } else {
+            String::new()
+        };
+
+        ui.set_current_script_info(UiScriptInfo {
+            loaded: true,
+            author: if i.author.is_empty() { "Unknown".into() } else { i.author.as_str().into() },
+            source: if i.user_script { "Your own add-on package".into() } else { "Included with Tux Store".into() },
+            admin: if i.root_commands == 0 {
+                "Not required".into()
+            } else {
+                format!("Required ({} command{})", i.root_commands, if i.root_commands == 1 { "" } else { "s" }).into()
+            },
+            path: if i.user_script { i.path.as_str().into() } else { "".into() },
+            download: download.into(),
+            extracted: extracted.into(),
+            installed_size: installed.into(),
+            free: if i.free_bytes == 0 { "Unknown".into() } else { mb(free_mb).into() },
+            low_space: i.free_bytes != 0 && needed > 0 && free_mb < needed,
+            space_ratio: if free_mb == 0 { 0.0 } else { (needed as f32 / free_mb as f32).min(1.0) },
+            note: i.note.as_str().into(),
+            installed: i.installed,
+            installed_text: installed_text.into(),
+            can_uninstall: i.can_uninstall,
+            needs_confirm: st == ValuesState::NeedsConfirm,
+        });
+
+        // The header: version text and the green "Installed" pill.
+        let mut cur = ui.get_current_package();
+        cur.version = version.as_str().into();
+        cur.installed = i.installed;
+        ui.set_current_package(cur);
+    }
+
+    /// "Uninstall" on an installed add-on package's page.
+    pub fn uninstall_current_script(&mut self) {
+        if let Some(cur) = self.current.clone().filter(|c| c.repo == "script") {
+            self.run_script(cur.name, true);
+        }
     }
 
     fn start_script(&mut self, id: String) {
+        self.run_script(id, false);
+    }
+
+    fn run_script(&mut self, id: String, uninstall: bool) {
         let Some(ui) = self.ui.upgrade() else { return };
         if self.script_running || ui.get_current_install().phase == OpPhase::Running {
             return;
@@ -474,7 +588,11 @@ impl State {
         ui.set_script_has_output(false);
         ui.set_script_progress(0.0);
         ui.set_script_progress_label("".into());
-        self.bus.publish(&Message::ScriptStartRequested { id });
+        if uninstall {
+            self.bus.publish(&Message::ScriptUninstallRequested { id });
+        } else {
+            self.bus.publish(&Message::ScriptStartRequested { id });
+        }
     }
 
     /// A button of the script dialog (the option selection lives in Slint).
@@ -689,6 +807,7 @@ impl State {
         if is_script {
             self.suggestions.set_vec(Vec::new());
             ui.set_current_script_info(UiScriptInfo::default());
+            self.script_page = None;
         } else {
             self.build_suggestions(&pkg);
         }
@@ -834,5 +953,31 @@ impl State {
             let name = cover_package(&cover.name).to_string();
             self.bus.publish(&Message::ExactRequested { name });
         }
+    }
+}
+
+/// `2026-11-03` from Unix seconds (UTC), without a date library.
+fn ymd(secs: u64) -> String {
+    let z = (secs / 86_400) as i64 + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z.rem_euclid(146_097);
+    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = yoe + era * 400 + i64::from(m <= 2);
+    format!("{y:04}-{m:02}-{d:02}")
+}
+
+#[cfg(test)]
+mod date_tests {
+    use super::ymd;
+
+    #[test]
+    fn civil_dates() {
+        assert_eq!(ymd(0), "1970-01-01");
+        assert_eq!(ymd(1_000_000_000), "2001-09-09");
+        assert_eq!(ymd(1_793_664_000), "2026-11-03");
     }
 }

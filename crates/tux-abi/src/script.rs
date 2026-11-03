@@ -281,6 +281,32 @@ pub struct RunStep {
     pub echo: bool,
 }
 
+/// Saves what the install did, for the uninstall flow, in the install record.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RecordStep {
+    /// Values to remember (also set as variables).
+    #[serde(default)]
+    pub set: Vars,
+    /// pacman packages installed (`${var}` allowed; split at spaces).
+    #[serde(default)]
+    pub packages: Vec<String>,
+    /// Files or folders created: absolute, or starting with `~/`.
+    #[serde(default)]
+    pub files: Vec<String>,
+    pub next: String,
+}
+
+/// What a finished flow means for the install record.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Mark {
+    /// The add-on is now installed (finish with success).
+    Installed,
+    /// The add-on is gone: delete the record (finish with success).
+    Uninstalled,
+}
+
 /// Writes a line to the terminal Tux Store was started from.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -320,6 +346,8 @@ pub struct FinishStep {
     pub success: bool,
     #[serde(default)]
     pub button: Option<String>,
+    #[serde(default)]
+    pub mark: Option<Mark>,
 }
 
 fn yes() -> bool {
@@ -336,6 +364,7 @@ pub enum Step {
     Branch(BranchStep),
     Set(SetStep),
     Print(PrintStep),
+    Record(RecordStep),
     Finish(FinishStep),
 }
 
@@ -393,19 +422,73 @@ fn is_valid_theme_icon_name(n: &str) -> bool {
     !n.is_empty() && n.len() <= 100 && n.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'+' | b'-'))
 }
 
+/// A number (megabytes) that is either written in the JSON or printed by a
+/// command. A command runs without root and must print the number.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum DynNum {
+    Fixed(u64),
+    Command(CommandSpec),
+}
+
+impl DynNum {
+    pub fn fixed(&self) -> Option<u64> {
+        match self {
+            DynNum::Fixed(n) => Some(*n),
+            DynNum::Command(_) => None,
+        }
+    }
+    pub fn command(&self) -> Option<&CommandSpec> {
+        match self {
+            DynNum::Command(c) => Some(c),
+            DynNum::Fixed(_) => None,
+        }
+    }
+}
+
+/// A text (the version) that is either written in the JSON or printed by a command.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum DynText {
+    Fixed(String),
+    Command(CommandSpec),
+}
+
+impl Default for DynText {
+    fn default() -> Self {
+        DynText::Fixed(String::new())
+    }
+}
+
+impl DynText {
+    /// The written text ("" when it comes from a command).
+    pub fn fixed(&self) -> String {
+        match self {
+            DynText::Fixed(s) => s.clone(),
+            DynText::Command(_) => String::new(),
+        }
+    }
+    pub fn command(&self) -> Option<&CommandSpec> {
+        match self {
+            DynText::Command(c) => Some(c),
+            DynText::Fixed(_) => None,
+        }
+    }
+}
+
 /// Sizes shown on the add-on package's page (estimates, in megabytes).
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct StorageInfo {
     /// What will be downloaded from the internet.
     #[serde(default)]
-    pub download_mb: Option<u64>,
+    pub download_mb: Option<DynNum>,
     /// Space needed while installing (unpacked / built files).
     #[serde(default)]
-    pub extracted_mb: Option<u64>,
+    pub extracted_mb: Option<DynNum>,
     /// Space used once installed.
     #[serde(default)]
-    pub installed_mb: Option<u64>,
+    pub installed_mb: Option<DynNum>,
     #[serde(default)]
     pub note: String,
 }
@@ -419,8 +502,10 @@ pub struct Script {
     pub title: String,
     #[serde(default)]
     pub description: String,
+    /// The add-on's own version, or a command that prints the version of what
+    /// it installs (e.g. the latest game version).
     #[serde(default)]
-    pub version: String,
+    pub version: DynText,
     #[serde(default)]
     pub author: String,
     #[serde(default)]
@@ -438,6 +523,9 @@ pub struct Script {
     #[serde(default)]
     pub vars: Vars,
     pub start: String,
+    /// Entry step of the uninstall flow (needs an install record to be offered).
+    #[serde(default)]
+    pub uninstall: Option<String>,
     pub steps: BTreeMap<String, Step>,
 }
 
@@ -512,11 +600,33 @@ impl Script {
                 }
             }
         }
+        if let Some(u) = &self.uninstall {
+            self.require_step(u, "uninstall")?;
+        }
+        for c in self.dynamic_commands() {
+            self.check_command(c, false).map_err(|e| format!("version/info command: {e}"))?;
+        }
         self.require_step(&self.start, "start")?;
         for (name, step) in &self.steps {
             self.validate_step(step).map_err(|e| format!("step {name:?}: {e}"))?;
         }
         Ok(())
+    }
+
+    /// Commands that compute the version or the sizes.
+    pub fn dynamic_commands(&self) -> Vec<&CommandSpec> {
+        let mut v: Vec<&CommandSpec> = Vec::new();
+        v.extend(self.version.command());
+        if let Some(i) = &self.info {
+            for n in [&i.download_mb, &i.extracted_mb, &i.installed_mb].into_iter().flatten() {
+                v.extend(n.command());
+            }
+        }
+        v
+    }
+
+    pub fn has_dynamic_values(&self) -> bool {
+        !self.dynamic_commands().is_empty()
     }
 
     fn require_step(&self, name: &str, what: &str) -> Result<(), String> {
@@ -680,6 +790,13 @@ impl Script {
                     return Err("print text is too long".into());
                 }
                 self.require_step(&p.next, "next")
+            }
+            Step::Record(r) => {
+                Self::check_vars(&r.set)?;
+                if r.packages.len() > 200 || r.files.len() > 200 {
+                    return Err("a record step is limited to 200 packages and 200 files".into());
+                }
+                self.require_step(&r.next, "next")
             }
             Step::Finish(_) => Ok(()),
         }

@@ -117,6 +117,12 @@ fn wire(ui: &MainWindow) {
     ui.on_run_script_clicked(|| {
         with_state(|st| st.run_current_script());
     });
+    ui.on_uninstall_script_clicked(|| {
+        with_state(|st| st.uninstall_current_script());
+    });
+    ui.on_eval_script_clicked(|| {
+        with_state(|st| st.eval_current_script());
+    });
     ui.on_script_button_clicked(|i| {
         with_state(|st| st.script_button(usize::try_from(i).unwrap_or(usize::MAX)));
     });

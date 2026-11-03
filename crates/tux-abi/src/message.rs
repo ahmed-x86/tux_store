@@ -140,12 +140,36 @@ pub struct ScriptInfo {
     /// Number of commands that ask for administrator rights.
     pub root_commands: usize,
     pub path: String,
+    /// Written values; `None` when absent or computed by a command.
     pub download_mb: Option<u64>,
     pub extracted_mb: Option<u64>,
     pub installed_mb: Option<u64>,
     pub note: String,
+    /// Written version ("" when absent or computed by a command).
+    pub version: String,
+    pub version_dynamic: bool,
+    pub download_dynamic: bool,
+    pub extracted_dynamic: bool,
+    pub installed_dynamic: bool,
+    /// The values come from commands of a script that is not shipped with
+    /// the store: they only run after the user asks.
+    pub needs_confirm: bool,
     /// Free bytes on `/` right now (0 = unknown).
     pub free_bytes: u64,
+    // ── install record ──
+    pub installed: bool,
+    pub installed_version: String,
+    pub installed_at: u64,
+    pub can_uninstall: bool,
+}
+
+/// Values computed by the commands of a script.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ScriptValues {
+    pub version: Option<String>,
+    pub download_mb: Option<u64>,
+    pub extracted_mb: Option<u64>,
+    pub installed_mb: Option<u64>,
 }
 
 /// One selectable row of a `choice` screen, already resolved (variables
@@ -207,6 +231,11 @@ pub enum Message {
     SystemUpgradeRequested,
     /// Ask for the details of a script (its page).
     ScriptInfoRequested { id: String },
+    /// Run the commands that compute the version and sizes of a script.
+    /// `confirmed`: the user asked (required for scripts from the user's own folder).
+    ScriptEvalRequested { id: String, confirmed: bool },
+    /// Start the uninstall flow of an installed add-on package.
+    ScriptUninstallRequested { id: String },
     /// Start the interactive script with this id.
     ScriptStartRequested { id: String },
     /// A button was pressed on screen `seq` (`selected` = chosen option).
@@ -232,6 +261,7 @@ pub enum Message {
     OperationFinished { op: Operation, success: bool, exit_code: i32 },
 
     ScriptInfoReady { id: String, info: Option<ScriptInfo> },
+    ScriptValuesReady { id: String, values: ScriptValues },
 
     // ── interactive scripts (script engine → UI) ──
     ScriptView { view: ScriptViewData },
