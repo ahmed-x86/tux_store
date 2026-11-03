@@ -24,6 +24,7 @@ fn package_from_block(b: &InfoBlock) -> Option<Package> {
         version: b.get("Version").cloned().unwrap_or_default(),
         description: b.get("Description").cloned().unwrap_or_default(),
         installed: false,
+        ..Default::default()
     })
 }
 
@@ -36,6 +37,7 @@ fn fallback_package(name: &str) -> Package {
             version: lp.version,
             description: lp.description,
             installed: true,
+            ..Default::default()
         };
     }
     Package {
@@ -44,6 +46,7 @@ fn fallback_package(name: &str) -> Package {
         version: "unknown".into(),
         description: "Not found in the synced repositories (probably an AUR package).".into(),
         installed: false,
+        ..Default::default()
     }
 }
 
@@ -152,6 +155,7 @@ fn parse_search(text: &str, query: &str, limit: usize, installed: &HashSet<Strin
                         version: version.to_string(),
                         description: String::new(),
                         installed: false,
+                        ..Default::default()
                     });
                 }
             }
@@ -267,6 +271,7 @@ pub fn installed_packages() -> Vec<Package> {
             version: p.version,
             description: p.description,
             installed: true,
+            ..Default::default()
         })
         .collect();
     list.sort_by(|a, b| a.name.cmp(&b.name));
