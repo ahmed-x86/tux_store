@@ -1,0 +1,18 @@
+[package]
+name = "tux-script"
+description = "libtux_script.so — runs interactive JSON scripts (dialogs, choices, checks, privileged commands)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+tux-abi.workspace = true
+log.workspace = true
+libc.workspace = true
+crossbeam-channel.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
