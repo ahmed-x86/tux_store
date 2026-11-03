@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "id": "hello-test-id-2",
+  "title": "Hello test script",
+  "description": "A tiny harmless script to try the script system. It only prints a few lines.",
+  "version": "1.0",
+  "author": "You",
+  "keywords": [
+    "hello",
+    "test",
+    "demo"
+  ],
+  "show_on_home": true,
+  "start": "welcome",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Hello!",
+      "message": "This is a test script. It does not change anything on your system.",
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "detect_helpers"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "pick": {
+      "type": "choice",
+      "title": "Pick a greeting",
+      "store_as": "greeting",
+      "next": "run",
+      "options": [
+        {
+          "value": "Hello",
+          "label": "Hello",
+          "hint": "A friendly greeting."
+        },
+        {
+          "value": "Marhaba",
+          "label": "Marhaba",
+          "hint": "The Arabic one."
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "helper_result"
+        }
+      ]
+    },
+    "run": {
+      "type": "run",
+      "title": "Working…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Saying hello",
+          "argv": [
+            "echo",
+            "${greeting} from Tux Store!"
+          ]
+        },
+        {
+          "label": "Waiting a moment",
+          "shell": "sleep 2; echo done",
+          "expected_secs": 2
+        }
+      ],
+      "on_success": "done"
+    },
+    "done": {
+      "type": "finish",
+      "title": "All done",
+      "message": "${helper_msg}\n\nYou picked “${greeting}”. Nothing was changed."
+    },
+    "detect_helpers": {
+      "type": "check",
+      "command": {
+        "label": "Looking for yay and paru…",
+        "shell": [
+          "y=0; p=0",
+          "command -v yay >/dev/null 2>&1 && y=1",
+          "command -v paru >/dev/null 2>&1 && p=1",
+          "if [ $y = 1 ] && [ $p = 1 ]; then echo both",
+          "elif [ $y = 1 ]; then echo yay",
+          "elif [ $p = 1 ]; then echo paru",
+          "else echo none; fi"
+        ]
+      },
+      "capture": "helpers",
+      "on_success": "helper_branch",
+      "on_failure": "helper_branch"
+    },
+    "helper_branch": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "helpers",
+            "eq": "both"
+          },
+          "goto": "set_both"
+        },
+        {
+          "when": {
+            "var": "helpers",
+            "eq": "yay"
+          },
+          "goto": "set_yay"
+        },
+        {
+          "when": {
+            "var": "helpers",
+            "eq": "paru"
+          },
+          "goto": "set_paru"
+        }
+      ],
+      "default": "set_none"
+    },
+    "set_both": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "Both yay and paru are installed."
+      },
+      "next": "helper_result"
+    },
+    "set_yay": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "yay is installed (paru is not)."
+      },
+      "next": "helper_result"
+    },
+    "set_paru": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "paru is installed (yay is not)."
+      },
+      "next": "helper_result"
+    },
+    "set_none": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "Neither yay nor paru is installed."
+      },
+      "next": "helper_result"
+    },
+    "helper_result": {
+      "type": "dialog",
+      "title": "AUR helpers",
+      "message": "${helper_msg}",
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "pick"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    }
+  }
+}
