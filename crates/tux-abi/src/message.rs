@@ -5,6 +5,7 @@
 //! UI, but any module may listen — e.g. the installer overhears
 //! [`Message::DetailsReady`] to learn package sizes for its progress bar).
 
+use crate::script::{ButtonStyle, Tone};
 use serde::{Deserialize, Serialize};
 
 // ───────────────────────────── data types ─────────────────────────────
@@ -12,6 +13,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Package {
     pub name: String,
+    /// Human title. Empty for pacman packages (the UI derives one from the
+    /// name); set for scripts, whose `name` is the script id.
+    #[serde(default)]
+    pub title: String,
     pub repo: String,
     pub version: String,
     pub description: String,
@@ -126,6 +131,51 @@ pub enum Operation {
     SystemUpgrade,
 }
 
+/// What the script's own page shows (besides title / description / version).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ScriptInfo {
+    pub author: String,
+    /// Found in the user's own config directory (not shipped with the store).
+    pub user_script: bool,
+    /// Number of commands that ask for administrator rights.
+    pub root_commands: usize,
+    pub path: String,
+}
+
+/// One selectable row of a `choice` screen, already resolved (variables
+/// interpolated, conditional notes applied).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ScriptOptionView {
+    pub label: String,
+    pub hint: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ScriptButtonView {
+    pub label: String,
+    pub style: ButtonStyle,
+    /// Disabled until a choice option is selected.
+    pub needs_selection: bool,
+}
+
+/// Everything the UI needs to draw the current screen of a running script.
+/// The UI is deliberately dumb: it renders this and reports button clicks.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ScriptViewData {
+    pub script_id: String,
+    pub script_title: String,
+    /// Increases with every screen; actions for an older screen are ignored.
+    pub seq: u64,
+    pub title: String,
+    pub message: String,
+    pub tone: Tone,
+    pub options: Vec<ScriptOptionView>,
+    pub preselected: Option<usize>,
+    pub buttons: Vec<ScriptButtonView>,
+    /// A command is running: no buttons, progress bar instead.
+    pub busy: bool,
+}
+
 // ───────────────────────────── the bus message ─────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -149,6 +199,12 @@ pub enum Message {
     InstallRequested { name: String },
     RemoveRequested { name: String, mode: RemoveMode },
     SystemUpgradeRequested,
+    /// Ask for the details of a script (its page).
+    ScriptInfoRequested { id: String },
+    /// Start the interactive script with this id.
+    ScriptStartRequested { id: String },
+    /// A button was pressed on screen `seq` (`selected` = chosen option).
+    ScriptAction { seq: u64, button: usize, selected: Option<usize> },
 
     // ── answers (backends → UI) ──
     HomeReady { sections: Vec<Section> },
@@ -168,6 +224,14 @@ pub enum Message {
     OperationOutput { text: String },
     OperationProgress { fraction: f64 },
     OperationFinished { op: Operation, success: bool, exit_code: i32 },
+
+    ScriptInfoReady { id: String, info: Option<ScriptInfo> },
+
+    // ── interactive scripts (script engine → UI) ──
+    ScriptView { view: ScriptViewData },
+    ScriptOutput { text: String },
+    ScriptProgress { fraction: f64, label: String },
+    ScriptEnded { id: String, success: bool },
 }
 
 impl Message {
