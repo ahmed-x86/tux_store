@@ -1,5 +1,5 @@
 import { Theme } from "theme.slint";
-import { UiPackage, UiPackageDetails, UiInstallState, UiSpecialCase, OpPhase } from "types.slint";
+import { UiPackage, UiPackageDetails, UiInstallState, UiSpecialCase, UiScriptInfo, OpPhase } from "types.slint";
 import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar } from "components.slint";
 
 // One choice in the "how do you want to uninstall?" dialog.
@@ -71,6 +71,8 @@ export component DetailsView inherits Rectangle {
     in property <[UiPackage]> suggestions;
     in property <UiSpecialCase> special-case;
     in property <int> accent-idx;
+    in property <UiScriptInfo> script-info;
+    callback run-script-clicked();
     callback back-clicked();
     callback install-clicked();
     callback remove-clicked(string);
@@ -81,6 +83,8 @@ export component DetailsView inherits Rectangle {
     callback copy-to-clipboard(string);
     callback show-console();
 
+    // A script is shown on the same page as a package, with a few differences.
+    property <bool> is-script: root.pkg.repo == "script";
     property <bool> show-uninstall-modal: false;
     property <color> accent: Theme.accents[mod(root.accent-idx, Theme.accents.length)];
     property <bool> busy: root.install-state.phase == OpPhase.running;
@@ -220,11 +224,12 @@ export component DetailsView inherits Rectangle {
                                     background: repo-ta.has-hover ? Theme.surface2 : Theme.surface1;
                                     animate background { duration: 150ms; }
                                     repo-ta := TouchArea {
-                                        mouse-cursor: pointer;
+                                        enabled: !root.is-script;
+                                        mouse-cursor: root.is-script ? MouseCursor.default : MouseCursor.pointer;
                                         clicked => { root.open-url(root.pkg.repo, root.pkg.name); }
                                     }
                                     repo-txt := Text {
-                                        text: root.pkg.repo;
+                                        text: root.is-script ? "Script" : root.pkg.repo;
                                         color: Theme.subtext0;
                                         font-size: 11px;
                                         font-weight: 700;
@@ -276,7 +281,30 @@ export component DetailsView inherits Rectangle {
 
                     Rectangle { horizontal-stretch: 1; }
 
-                    VerticalLayout {
+                    if root.is-script : VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 152px;
+                            height: 44px;
+                            background: root.accent;
+                            border-radius: 10px;
+                            opacity: root.busy ? 0.5 : 1.0;
+                            TouchArea {
+                                enabled: !root.busy;
+                                mouse-cursor: pointer;
+                                clicked => { root.run-script-clicked(); }
+                            }
+                            Text {
+                                text: "Run script";
+                                color: Theme.crust;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                    if !root.is-script : VerticalLayout {
                         alignment: center;
                         Rectangle {
                             width: 152px;
@@ -313,8 +341,32 @@ export component DetailsView inherits Rectangle {
                     console-clicked => { root.show-console(); }
                 }
 
+                // ---- About this script (scripts only) ---------------------
+                if root.is-script : Card {
+                    Text { text: "About this script"; color: Theme.text; font-size: 16px; font-weight: 700; }
+                    HorizontalLayout {
+                        spacing: 40px;
+                        alignment: start;
+                        Stat { label: "Source"; value: root.script-info.source; }
+                        Stat { label: "Author"; value: root.script-info.author; }
+                        Stat { label: "Administrator rights"; value: root.script-info.admin; }
+                    }
+                    Text {
+                        text: "Running it opens a guided window. Nothing on your system changes until you confirm the steps shown there.";
+                        color: Theme.subtext0;
+                        font-size: 13px;
+                        wrap: word-wrap;
+                    }
+                    if root.script-info.path != "" : Text {
+                        text: root.script-info.path;
+                        color: Theme.overlay1;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+                }
+
                 // ---- Download summary -------------------------------------
-                Card {
+                if !root.is-script : Card {
                     HorizontalLayout {
                         alignment: space-between;
                         Text { text: "What you'll download"; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
@@ -416,7 +468,7 @@ export component DetailsView inherits Rectangle {
                 }
 
                 // ---- Dependencies ------------------------------------------
-                if !root.details.is-loading && root.details.dependencies.length > 0 : Card {
+                if !root.is-script && !root.details.is-loading && root.details.dependencies.length > 0 : Card {
                     Text {
                         text: "Dependencies (" + root.details.dependencies.length + ")";
                         color: Theme.text;
@@ -428,7 +480,7 @@ export component DetailsView inherits Rectangle {
                         accent: root.accent;
                     }
                 }
-                if !root.details.is-loading && root.details.plan-ok && root.details.dependencies.length == 0 : Card {
+                if !root.is-script && !root.details.is-loading && root.details.plan-ok && root.details.dependencies.length == 0 : Card {
                     Text { text: "No additional dependencies required."; color: Theme.subtext1; font-size: 13px; }
                 }
 
