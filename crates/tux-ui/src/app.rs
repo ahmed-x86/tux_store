@@ -99,8 +99,26 @@ fn wire(ui: &MainWindow) {
     });
 
     // ── details ──
+    // Don't let the window be closed while a script is changing the system.
+    {
+        let weak = ui.as_weak();
+        ui.window().on_close_requested(move || {
+            let busy = weak.upgrade().is_some_and(|u| u.get_script_active() && u.get_script_view().busy);
+            if busy {
+                slint::CloseRequestResponse::KeepWindowShown
+            } else {
+                slint::CloseRequestResponse::HideWindow
+            }
+        });
+    }
     ui.on_app_clicked(|pkg| {
-        with_state(|st| st.open_package(convert::from_ui(&pkg), false));
+        with_state(|st| st.app_clicked(convert::from_ui(&pkg)));
+    });
+    ui.on_run_script_clicked(|| {
+        with_state(|st| st.run_current_script());
+    });
+    ui.on_script_button_clicked(|i| {
+        with_state(|st| st.script_button(usize::try_from(i).unwrap_or(usize::MAX)));
     });
     ui.on_back_clicked(|| {
         with_state(|st| st.back());
