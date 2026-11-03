@@ -17,6 +17,8 @@ pub mod logging;
 pub mod message;
 pub mod module;
 pub mod paths;
+pub mod script;
+pub mod stream;
 pub mod sync;
 pub mod text;
 
