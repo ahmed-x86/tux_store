@@ -124,7 +124,7 @@ pub fn run_check(spec: &CommandSpec, vars: &Vars) -> Outcome {
 }
 
 /// Run `spec` with live output on the bus; returns the exit code.
-pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus) -> i32 {
+pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus, echo: bool) -> i32 {
     let inner = build_inner(spec, vars).iter().map(|a| shell_quote(a)).collect::<Vec<_>>().join(" ");
     let (program, argv): (&str, Vec<String>) = if spec.root && !is_root() {
         ("pkexec", vec!["script".into(), "-qec".into(), inner, "/dev/null".into()])
@@ -152,7 +152,7 @@ pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus) -> i32 {
         .flatten()
         .map(|s| {
             let bus = *bus;
-            thread::spawn(move || pump(s, bus))
+            thread::spawn(move || pump(s, bus, echo))
         })
         .collect();
 
@@ -178,7 +178,7 @@ pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus) -> i32 {
     code
 }
 
-fn pump(mut reader: Box<dyn Read + Send>, bus: Bus) {
+fn pump(mut reader: Box<dyn Read + Send>, bus: Bus, echo: bool) {
     let mut buf = [0u8; 8192];
     let mut utf8 = Utf8Stream::default();
     loop {
@@ -190,6 +190,10 @@ fn pump(mut reader: Box<dyn Read + Send>, bus: Bus) {
         };
         let text = utf8.push(&buf[..n]);
         if !text.is_empty() {
+            if echo {
+                use std::io::Write;
+                let _ = std::io::stderr().write_all(text.as_bytes());
+            }
             bus.publish(&Message::ScriptOutput { text });
         }
     }

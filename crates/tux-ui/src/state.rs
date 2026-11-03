@@ -387,7 +387,8 @@ impl State {
         ui.set_script_selected(view.preselected.map_or(-1, |i| i as i32));
         ui.set_script_view(convert::script_view(&view));
         if !view.busy {
-            ui.set_script_progress(0.0);
+            // a screen that needs the user always comes back to the front
+            ui.set_script_minimized(false);
         }
         ui.set_script_active(true);
     }
@@ -396,6 +397,8 @@ impl State {
         self.script_running = false;
         let Some(ui) = self.ui.upgrade() else { return };
         ui.set_script_active(false);
+        ui.set_script_minimized(false);
+        ui.set_script_running_id("".into());
         if success {
             // A script may have installed or removed packages.
             match ui.get_active_tab() {
@@ -423,19 +426,37 @@ impl State {
         if self.current.as_ref().map(|c| c.name.as_str()) != Some(id.as_str()) {
             return; // the user already moved on
         }
+        let mb = |v: Option<u64>| -> slint::SharedString {
+            match v {
+                None => "Not specified".into(),
+                Some(m) if m >= 1024 => format!("{:.1} GB", m as f64 / 1024.0).into(),
+                Some(m) => format!("{m} MB").into(),
+            }
+        };
         let ui_info = match info {
-            Some(i) => UiScriptInfo {
-                loaded: true,
-                author: if i.author.is_empty() { "Unknown".into() } else { i.author.as_str().into() },
-                source: if i.user_script { "Your own script".into() } else { "Included with Tux Store".into() },
-                admin: if i.root_commands == 0 {
-                    "Not required".into()
-                } else {
-                    format!("Required ({} command{})", i.root_commands, if i.root_commands == 1 { "" } else { "s" }).into()
-                },
-                path: if i.user_script { i.path.as_str().into() } else { "".into() },
-            },
-            None => UiScriptInfo { loaded: true, author: "—".into(), source: "Script file not found".into(), ..Default::default() },
+            Some(i) => {
+                let free_mb = i.free_bytes / (1024 * 1024);
+                let needed = i.extracted_mb.or(i.installed_mb).unwrap_or(0) + i.download_mb.unwrap_or(0);
+                UiScriptInfo {
+                    loaded: true,
+                    author: if i.author.is_empty() { "Unknown".into() } else { i.author.as_str().into() },
+                    source: if i.user_script { "Your own add-on package".into() } else { "Included with Tux Store".into() },
+                    admin: if i.root_commands == 0 {
+                        "Not required".into()
+                    } else {
+                        format!("Required ({} command{})", i.root_commands, if i.root_commands == 1 { "" } else { "s" }).into()
+                    },
+                    path: if i.user_script { i.path.as_str().into() } else { "".into() },
+                    download: mb(i.download_mb),
+                    extracted: mb(i.extracted_mb),
+                    installed: mb(i.installed_mb),
+                    free: if i.free_bytes == 0 { "Unknown".into() } else { mb(Some(free_mb)) },
+                    low_space: i.free_bytes != 0 && needed > 0 && free_mb < needed,
+                    space_ratio: if free_mb == 0 { 0.0 } else { (needed as f32 / free_mb as f32).min(1.0) },
+                    note: i.note.as_str().into(),
+                }
+            }
+            None => UiScriptInfo { loaded: true, author: "—".into(), source: "File not found".into(), ..Default::default() },
         };
         ui.set_current_script_info(ui_info);
     }
@@ -446,6 +467,8 @@ impl State {
             return;
         }
         self.script_running = true;
+        ui.set_script_minimized(false);
+        ui.set_script_running_id(id.as_str().into());
         self.console.clear();
         self.console_dirty = true;
         ui.set_script_has_output(false);

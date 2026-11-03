@@ -61,6 +61,8 @@ export component MainWindow inherits Window {
 
     // ── interactive scripts ──
     in-out property <bool> script-active: false;
+    in-out property <bool> script-minimized: false;
+    in-out property <string> script-running-id;
     in property <UiScriptView> script-view;
     in property <UiScriptInfo> current-script-info;
     in-out property <int> script-selected: -1;
@@ -251,7 +253,12 @@ export component MainWindow inherits Window {
         special-case: root.current-special-case;
         accent-idx: root.accent-idx;
         script-info: root.current-script-info;
+        script-running: root.script-active && root.script-running-id == root.current-package.name;
+        script-progress: root.script-progress;
+        script-progress-label: root.script-progress-label;
+        script-minimized: root.script-minimized;
         run-script-clicked => { root.run-script-clicked(); }
+        show-script-clicked => { root.script-minimized = false; }
         back-clicked => { root.back-clicked(); }
         install-clicked => { root.install-clicked(); }
         remove-clicked(mode) => { root.remove-clicked(mode); }
@@ -279,7 +286,7 @@ export component MainWindow inherits Window {
     }
 
     // A running script's dialog sits above every screen (but under the console).
-    if root.script-active : ScriptDialog {
+    if root.script-active && !root.script-minimized : ScriptDialog {
         view: root.script-view;
         progress: root.script-progress;
         progress-label: root.script-progress-label;
@@ -287,6 +294,38 @@ export component MainWindow inherits Window {
         selected <=> root.script-selected;
         button-clicked(i) => { root.script-button-clicked(i); }
         details-clicked => { root.show-console = true; }
+        minimize-clicked => { root.script-minimized = true; }
+    }
+
+    // While an add-on package works in the background: a small bar that brings the window back.
+    if root.script-active && root.script-minimized : Rectangle {
+        width: min(460px, root.width - 32px);
+        height: 52px;
+        x: (root.width - self.width) / 2;
+        y: root.height - 76px;
+        background: Theme.mantle;
+        border-color: Theme.mauve;
+        border-width: 1px;
+        border-radius: 14px;
+        TouchArea {
+            mouse-cursor: pointer;
+            clicked => { root.script-minimized = false; }
+        }
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 16px;
+            spacing: 12px;
+            Text {
+                horizontal-stretch: 1;
+                text: root.script-progress-label != "" ? root.script-progress-label : "Add-on package is working…";
+                color: Theme.text;
+                font-size: 12px;
+                overflow: elide;
+                vertical-alignment: center;
+            }
+            Text { text: round(root.script-progress * 100) + "%"; color: Theme.mauve; font-size: 13px; font-weight: 700; vertical-alignment: center; }
+            Text { text: "Show"; color: Theme.overlay1; font-size: 12px; vertical-alignment: center; }
+        }
     }
 
     // The console overlay sits above every screen.

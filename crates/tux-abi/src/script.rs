@@ -20,7 +20,9 @@ use std::collections::{BTreeMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub const SCHEMA: u32 = 1;
+/// Newest format version. Version 1 files (no `info`, no `percent`) still load.
+pub const SCHEMA: u32 = 2;
+pub const MIN_SCHEMA: u32 = 1;
 pub const MAX_STEPS: usize = 200;
 pub const MAX_COMMANDS: usize = 64;
 pub const MAX_OPTIONS: usize = 40;
@@ -186,6 +188,10 @@ pub struct CommandSpec {
     /// How long the command usually takes; only shapes the progress bar.
     #[serde(default)]
     pub expected_secs: Option<u64>,
+    /// Overall progress of the whole add-on (0–100) once this command has
+    /// finished. Absolute, so it also works across several `run` steps.
+    #[serde(default)]
+    pub percent: Option<u8>,
 }
 
 impl CommandSpec {
@@ -269,6 +275,18 @@ pub struct RunStep {
     /// is shown.
     #[serde(default)]
     pub on_failure: Option<String>,
+    /// Also write the commands' output to the terminal Tux Store was started
+    /// from (handy while developing a script).
+    #[serde(default)]
+    pub echo: bool,
+}
+
+/// Writes a line to the terminal Tux Store was started from.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PrintStep {
+    pub text: Text,
+    pub next: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -317,10 +335,80 @@ pub enum Step {
     Run(RunStep),
     Branch(BranchStep),
     Set(SetStep),
+    Print(PrintStep),
     Finish(FinishStep),
 }
 
 // ───────────────────────────── the script ─────────────────────────────
+
+/// Where an add-on package's thumbnail comes from. Exactly one field is set.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IconSource {
+    /// A `.png` / `.svg` / `.ico` file **in the same folder as the JSON**
+    /// (a bare file name, no path).
+    #[serde(default)]
+    pub file: Option<String>,
+    /// A name asked from the user's icon theme (e.g. `"nvidia"`).
+    #[serde(default)]
+    pub theme: Option<String>,
+    /// An `https://` link to a `.png` / `.svg` picture, downloaded once and cached.
+    #[serde(default)]
+    pub url: Option<String>,
+}
+
+/// One source, or a list tried in order until one works.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IconSpec {
+    One(IconSource),
+    Many(Vec<IconSource>),
+}
+
+impl IconSpec {
+    pub fn sources(&self) -> Vec<&IconSource> {
+        match self {
+            IconSpec::One(s) => vec![s],
+            IconSpec::Many(v) => v.iter().collect(),
+        }
+    }
+}
+
+pub const ICON_EXTENSIONS: [&str; 3] = ["svg", "png", "ico"];
+
+/// A bare, harmless file name with an allowed picture extension.
+pub fn is_valid_icon_file_name(f: &str) -> bool {
+    !f.is_empty()
+        && f.len() <= 128
+        && !f.starts_with('.')
+        && !f.contains(['/', '\\', '\0'])
+        && f.rsplit_once('.').is_some_and(|(_, e)| ICON_EXTENSIONS.contains(&e.to_ascii_lowercase().as_str()))
+}
+
+pub fn is_valid_icon_url(u: &str) -> bool {
+    u.len() <= 500 && u.starts_with("https://") && u.len() > 12 && !u.chars().any(|c| c.is_whitespace() || c.is_control())
+}
+
+fn is_valid_theme_icon_name(n: &str) -> bool {
+    !n.is_empty() && n.len() <= 100 && n.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'+' | b'-'))
+}
+
+/// Sizes shown on the add-on package's page (estimates, in megabytes).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StorageInfo {
+    /// What will be downloaded from the internet.
+    #[serde(default)]
+    pub download_mb: Option<u64>,
+    /// Space needed while installing (unpacked / built files).
+    #[serde(default)]
+    pub extracted_mb: Option<u64>,
+    /// Space used once installed.
+    #[serde(default)]
+    pub installed_mb: Option<u64>,
+    #[serde(default)]
+    pub note: String,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -340,6 +428,12 @@ pub struct Script {
     /// List it on the Home page ("Tools & Scripts" shelf).
     #[serde(default)]
     pub show_on_home: bool,
+    /// Download / disk-space estimate for the page (format version 2).
+    #[serde(default)]
+    pub info: Option<StorageInfo>,
+    /// How to get the thumbnail (format version 2).
+    #[serde(default)]
+    pub icon: Option<IconSpec>,
     /// Initial variables.
     #[serde(default)]
     pub vars: Vars,
@@ -380,8 +474,8 @@ fn is_valid_env_name(n: &str) -> bool {
 
 impl Script {
     pub fn validate(&self) -> Result<(), String> {
-        if self.schema != SCHEMA {
-            return Err(format!("unsupported schema {} (expected {SCHEMA})", self.schema));
+        if !(MIN_SCHEMA..=SCHEMA).contains(&self.schema) {
+            return Err(format!("unsupported schema {} (supported: {MIN_SCHEMA}..={SCHEMA})", self.schema));
         }
         if !is_valid_package_name(&self.id) || self.id.bytes().any(|b| b.is_ascii_uppercase()) {
             return Err(format!("invalid id {:?} (lowercase letters, digits, - _ . + only)", self.id));
@@ -395,6 +489,27 @@ impl Script {
         for k in self.vars.keys() {
             if !is_valid_var_name(k) {
                 return Err(format!("invalid variable name {k:?}"));
+            }
+        }
+        if let Some(icon) = &self.icon {
+            let sources = icon.sources();
+            if sources.is_empty() || sources.len() > 8 {
+                return Err("icon needs 1..=8 sources".into());
+            }
+            for src in sources {
+                let set = [src.file.is_some(), src.theme.is_some(), src.url.is_some()].iter().filter(|b| **b).count();
+                if set != 1 {
+                    return Err("each icon source needs exactly one of file / theme / url".into());
+                }
+                if src.file.as_deref().is_some_and(|f| !is_valid_icon_file_name(f)) {
+                    return Err("icon file must be a bare .svg/.png/.ico file name in the JSON's folder".into());
+                }
+                if src.theme.as_deref().is_some_and(|t| !is_valid_theme_icon_name(t)) {
+                    return Err("invalid icon theme name".into());
+                }
+                if src.url.as_deref().is_some_and(|u| !is_valid_icon_url(u)) {
+                    return Err("icon url must be a plain https:// link".into());
+                }
             }
         }
         self.require_step(&self.start, "start")?;
@@ -476,6 +591,9 @@ impl Script {
         if c.weight == 0 {
             return Err("weight must be at least 1".into());
         }
+        if c.percent.is_some_and(|p| p > 100) {
+            return Err("percent must be between 0 and 100".into());
+        }
         for k in c.env.keys() {
             if !is_valid_env_name(k) {
                 return Err(format!("invalid environment variable name {k:?}"));
@@ -556,6 +674,12 @@ impl Script {
             Step::Set(s) => {
                 Self::check_vars(&s.vars)?;
                 self.require_step(&s.next, "next")
+            }
+            Step::Print(p) => {
+                if p.text.len() > MAX_TEXT {
+                    return Err("print text is too long".into());
+                }
+                self.require_step(&p.next, "next")
             }
             Step::Finish(_) => Ok(()),
         }
@@ -800,6 +924,46 @@ mod tests {
         assert!(eval(&c, &v));
         let c: Cond = serde_json::from_str(r#"{"any":[{"var":"gpu","eq":"x"},{"var":"pick","eq":"y"}]}"#).unwrap();
         assert!(!eval(&c, &v));
+    }
+
+    #[test]
+    fn schema_one_and_two_load_and_percent_is_checked() {
+        let mk = |schema: u32, pct: u32| -> Result<(), String> {
+            let s: Script = serde_json::from_str(&format!(
+                r#"{{"schema":{schema},"id":"x","title":"t","start":"a","steps":{{
+                  "a":{{"type":"run","title":"t","commands":[{{"argv":["true"],"percent":{pct}}}],"on_success":"b"}},
+                  "b":{{"type":"finish","title":"t"}}}}}}"#
+            ))
+            .unwrap();
+            s.validate()
+        };
+        assert!(mk(1, 50).is_ok());
+        assert!(mk(2, 100).is_ok());
+        assert!(mk(3, 50).is_err());
+        let r: Result<Script, _> = serde_json::from_str(
+            r#"{"schema":2,"id":"x","title":"t","start":"a","steps":{"a":{"type":"run","title":"t","commands":[{"argv":["true"],"percent":300}],"on_success":"a"}}}"#,
+        );
+        assert!(r.is_err(), "300 does not fit u8");
+    }
+
+    #[test]
+    fn icon_sources_are_checked() {
+        let mk = |icon: &str| -> Result<(), String> {
+            let s: Script = serde_json::from_str(&format!(
+                r#"{{"schema":2,"id":"x","title":"t","start":"a","icon":{icon},"steps":{{"a":{{"type":"finish","title":"t"}}}}}}"#
+            ))
+            .unwrap();
+            s.validate()
+        };
+        assert!(mk(r#"{"file":"logo.svg"}"#).is_ok());
+        assert!(mk(r#"[{"file":"logo.png"},{"theme":"nvidia"},{"url":"https://example.com/a.svg"}]"#).is_ok());
+        assert!(mk(r#"{"file":"../logo.svg"}"#).is_err());
+        assert!(mk(r#"{"file":"sub/logo.svg"}"#).is_err());
+        assert!(mk(r#"{"file":"logo.exe"}"#).is_err());
+        assert!(mk(r#"{"url":"http://example.com/a.svg"}"#).is_err());
+        assert!(mk(r#"{"url":"https://a b"}"#).is_err());
+        assert!(mk(r#"{"file":"a.svg","theme":"x"}"#).is_err());
+        assert!(mk(r#"{}"#).is_err());
     }
 
     #[test]

@@ -32,7 +32,8 @@ pub fn from_ui(p: &UiPackage) -> Package {
         version: p.version.to_string(),
         description: p.description.to_string(),
         installed: p.installed,
-        title: String::new(),
+        // A script's page must keep its real title (the card shows it).
+        title: if p.repo == "script" { p.pretty_name.to_string() } else { String::new() },
     }
 }
 

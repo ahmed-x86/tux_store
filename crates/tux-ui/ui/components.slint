@@ -267,7 +267,7 @@ export component AppCard inherits Rectangle {
                 overflow: elide;
             }
             Text {
-                text: root.pkg.repo == "script" ? "Interactive script"
+                text: root.pkg.repo == "script" ? "Add-on package"
                     : (root.pkg.installed ? "Installed" : "Not Installed");
                 color: root.pkg.repo == "script" ? Theme.mauve
                     : (root.pkg.installed ? Theme.green : Theme.overlay0);
@@ -323,7 +323,7 @@ export component SuggestionCard inherits Rectangle {
         Rectangle { vertical-stretch: 1; }
 
         Text {
-            text: root.pkg.repo == "script" ? "View script" : (root.pkg.installed ? "Installed" : "View details");
+            text: root.pkg.repo == "script" ? "View add-on" : (root.pkg.installed ? "Installed" : "View details");
             color: root.pkg.installed && root.pkg.repo != "script" ? Theme.green : Theme.accents[mod(root.accent-idx, Theme.accents.length)];
             font-size: 11px;
             font-weight: 700;
@@ -748,6 +748,7 @@ export component ScriptDialog inherits Rectangle {
     in-out property <int> selected: -1;
     callback button-clicked(int);
     callback details-clicked();
+    callback minimize-clicked();
 
     property <color> tone-color: root.view.tone == 1 ? #f9e2af
         : (root.view.tone == 2 ? Theme.red
@@ -851,6 +852,10 @@ export component ScriptDialog inherits Rectangle {
                 if root.has-output : PillButton {
                     text: "Show details";
                     clicked => { root.details-clicked(); }
+                }
+                if root.view.busy : PillButton {
+                    text: "Run in background";
+                    clicked => { root.minimize-clicked(); }
                 }
                 Rectangle { horizontal-stretch: 1; }
                 for b[i] in root.view.buttons : PillButton {

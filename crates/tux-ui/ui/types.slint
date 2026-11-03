@@ -93,11 +93,18 @@ export struct UiScriptView {
     busy: bool,
 }
 
-// Extra facts on a script's own page.
+// Extra facts on an add-on package's own page.
 export struct UiScriptInfo {
     loaded: bool,
     author: string,
     source: string,
     admin: string,
     path: string,
+    download: string,
+    extracted: string,
+    installed: string,
+    free: string,
+    low-space: bool,
+    space-ratio: float,
+    note: string,
 }

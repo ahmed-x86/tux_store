@@ -1,0 +1,8 @@
+{
+  "package": "wine",
+  "addons": {
+    "Wine Mono (.NET)": "wine-mono",
+    "Wine Gecko (HTML)": "wine-gecko",
+    "Winetricks": "winetricks"
+  }
+}

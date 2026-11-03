@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "hello-test-id-2",
   "title": "Hello test script",
   "description": "A tiny harmless script to try the script system. It only prints a few lines.",
@@ -33,7 +33,7 @@
       "type": "choice",
       "title": "Pick a greeting",
       "store_as": "greeting",
-      "next": "run",
+      "next": "say_in_terminal",
       "options": [
         {
           "value": "Hello",
@@ -63,15 +63,18 @@
           "argv": [
             "echo",
             "${greeting} from Tux Store!"
-          ]
+          ],
+          "percent": 40
         },
         {
           "label": "Waiting a moment",
           "shell": "sleep 2; echo done",
-          "expected_secs": 2
+          "expected_secs": 2,
+          "percent": 90
         }
       ],
-      "on_success": "done"
+      "on_success": "done",
+      "echo": true
     },
     "done": {
       "type": "finish",
@@ -166,6 +169,25 @@
           "exit": true
         }
       ]
+    },
+    "say_in_terminal": {
+      "type": "print",
+      "text": "hello add-on: the user picked ${greeting}",
+      "next": "run"
     }
-  }
+  },
+  "info": {
+    "download_mb": 0,
+    "extracted_mb": 0,
+    "installed_mb": 0,
+    "note": "This test add-on package downloads and installs nothing."
+  },
+  "icon": [
+    {
+      "file": "hello-test-id-2.svg"
+    },
+    {
+      "theme": "face-smile"
+    }
+  ]
 }

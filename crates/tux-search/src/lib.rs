@@ -48,11 +48,19 @@ impl Module for SearchModule {
             Message::SearchRequested { query } => self.search(query),
             Message::DetailsRequested { name } => self.details(name),
             Message::ScriptInfoRequested { id } => {
-                let info = self.catalog.scripts.iter().find(|l| l.script.id == id).map(|l| ScriptInfo {
-                    author: l.script.author.clone(),
-                    user_script: l.origin == tux_abi::script::Origin::User,
-                    root_commands: l.script.root_command_summaries().len(),
-                    path: l.path.display().to_string(),
+                let info = self.catalog.scripts.iter().find(|l| l.script.id == id).map(|l| {
+                    let storage = l.script.info.clone().unwrap_or_default();
+                    ScriptInfo {
+                        author: l.script.author.clone(),
+                        user_script: l.origin == tux_abi::script::Origin::User,
+                        root_commands: l.script.root_command_summaries().len(),
+                        path: l.path.display().to_string(),
+                        download_mb: storage.download_mb,
+                        extracted_mb: storage.extracted_mb,
+                        installed_mb: storage.installed_mb,
+                        note: storage.note,
+                        free_bytes: free_bytes_on_root(),
+                    }
                 });
                 self.bus.publish(&Message::ScriptInfoReady { id, info });
             }
@@ -194,9 +202,20 @@ fn build_home(catalog: &Catalog) -> Vec<Section> {
         .collect();
     let scripts = catalog.home_scripts();
     if !scripts.is_empty() {
-        sections.push(Section { id: "scripts".into(), title: "Tools & Scripts".into(), packages: scripts });
+        sections.push(Section { id: "scripts".into(), title: "Add-on packages".into(), packages: scripts });
     }
     sections
 }
 
 tux_abi::export_module!(SearchModule, "search");
+
+/// Free space (for normal users) on `/`, or 0 when it cannot be read.
+fn free_bytes_on_root() -> u64 {
+    let mut st: libc::statvfs = unsafe { std::mem::zeroed() };
+    // SAFETY: `st` is a valid out-pointer and the path is a NUL-terminated literal.
+    let rc = unsafe { libc::statvfs(c"/".as_ptr(), &mut st) };
+    if rc != 0 {
+        return 0;
+    }
+    (st.f_bavail as u64).saturating_mul(st.f_frsize as u64)
+}

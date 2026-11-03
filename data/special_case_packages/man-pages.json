@@ -1,0 +1,27 @@
+{
+  "package": "man-pages",
+  "language_packs": {
+    "Chinese (Simplified)": "man-pages-zh_cn",
+    "Chinese (Traditional)": "man-pages-zh_tw",
+    "Czech": "man-pages-cs",
+    "Danish": "man-pages-da",
+    "Dutch": "man-pages-nl",
+    "Finnish": "man-pages-fi",
+    "French": "man-pages-fr",
+    "German": "man-pages-de",
+    "Greek": "man-pages-el",
+    "Hungarian": "man-pages-hu",
+    "Indonesian": "man-pages-id",
+    "Italian": "man-pages-it",
+    "Macedonian": "man-pages-mk",
+    "Polish": "man-pages-pl",
+    "Portuguese (Brazil)": "man-pages-pt_br",
+    "Romanian": "man-pages-ro",
+    "Russian": "man-pages-ru",
+    "Serbian": "man-pages-sr",
+    "Spanish": "man-pages-es",
+    "Swedish": "man-pages-sv",
+    "Ukrainian": "man-pages-uk",
+    "Vietnamese": "man-pages-vi"
+  }
+}

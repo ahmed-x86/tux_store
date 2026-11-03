@@ -22,6 +22,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 use tux_abi::paths;
+use tux_abi::script::{is_valid_icon_file_name, IconSource};
 
 /// How long a "no icon found" verdict is trusted.
 const NEGATIVE_TTL: Duration = Duration::from_secs(14 * 24 * 3600);
@@ -41,6 +42,14 @@ enum Download {
     Failed,
 }
 
+/// An add-on package that declares where its icon comes from.
+struct ScriptIcon {
+    id: String,
+    /// The folder holding the script's JSON (for `"file"` sources).
+    dir: PathBuf,
+    sources: Vec<IconSource>,
+}
+
 pub struct Resolver {
     /// `~/.cache/tux-store` — everything the app ever caches lives below it.
     cache_root: PathBuf,
@@ -51,6 +60,7 @@ pub struct Resolver {
     custom: Vec<(String, String)>,
     theme: Mutex<Option<Arc<ThemeDirs>>>,
     warned_curl: AtomicBool,
+    script_icons: Mutex<Option<Arc<Vec<ScriptIcon>>>>,
 }
 
 impl Resolver {
@@ -69,6 +79,7 @@ impl Resolver {
             custom,
             theme: Mutex::new(None),
             warned_curl: AtomicBool::new(false),
+            script_icons: Mutex::new(None),
         }
     }
 
@@ -116,6 +127,60 @@ impl Resolver {
             .is_some_and(|age| age < NEGATIVE_TTL)
     }
 
+    /// Icon declarations of all add-on packages, read once (and again after
+    /// the cache is cleared).
+    fn script_icon_table(&self) -> Arc<Vec<ScriptIcon>> {
+        let mut g = tux_abi::sync::lock(&self.script_icons);
+        g.get_or_insert_with(|| {
+            let list = tux_abi::script::load_all()
+                .into_iter()
+                .filter_map(|l| {
+                    let icon = l.script.icon.as_ref()?;
+                    Some(ScriptIcon {
+                        id: l.script.id.clone(),
+                        dir: l.path.parent()?.to_path_buf(),
+                        sources: icon.sources().into_iter().cloned().collect(),
+                    })
+                })
+                .collect();
+            Arc::new(list)
+        })
+        .clone()
+    }
+
+    fn script_icon(&self, name: &str) -> Option<(PathBuf, Vec<IconSource>)> {
+        self.script_icon_table().iter().find(|s| s.id == name).map(|s| (s.dir.clone(), s.sources.clone()))
+    }
+
+    /// `"file"` source: a picture next to the JSON. `.ico` files are unpacked
+    /// (their embedded PNG) into the cache because the UI cannot show ICO.
+    fn script_file_icon(&self, dir: &Path, file: &str, name: &str) -> Option<PathBuf> {
+        if !is_valid_icon_file_name(file) {
+            return None;
+        }
+        let path = dir.join(file);
+        let meta = fs::metadata(&path).ok()?;
+        if !meta.is_file() || meta.len() > MAX_ICON_BYTES {
+            return None;
+        }
+        let bytes = fs::read(&path).ok()?;
+        if file.to_ascii_lowercase().ends_with(".ico") {
+            let png = ico_to_png(&bytes)?;
+            let out = self.cache_dir.join(format!("{name}.png"));
+            let _ = fs::create_dir_all(&self.cache_dir);
+            fs::write(&out, png).ok()?;
+            return Some(out);
+        }
+        is_valid_image(&bytes).then_some(path)
+    }
+
+    /// `"theme"` source: ask the icon theme the user runs.
+    fn script_theme_icon(&self, icon: &str) -> Option<PathBuf> {
+        let cands = [icon.to_string()];
+        let theme = self.theme();
+        theme.find_primary(&cands).or_else(|| theme.find_fallback(&cands))
+    }
+
     /// An icon shipped for exactly this package (or script id). Looked up by
     /// the *exact* name only — never by a truncated guess.
     fn exact_bundled(&self, name: &str) -> Option<PathBuf> {
@@ -132,6 +197,31 @@ impl Resolver {
 
     pub fn resolve_offline(&self, name: &str) -> Offline {
         let cands = candidates(name);
+
+        // 00. an add-on package says in its JSON where its icon comes from:
+        //     file next to the JSON, icon theme, or a link — tried in that order.
+        if let Some((dir, sources)) = self.script_icon(name) {
+            let mut wants_download = false;
+            for src in &sources {
+                if let Some(f) = &src.file {
+                    if let Some(p) = self.script_file_icon(&dir, f, name) {
+                        return Offline::Hit(p);
+                    }
+                } else if let Some(t) = &src.theme {
+                    if let Some(p) = self.script_theme_icon(t) {
+                        return Offline::Hit(p);
+                    }
+                } else if src.url.is_some() {
+                    if let Some(p) = self.cached(name) {
+                        return Offline::Hit(p);
+                    }
+                    wants_download = true;
+                }
+            }
+            if wants_download && !self.is_known_missing(name) {
+                return Offline::Miss; // the network stage fetches the link
+            }
+        }
 
         // 0. an icon made for exactly this package. This must come before the
         //    theme: for `libreoffice-fresh-ar` the candidate list also holds the
@@ -170,11 +260,23 @@ impl Resolver {
 
     /// One HTTP request for the best candidate; caches the outcome.
     pub fn fetch(&self, name: &str) -> Option<PathBuf> {
-        let best = candidates(name).into_iter().next().unwrap_or_else(|| name.to_string());
-        match self.download(&best) {
+        // An add-on package with a link gets exactly that link, not a guess.
+        let declared = self
+            .script_icon(name)
+            .and_then(|(_, sources)| sources.into_iter().find_map(|s| s.url))
+            .filter(|u| tux_abi::script::is_valid_icon_url(u));
+        let result = match declared {
+            Some(url) => self.download_url(&url),
+            None => {
+                let best = candidates(name).into_iter().next().unwrap_or_else(|| name.to_string());
+                self.download(&best)
+            }
+        };
+        match result {
             Download::Ok(bytes) => {
-                let path = self.cache_dir.join(format!("{name}.svg"));
-                let tmp = self.cache_dir.join(format!("{name}.svg.tmp"));
+                let ext = if bytes.starts_with(b"\x89PNG") { "png" } else { "svg" };
+                let path = self.cache_dir.join(format!("{name}.{ext}"));
+                let tmp = self.cache_dir.join(format!("{name}.{ext}.tmp"));
                 let _ = fs::create_dir_all(&self.cache_dir);
                 if fs::write(&tmp, &bytes).is_ok() && fs::rename(&tmp, &path).is_ok() {
                     let _ = fs::remove_file(self.negative_marker(name));
@@ -196,6 +298,10 @@ impl Resolver {
         let url = format!(
             "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/{candidate}.svg"
         );
+        self.download_url(&url)
+    }
+
+    fn download_url(&self, url: &str) -> Download {
         let out = Command::new("curl")
             .args([
                 "--silent",
@@ -213,7 +319,8 @@ impl Resolver {
                 concat!("tux-store/", env!("CARGO_PKG_VERSION")),
                 "--output",
                 "-",
-                &url,
+                "--",
+                url,
             ])
             .stdin(Stdio::null())
             .stderr(Stdio::null())
@@ -245,6 +352,7 @@ impl Resolver {
         let removed = clear_dir_contents(&self.cache_root);
         let _ = fs::create_dir_all(&self.cache_dir);
         *tux_abi::sync::lock(&self.theme) = None;
+        *tux_abi::sync::lock(&self.script_icons) = None;
         removed
     }
 }
@@ -290,6 +398,31 @@ fn count_files(dir: &Path) -> u32 {
     n
 }
 
+/// The largest PNG image stored inside an `.ico` file (modern icons embed
+/// PNGs). Old BMP-only icons are not supported and give `None`.
+pub fn ico_to_png(bytes: &[u8]) -> Option<Vec<u8>> {
+    let u16le = |o: usize| bytes.get(o..o + 2).map(|b| u16::from_le_bytes([b[0], b[1]]) as usize);
+    let u32le = |o: usize| bytes.get(o..o + 4).map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]) as usize);
+    if u16le(0)? != 0 || u16le(2)? != 1 {
+        return None;
+    }
+    let count = u16le(4)?;
+    let mut best: Option<(usize, &[u8])> = None;
+    for i in 0..count.min(64) {
+        let e = 6 + i * 16;
+        let width = match *bytes.get(e)? {
+            0 => 256,
+            w => w as usize,
+        };
+        let (size, offset) = (u32le(e + 8)?, u32le(e + 12)?);
+        let data = bytes.get(offset..offset.checked_add(size)?)?;
+        if data.starts_with(b"\x89PNG") && best.map_or(true, |(w, _)| width > w) {
+            best = Some((width, data));
+        }
+    }
+    best.map(|(_, d)| d.to_vec())
+}
+
 /// Reject HTML error pages that were served with status 200.
 pub fn is_valid_image(bytes: &[u8]) -> bool {
     if bytes.len() < 8 {
@@ -323,9 +456,42 @@ mod tests {
             custom: vec![("libreoffice-fresh".into(), "libreoffice-fresh".into())],
             theme: Mutex::new(None),
             warned_curl: AtomicBool::new(false),
+            script_icons: Mutex::new(None),
         };
         assert_eq!(r.exact_bundled("libreoffice-fresh-ar"), Some(dir.join("libreoffice-fresh-ar.svg")));
         assert_eq!(r.exact_bundled("libreoffice-fresh-xx"), None);
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn ico_with_embedded_png_is_unpacked() {
+        let png = b"\x89PNG\r\n\x1a\nDATA".to_vec();
+        let mut ico = vec![0, 0, 1, 0, 1, 0]; // header: 1 image
+        ico.extend([32, 32, 0, 0, 1, 0, 32, 0]); // entry: 32x32
+        ico.extend((png.len() as u32).to_le_bytes());
+        ico.extend(22u32.to_le_bytes()); // data offset
+        ico.extend(&png);
+        assert_eq!(ico_to_png(&ico), Some(png));
+        assert_eq!(ico_to_png(b"not an icon"), None);
+        // BMP payload: unsupported
+        let mut bmp = ico.clone();
+        bmp[22] = b'B';
+        assert_eq!(ico_to_png(&bmp), None);
+    }
+
+    #[test]
+    fn script_declares_file_then_theme_sources() {
+        let base = std::env::temp_dir().join(format!("tux-script-icon-{}", std::process::id()));
+        fs::create_dir_all(&base).unwrap();
+        fs::write(base.join("logo.svg"), b"<svg xmlns='x'/>").unwrap();
+        fs::write(base.join("fake.png"), b"<html>no</html>").unwrap();
+        let r = Resolver::new(base.join("cache"));
+        // a real picture next to the JSON is used
+        assert_eq!(r.script_file_icon(&base, "logo.svg", "demo"), Some(base.join("logo.svg")));
+        // wrong content, missing file and path tricks are refused
+        assert_eq!(r.script_file_icon(&base, "fake.png", "demo"), None);
+        assert_eq!(r.script_file_icon(&base, "missing.svg", "demo"), None);
+        assert_eq!(r.script_file_icon(&base, "../logo.svg", "demo"), None);
         let _ = fs::remove_dir_all(&base);
     }
 

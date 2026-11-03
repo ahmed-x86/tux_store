@@ -1,9 +1,9 @@
 {
-  "schema": 1,
+  "schema": 2,
   "id": "nvidia-drivers-id-1",
   "title": "Install NVIDIA drivers",
   "description": "Guided, checked installation of the right NVIDIA driver for your graphics card.",
-  "version": "1.0",
+  "version": "1.1",
   "author": "Tux Store",
   "keywords": [
     "nvidia",
@@ -558,7 +558,8 @@
           ],
           "root": true,
           "weight": 2,
-          "expected_secs": 40
+          "expected_secs": 40,
+          "percent": 15
         }
       ],
       "on_success": "install_driver",
@@ -585,7 +586,8 @@
             "eq": "open"
           },
           "weight": 10,
-          "expected_secs": 150
+          "expected_secs": 150,
+          "percent": 85
         },
         {
           "label": "Installing ${driver_label}",
@@ -605,7 +607,8 @@
             "ne": "open"
           },
           "weight": 10,
-          "expected_secs": 300
+          "expected_secs": 300,
+          "percent": 85
         },
         {
           "label": "Rebuilding the boot images",
@@ -614,7 +617,8 @@
           ],
           "root": true,
           "weight": 3,
-          "expected_secs": 40
+          "expected_secs": 40,
+          "percent": 95
         }
       ],
       "on_success": "verify",
@@ -772,7 +776,8 @@
             "pacman -Rdd --noconfirm $pk"
           ],
           "root": true,
-          "expected_secs": 20
+          "expected_secs": 20,
+          "percent": 5
         }
       ],
       "on_success": "install_headers",
@@ -795,5 +800,22 @@
         }
       ]
     }
-  }
+  },
+  "info": {
+    "download_mb": 350,
+    "extracted_mb": 1500,
+    "installed_mb": 700,
+    "note": "Estimates for the largest case (an AUR driver, which is built on your computer). The latest driver from the official repositories is smaller."
+  },
+  "icon": [
+    {
+      "theme": "nvidia"
+    },
+    {
+      "file": "nvidia-drivers-id-1.svg"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/nvidia.svg"
+    }
+  ]
 }

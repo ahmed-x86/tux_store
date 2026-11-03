@@ -140,6 +140,12 @@ pub struct ScriptInfo {
     /// Number of commands that ask for administrator rights.
     pub root_commands: usize,
     pub path: String,
+    pub download_mb: Option<u64>,
+    pub extracted_mb: Option<u64>,
+    pub installed_mb: Option<u64>,
+    pub note: String,
+    /// Free bytes on `/` right now (0 = unknown).
+    pub free_bytes: u64,
 }
 
 /// One selectable row of a `choice` screen, already resolved (variables

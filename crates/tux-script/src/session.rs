@@ -32,6 +32,8 @@ pub struct Session {
     vars: Vars,
     rx: Receiver<Input>,
     seq: u64,
+    /// Overall progress of the add-on, 0.0–1.0; never goes backwards.
+    progress: f64,
 }
 
 fn clip(s: &str, max: usize) -> String {
@@ -49,7 +51,7 @@ impl Session {
     pub fn new(bus: Bus, loaded: LoadedScript, rx: Receiver<Input>) -> Self {
         let mut vars = loaded.script.vars.clone();
         vars.insert("script_id".into(), loaded.script.id.clone());
-        Session { bus, loaded, vars, rx, seq: 0 }
+        Session { bus, loaded, vars, rx, seq: 0, progress: 0.0 }
     }
 
     /// Runs to completion. `Some(success)`, or `None` when the host shut down.
@@ -78,6 +80,11 @@ impl Session {
                         self.vars.insert(k.clone(), clip(&v, MAX_VAR_LEN));
                     }
                     Next::Goto(s.next)
+                }
+                Step::Print(p) => {
+                    // Goes to the terminal Tux Store was started from, at any log level.
+                    eprintln!("[add-on {}] {}", self.loaded.script.id, self.txt(&p.text.joined()));
+                    Next::Goto(p.next)
                 }
                 Step::Finish(f) => return self.finish(&f),
             };
@@ -134,7 +141,7 @@ impl Session {
         let mut v = self.base_view(title, message, Tone::Info);
         v.busy = true;
         self.publish(v);
-        self.bus.publish(&Message::ScriptProgress { fraction: 0.0, label: String::new() });
+        self.bus.publish(&Message::ScriptProgress { fraction: self.progress, label: String::new() });
     }
 
     fn button_views(&self, buttons: &[Button]) -> Vec<ScriptButtonView> {
@@ -225,6 +232,10 @@ impl Session {
 
     fn finish(&mut self, f: &FinishStep) -> Option<bool> {
         let tone = if f.success { Tone::Success } else { Tone::Error };
+        if f.success {
+            self.progress = 1.0;
+            self.bus.publish(&Message::ScriptProgress { fraction: 1.0, label: String::new() });
+        }
         let mut v = self.base_view(&f.title, &f.message.joined(), tone);
         v.buttons = vec![ScriptButtonView {
             label: self.txt(f.button.as_deref().unwrap_or("Close")),
@@ -319,10 +330,33 @@ impl Session {
     fn run_step(&mut self, r: &RunStep) -> Next {
         let todo: Vec<&CommandSpec> = r.commands.iter().filter(|c| self.command_runs(c)).collect();
         self.busy_screen(&r.title, &r.message.joined());
-        let total: f64 = todo.iter().map(|c| f64::from(c.weight)).sum::<f64>().max(1.0);
 
-        // The progress bar creeps while a long command runs.
-        let state = Arc::new(Mutex::new(Tick { done: 0.0, cur_weight: 0.0, started: Instant::now(), expected: 30.0, label: String::new() }));
+        // Where each command ends on the overall bar (absolute 0.0–1.0).
+        // Commands with `percent` say it themselves; the others share the
+        // distance up to the step's highest explicit percent (or 100 %) by weight.
+        let start0 = self.progress;
+        let step_end = todo
+            .iter()
+            .filter_map(|c| c.percent)
+            .map(|p| f64::from(p) / 100.0)
+            .fold(None, |m: Option<f64>, p| Some(m.map_or(p, |m| m.max(p))))
+            .unwrap_or(1.0)
+            .max(start0);
+        let total_w: f64 = todo.iter().map(|c| f64::from(c.weight)).sum::<f64>().max(1.0);
+        let mut cum = 0.0;
+        let mut last = start0;
+        let ends: Vec<f64> = todo
+            .iter()
+            .map(|c| {
+                cum += f64::from(c.weight);
+                let e = c.percent.map_or(start0 + (step_end - start0) * (cum / total_w), |p| f64::from(p) / 100.0);
+                last = e.max(last).min(1.0);
+                last
+            })
+            .collect();
+
+        // The bar creeps toward the end of the running command.
+        let state = Arc::new(Mutex::new(Tick { from: start0, to: start0, started: Instant::now(), expected: 30.0, label: String::new() }));
         let stop = Arc::new(AtomicBool::new(false));
         let ticker = {
             let (state, stop, bus) = (state.clone(), stop.clone(), self.bus);
@@ -330,33 +364,38 @@ impl Session {
                 while !stop.load(Ordering::Relaxed) {
                     thread::sleep(Duration::from_millis(400));
                     let t = tux_abi::sync::lock(&state);
-                    let creep = if t.cur_weight > 0.0 {
-                        t.cur_weight * 0.95 * (1.0 - (-t.started.elapsed().as_secs_f64() / t.expected).exp())
-                    } else {
-                        0.0
-                    };
-                    let fraction = ((t.done + creep) / total).clamp(0.0, 0.99);
+                    let creep = (t.to - t.from) * 0.95 * (1.0 - (-t.started.elapsed().as_secs_f64() / t.expected).exp());
+                    let fraction = (t.from + creep).clamp(0.0, 0.99);
                     bus.publish(&Message::ScriptProgress { fraction, label: t.label.clone() });
                 }
             })
         };
 
         let mut failure: Option<(i32, String)> = None;
-        for c in todo {
+        for (c, end) in todo.into_iter().zip(ends) {
             let label = c.describe();
             {
                 let mut t = tux_abi::sync::lock(&state);
-                t.cur_weight = f64::from(c.weight);
+                t.from = self.progress;
+                t.to = end;
                 t.started = Instant::now();
                 t.expected = c.expected_secs.unwrap_or(30).max(1) as f64;
                 t.label = label.clone();
             }
             self.bus.publish(&Message::ScriptOutput { text: format!("\n==> {label}\n") });
-            let code = run_visible(c, &self.vars, &self.bus);
-            {
-                let mut t = tux_abi::sync::lock(&state);
-                t.done += f64::from(c.weight);
-                t.cur_weight = 0.0;
+            if r.echo {
+                eprintln!("[add-on {}] ==> {label}", self.loaded.script.id);
+            }
+            let code = run_visible(c, &self.vars, &self.bus, r.echo);
+            if code == 0 || c.ignore_failure {
+                self.progress = self.progress.max(end);
+                {
+                    let mut t = tux_abi::sync::lock(&state);
+                    t.from = self.progress;
+                    t.to = self.progress;
+                }
+                // a finished command is reported at once, not at the next tick
+                self.bus.publish(&Message::ScriptProgress { fraction: self.progress.min(0.99), label: label.clone() });
             }
             if code != 0 && !c.ignore_failure {
                 self.bus.publish(&Message::ScriptOutput { text: format!("\n[{label}: exit code {code}]\n") });
@@ -370,7 +409,7 @@ impl Session {
         match failure {
             None => {
                 self.set_last(0, "", "");
-                self.bus.publish(&Message::ScriptProgress { fraction: 1.0, label: String::new() });
+                self.bus.publish(&Message::ScriptProgress { fraction: self.progress, label: String::new() });
                 Next::Goto(r.on_success.clone())
             }
             Some((code, label)) => {
@@ -391,8 +430,8 @@ impl Session {
 }
 
 struct Tick {
-    done: f64,
-    cur_weight: f64,
+    from: f64,
+    to: f64,
     started: Instant,
     expected: f64,
     label: String,
@@ -497,6 +536,22 @@ mod tests {
         let out: String = msgs.iter().filter_map(|m| match m { Message::ScriptOutput { text } => Some(text.as_str()), _ => None }).collect();
         assert!(out.contains("installing open"), "output was: {out:?}");
         assert!(msgs.iter().any(|m| matches!(m, Message::ScriptProgress { fraction, .. } if *fraction >= 1.0)));
+    }
+
+    #[test]
+    fn percent_is_absolute_across_steps_and_never_goes_back() {
+        let json = r#"{"schema":2,"id":"p-1","title":"P","start":"one","steps":{
+          "one":{"type":"run","title":"1","commands":[{"label":"a","shell":"true","percent":30},{"label":"b","shell":"true","percent":60}],"on_success":"two"},
+          "two":{"type":"run","title":"2","commands":[{"label":"c","shell":"true","percent":50},{"label":"d","shell":"true"}],"on_success":"end"},
+          "end":{"type":"finish","title":"ok"}}}"#;
+        let (res, msgs) = play(json, Origin::System, |_| (0, None));
+        assert_eq!(res, Some(true));
+        let fr: Vec<f64> = msgs.iter().filter_map(|m| match m { Message::ScriptProgress { fraction, .. } => Some(*fraction), _ => None }).collect();
+        // the bar passes 0.30, 0.60 and never decreases (0.50 < 0.60 is clamped)
+        assert!(fr.iter().any(|f| (*f - 0.30).abs() < 1e-9), "{fr:?}");
+        assert!(fr.iter().any(|f| (*f - 0.60).abs() < 1e-9), "{fr:?}");
+        assert!(fr.windows(2).all(|w| w[1] + 1e-9 >= w[0]), "progress went backwards: {fr:?}");
+        assert_eq!(*fr.last().unwrap(), 1.0);
     }
 
     #[test]

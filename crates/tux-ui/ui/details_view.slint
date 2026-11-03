@@ -72,7 +72,12 @@ export component DetailsView inherits Rectangle {
     in property <UiSpecialCase> special-case;
     in property <int> accent-idx;
     in property <UiScriptInfo> script-info;
+    in property <bool> script-running;
+    in property <float> script-progress;
+    in property <string> script-progress-label;
+    in property <bool> script-minimized;
     callback run-script-clicked();
+    callback show-script-clicked();
     callback back-clicked();
     callback install-clicked();
     callback remove-clicked(string);
@@ -221,7 +226,8 @@ export component DetailsView inherits Rectangle {
                                     width: repo-txt.width + 20px;
                                     height: 24px;
                                     border-radius: 12px;
-                                    background: repo-ta.has-hover ? Theme.surface2 : Theme.surface1;
+                                    background: root.is-script ? Theme.mauve.transparentize(0.82)
+                                        : (repo-ta.has-hover ? Theme.surface2 : Theme.surface1);
                                     animate background { duration: 150ms; }
                                     repo-ta := TouchArea {
                                         enabled: !root.is-script;
@@ -229,8 +235,8 @@ export component DetailsView inherits Rectangle {
                                         clicked => { root.open-url(root.pkg.repo, root.pkg.name); }
                                     }
                                     repo-txt := Text {
-                                        text: root.is-script ? "Script" : root.pkg.repo;
-                                        color: Theme.subtext0;
+                                        text: root.is-script ? "Add-on package" : root.pkg.repo;
+                                        color: root.is-script ? Theme.mauve : Theme.subtext0;
                                         font-size: 11px;
                                         font-weight: 700;
                                         horizontal-alignment: center;
@@ -295,7 +301,7 @@ export component DetailsView inherits Rectangle {
                                 clicked => { root.run-script-clicked(); }
                             }
                             Text {
-                                text: "Run script";
+                                text: "Run add-on";
                                 color: Theme.crust;
                                 font-size: 14px;
                                 font-weight: 700;
@@ -341,27 +347,91 @@ export component DetailsView inherits Rectangle {
                     console-clicked => { root.show-console(); }
                 }
 
-                // ---- About this script (scripts only) ---------------------
+                // ---- What you'll download (add-on packages) -----------------
                 if root.is-script : Card {
-                    Text { text: "About this script"; color: Theme.text; font-size: 16px; font-weight: 700; }
                     HorizontalLayout {
-                        spacing: 40px;
-                        alignment: start;
-                        Stat { label: "Source"; value: root.script-info.source; }
-                        Stat { label: "Author"; value: root.script-info.author; }
-                        Stat { label: "Administrator rights"; value: root.script-info.admin; }
+                        alignment: space-between;
+                        Text {
+                            text: root.script-running
+                                ? (root.script-progress >= 0.98 ? "Finishing up…" : "Working…")
+                                : "What you'll download";
+                            color: Theme.text;
+                            font-size: 16px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                        Text {
+                            text: root.script-running ? round(root.script-progress * 100) + "%" : root.script-info.download;
+                            color: root.accent;
+                            font-size: 26px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
                     }
-                    Text {
-                        text: "Running it opens a guided window. Nothing on your system changes until you confirm the steps shown there.";
-                        color: Theme.subtext0;
-                        font-size: 13px;
-                        wrap: word-wrap;
-                    }
-                    if root.script-info.path != "" : Text {
-                        text: root.script-info.path;
-                        color: Theme.overlay1;
-                        font-size: 11px;
-                        wrap: word-wrap;
+
+                    VerticalLayout {
+                        spacing: 14px;
+
+                        // Running: how far the add-on package got. Idle: how much of the free space it needs.
+                        Rectangle {
+                            height: 8px;
+                            border-radius: 4px;
+                            background: Theme.surface1;
+                            clip: true;
+                            Rectangle {
+                                x: 0px;
+                                width: parent.width * (root.script-running
+                                    ? max(0.01, min(1.0, root.script-progress))
+                                    : max(0.0, min(1.0, root.script-info.space-ratio)));
+                                background: root.script-info.low-space && !root.script-running ? Theme.red : Theme.mauve;
+                                animate width { duration: 350ms; easing: ease-out; }
+                            }
+                        }
+
+                        if root.script-running : HorizontalLayout {
+                            spacing: 12px;
+                            Text {
+                                horizontal-stretch: 1;
+                                text: root.script-progress-label;
+                                color: Theme.subtext0;
+                                font-size: 12px;
+                                overflow: elide;
+                                vertical-alignment: center;
+                            }
+                            if root.script-minimized : PillButton {
+                                text: "Show window";
+                                clicked => { root.show-script-clicked(); }
+                            }
+                        }
+                        if !root.script-running : HorizontalLayout {
+                            spacing: 24px;
+                            Legend { dot: Theme.mauve; text: "Needed while installing: " + root.script-info.extracted; }
+                            Legend { dot: #6c7086; text: "Free space on /: " + root.script-info.free; }
+                        }
+
+                        Rectangle { height: 1px; background: Theme.surface0; }
+
+                        HorizontalLayout {
+                            Stat { label: "Total Download"; value: root.script-info.download; }
+                            Rectangle { horizontal-stretch: 1; }
+                            Stat { label: "Needed while installing"; value: root.script-info.extracted; align: TextHorizontalAlignment.center; }
+                            Rectangle { horizontal-stretch: 1; }
+                            Stat { label: "Total Installed"; value: root.script-info.installed; value-color: root.accent; align: TextHorizontalAlignment.right; }
+                        }
+
+                        if root.script-info.low-space : Text {
+                            text: "⚠ There may not be enough free space for this add-on package.";
+                            color: Theme.red;
+                            font-size: 13px;
+                            font-weight: 700;
+                            wrap: word-wrap;
+                        }
+                        if root.script-info.note != "" : Text {
+                            text: root.script-info.note;
+                            color: Theme.subtext0;
+                            font-size: 12px;
+                            wrap: word-wrap;
+                        }
                     }
                 }
 
@@ -513,6 +583,31 @@ export component DetailsView inherits Rectangle {
                         accent: root.accent;
                     }
                 }
+
+                // ---- About this add-on package (last, like "You might also like") ----
+                if root.is-script : Card {
+                    Text { text: "About this add-on package"; color: Theme.text; font-size: 16px; font-weight: 700; }
+                    HorizontalLayout {
+                        spacing: 40px;
+                        alignment: start;
+                        Stat { label: "Source"; value: root.script-info.source; }
+                        Stat { label: "Author"; value: root.script-info.author; }
+                        Stat { label: "Administrator rights"; value: root.script-info.admin; }
+                    }
+                    Text {
+                        text: "Running it opens a guided window. Nothing on your system changes until you confirm the steps shown there.";
+                        color: Theme.subtext0;
+                        font-size: 13px;
+                        wrap: word-wrap;
+                    }
+                    if root.script-info.path != "" : Text {
+                        text: root.script-info.path;
+                        color: Theme.overlay1;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+                }
+
             }
           }
         }
