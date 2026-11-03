@@ -1,7 +1,7 @@
 import { Theme } from "theme.slint";
 import { AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
-         UiInstallState, UiAddon, UiSpecialCase, UiUpdate } from "types.slint";
-import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay } from "components.slint";
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo } from "types.slint";
+import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay, ScriptDialog } from "components.slint";
 import { HomeTab } from "home_tab.slint";
 import { InstalledTab } from "installed_tab.slint";
 import { UpdateTab } from "update_tab.slint";
@@ -11,7 +11,7 @@ import { AddonsStore } from "addons_store.slint";
 
 // Everything Rust needs to name must be re-exported from the main file.
 export { Theme, AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
-         UiInstallState, UiAddon, UiSpecialCase, UiUpdate }
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo }
 
 export component MainWindow inherits Window {
     title: "Tux Store";
@@ -20,6 +20,7 @@ export component MainWindow inherits Window {
     min-width: 640px;
     min-height: 480px;
     background: Theme.base;
+
 
     // ── navigation ──
     in-out property <AppView> view: AppView.main;
@@ -58,6 +59,15 @@ export component MainWindow inherits Window {
     in-out property <UiInstallState> current-install;
     in property <string> console-text;
 
+    // ── interactive scripts ──
+    in-out property <bool> script-active: false;
+    in property <UiScriptView> script-view;
+    in property <UiScriptInfo> current-script-info;
+    in-out property <int> script-selected: -1;
+    in property <float> script-progress;
+    in property <string> script-progress-label;
+    in property <bool> script-has-output;
+
     // ── settings ──
     in property <string> app-version;
     in property <string> cache-status;
@@ -84,6 +94,8 @@ export component MainWindow inherits Window {
     callback cover-clicked();
     callback theme-changed(bool);
     callback clear-icon-cache();
+    callback script-button-clicked(int);
+    callback run-script-clicked();
 
     // Copy via a hidden, read-only TextInput: Slint's own clipboard support
     // works on both X11 and Wayland without extra dependencies.
@@ -238,6 +250,8 @@ export component MainWindow inherits Window {
         suggestions: root.current-suggestions;
         special-case: root.current-special-case;
         accent-idx: root.accent-idx;
+        script-info: root.current-script-info;
+        run-script-clicked => { root.run-script-clicked(); }
         back-clicked => { root.back-clicked(); }
         install-clicked => { root.install-clicked(); }
         remove-clicked(mode) => { root.remove-clicked(mode); }
@@ -262,6 +276,17 @@ export component MainWindow inherits Window {
         back-clicked => { root.view = AppView.main; }
         theme-selected(dark) => { root.theme-changed(dark); }
         clear-cache-clicked => { root.clear-icon-cache(); }
+    }
+
+    // A running script's dialog sits above every screen (but under the console).
+    if root.script-active : ScriptDialog {
+        view: root.script-view;
+        progress: root.script-progress;
+        progress-label: root.script-progress-label;
+        has-output: root.script-has-output;
+        selected <=> root.script-selected;
+        button-clicked(i) => { root.script-button-clicked(i); }
+        details-clicked => { root.show-console = true; }
     }
 
     // The console overlay sits above every screen.
