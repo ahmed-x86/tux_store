@@ -116,8 +116,31 @@ impl Resolver {
             .is_some_and(|age| age < NEGATIVE_TTL)
     }
 
+    /// An icon shipped for exactly this package (or script id). Looked up by
+    /// the *exact* name only — never by a truncated guess.
+    fn exact_bundled(&self, name: &str) -> Option<PathBuf> {
+        if let Some(p) = self.bundled(name) {
+            return Some(p);
+        }
+        // `images/icons/scripts/<id>.svg` (shipped) and
+        // `~/.config/tux-store/scripts/icons/<id>.svg` (user scripts).
+        let dirs = [self.local_root.join("scripts"), paths::user_scripts_dir().join("icons")];
+        dirs.iter()
+            .flat_map(|d| ["svg", "png"].map(|e| d.join(format!("{name}.{e}"))))
+            .find(|p| p.is_file())
+    }
+
     pub fn resolve_offline(&self, name: &str) -> Offline {
         let cands = candidates(name);
+
+        // 0. an icon made for exactly this package. This must come before the
+        //    theme: for `libreoffice-fresh-ar` the candidate list also holds the
+        //    shortened `libreoffice-fresh` / `libreoffice`, and the theme would
+        //    answer with its generic icon, hiding the bundled one with the
+        //    language letters on it.
+        if let Some(p) = self.exact_bundled(name) {
+            return Offline::Hit(p);
+        }
         let theme = self.theme();
 
         // 1. the icon theme the user actually runs
@@ -286,6 +309,25 @@ pub fn is_valid_image(bytes: &[u8]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn exact_bundled_icon_beats_everything() {
+        let base = std::env::temp_dir().join(format!("tux-icon-test-{}", std::process::id()));
+        let dir = base.join("libreoffice-fresh");
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("libreoffice-fresh-ar.svg"), b"<svg/>").unwrap();
+        let r = Resolver {
+            cache_root: base.clone(),
+            cache_dir: base.join("icons"),
+            local_root: base.clone(),
+            custom: vec![("libreoffice-fresh".into(), "libreoffice-fresh".into())],
+            theme: Mutex::new(None),
+            warned_curl: AtomicBool::new(false),
+        };
+        assert_eq!(r.exact_bundled("libreoffice-fresh-ar"), Some(dir.join("libreoffice-fresh-ar.svg")));
+        assert_eq!(r.exact_bundled("libreoffice-fresh-xx"), None);
+        let _ = fs::remove_dir_all(&base);
+    }
 
     #[test]
     fn sniffing() {
