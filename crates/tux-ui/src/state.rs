@@ -8,14 +8,18 @@
 
 use crate::console::ConsoleBuffer;
 use crate::convert;
-use crate::{AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails, UiSection};
+use crate::{AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails, UiScriptInfo, UiSection};
 use slint::{Image, Model, ModelRc, VecModel, Weak};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::rc::Rc;
 use tux_abi::text::prettify_name;
-use tux_abi::{Bus, Cover, Message, Operation, Package, PackageDetails, RemoveMode, Section, SpecialCase, UpdateEntry};
+use tux_abi::{
+    Bus, Cover, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo, ScriptViewData, Section,
+    SpecialCase,
+    UpdateEntry,
+};
 
 const FIRST_PAGE: usize = 35;
 const PAGE: usize = 20;
@@ -156,6 +160,11 @@ pub struct State {
 
     console: ConsoleBuffer,
     console_dirty: bool,
+
+    /// Interactive script: `seq` of the screen on display, and whether one is
+    /// running at all (blocks pacman transactions and a second script).
+    script_seq: u64,
+    script_running: bool,
 }
 
 impl State {
@@ -184,6 +193,8 @@ impl State {
             last_details: PackageDetails::default(),
             console: ConsoleBuffer::default(),
             console_dirty: false,
+            script_seq: 0,
+            script_running: false,
         }
     }
 
@@ -239,6 +250,22 @@ impl State {
                 });
             }
             Message::OperationFinished { op, success, .. } => self.on_finished(op, success),
+            Message::ScriptInfoReady { id, info } => self.on_script_info(id, info),
+            Message::ScriptView { view } => self.on_script_view(view),
+            Message::ScriptOutput { text } => {
+                self.console.push(&text);
+                self.console_dirty = true;
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_script_has_output(true);
+                }
+            }
+            Message::ScriptProgress { fraction, label } => {
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_script_progress(fraction as f32);
+                    ui.set_script_progress_label(label.as_str().into());
+                }
+            }
+            Message::ScriptEnded { success, .. } => self.on_script_ended(success),
             _ => {}
         }
     }
@@ -350,6 +377,89 @@ impl State {
         if self.ui.upgrade().is_some_and(|ui| ui.get_active_tab() == 2) {
             self.refresh_installed();
         }
+    }
+
+    // ───────────────────────── scripts ─────────────────────────
+
+    fn on_script_view(&mut self, view: ScriptViewData) {
+        self.script_seq = view.seq;
+        let Some(ui) = self.ui.upgrade() else { return };
+        ui.set_script_selected(view.preselected.map_or(-1, |i| i as i32));
+        ui.set_script_view(convert::script_view(&view));
+        if !view.busy {
+            ui.set_script_progress(0.0);
+        }
+        ui.set_script_active(true);
+    }
+
+    fn on_script_ended(&mut self, success: bool) {
+        self.script_running = false;
+        let Some(ui) = self.ui.upgrade() else { return };
+        ui.set_script_active(false);
+        if success {
+            // A script may have installed or removed packages.
+            match ui.get_active_tab() {
+                1 => self.request_updates(),
+                2 => self.refresh_installed(),
+                _ => {}
+            }
+        }
+    }
+
+    /// A card was clicked: packages and scripts both open their own page.
+    pub fn app_clicked(&mut self, pkg: Package) {
+        self.open_package(pkg, false);
+    }
+
+    /// "Run script" on a script's page.
+    pub fn run_current_script(&mut self) {
+        if let Some(cur) = self.current.clone().filter(|c| c.repo == "script") {
+            self.start_script(cur.name);
+        }
+    }
+
+    fn on_script_info(&mut self, id: String, info: Option<ScriptInfo>) {
+        let Some(ui) = self.ui.upgrade() else { return };
+        if self.current.as_ref().map(|c| c.name.as_str()) != Some(id.as_str()) {
+            return; // the user already moved on
+        }
+        let ui_info = match info {
+            Some(i) => UiScriptInfo {
+                loaded: true,
+                author: if i.author.is_empty() { "Unknown".into() } else { i.author.as_str().into() },
+                source: if i.user_script { "Your own script".into() } else { "Included with Tux Store".into() },
+                admin: if i.root_commands == 0 {
+                    "Not required".into()
+                } else {
+                    format!("Required ({} command{})", i.root_commands, if i.root_commands == 1 { "" } else { "s" }).into()
+                },
+                path: if i.user_script { i.path.as_str().into() } else { "".into() },
+            },
+            None => UiScriptInfo { loaded: true, author: "—".into(), source: "Script file not found".into(), ..Default::default() },
+        };
+        ui.set_current_script_info(ui_info);
+    }
+
+    fn start_script(&mut self, id: String) {
+        let Some(ui) = self.ui.upgrade() else { return };
+        if self.script_running || ui.get_current_install().phase == OpPhase::Running {
+            return;
+        }
+        self.script_running = true;
+        self.console.clear();
+        self.console_dirty = true;
+        ui.set_script_has_output(false);
+        ui.set_script_progress(0.0);
+        ui.set_script_progress_label("".into());
+        self.bus.publish(&Message::ScriptStartRequested { id });
+    }
+
+    /// A button of the script dialog (the option selection lives in Slint).
+    pub fn script_button(&mut self, button: usize) {
+        let Some(ui) = self.ui.upgrade() else { return };
+        let sel = ui.get_script_selected();
+        let selected = usize::try_from(sel).ok();
+        self.bus.publish(&Message::ScriptAction { seq: self.script_seq, button, selected });
     }
 
     // ───────────────────────── helpers ─────────────────────────
@@ -552,12 +662,22 @@ impl State {
         if ui.get_current_install().phase != OpPhase::Running {
             ui.set_current_install(UiInstallState::default());
         }
-        self.build_suggestions(&pkg);
+        let is_script = pkg.repo == "script";
+        if is_script {
+            self.suggestions.set_vec(Vec::new());
+            ui.set_current_script_info(UiScriptInfo::default());
+        } else {
+            self.build_suggestions(&pkg);
+        }
         ui.set_view(AppView::Details);
 
         let missing = if self.icons.contains_key(&pkg.name) { Vec::new() } else { vec![pkg.name.clone()] };
         self.request_icons(missing);
-        self.bus.publish(&Message::DetailsRequested { name: pkg.name.clone() });
+        if is_script {
+            self.bus.publish(&Message::ScriptInfoRequested { id: pkg.name.clone() });
+        } else {
+            self.bus.publish(&Message::DetailsRequested { name: pkg.name.clone() });
+        }
         self.current = Some(pkg);
     }
 
@@ -613,7 +733,7 @@ impl State {
 
     fn begin_operation(&mut self, kind: OpKind, target: &str, deps_ratio: f32) -> bool {
         let Some(ui) = self.ui.upgrade() else { return false };
-        if ui.get_current_install().phase == OpPhase::Running {
+        if self.script_running || ui.get_current_install().phase == OpPhase::Running {
             return false;
         }
         ui.set_current_install(UiInstallState {
