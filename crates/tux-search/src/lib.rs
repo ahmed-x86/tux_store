@@ -1,6 +1,6 @@
 //! `libtux_search.so` — answers every "what packages are there?" question.
 //!
-//! Handles: `HomeRequested`, `SearchRequested`, `DetailsRequested`,
+//! Handles: `HomeRequested`, `SearchRequested`, `DetailsRequested`, `ScriptInfoRequested`,
 //! `ExactRequested`, `AddonsRequested`, `InstalledRequested`,
 //! `UpdatesRequested`. Drops its caches on `OperationFinished`.
 //! Each request runs on its own short-lived thread so `on_message` never
@@ -16,7 +16,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 use tux_abi::sync::lock;
 use tux_abi::text::is_valid_package_name;
-use tux_abi::{paths, Bus, Message, Module, Package, PackageDetails, Section};
+use tux_abi::{paths, Bus, Message, Module, Package, PackageDetails, ScriptInfo, Section};
 use tux_pacman::{localdb, queries};
 
 const DETAILS_TTL: Duration = Duration::from_secs(60);
@@ -47,11 +47,20 @@ impl Module for SearchModule {
             Message::HomeRequested => self.home(),
             Message::SearchRequested { query } => self.search(query),
             Message::DetailsRequested { name } => self.details(name),
+            Message::ScriptInfoRequested { id } => {
+                let info = self.catalog.scripts.iter().find(|l| l.script.id == id).map(|l| ScriptInfo {
+                    author: l.script.author.clone(),
+                    user_script: l.origin == tux_abi::script::Origin::User,
+                    root_commands: l.script.root_command_summaries().len(),
+                    path: l.path.display().to_string(),
+                });
+                self.bus.publish(&Message::ScriptInfoReady { id, info });
+            }
             Message::ExactRequested { name } => self.exact(name),
             Message::AddonsRequested { package } => self.addons(package),
             Message::InstalledRequested => self.installed(),
             Message::UpdatesRequested => self.updates(),
-            Message::OperationFinished { .. } | Message::ClearIconCache => {
+            Message::OperationFinished { .. } | Message::ScriptEnded { .. } | Message::ClearIconCache => {
                 *lock(&self.home_cache) = None;
                 lock(&self.details_cache).clear();
             }
@@ -86,9 +95,11 @@ impl SearchModule {
 
     fn search(&self, query: String) {
         let my_gen = self.search_gen.fetch_add(1, Ordering::SeqCst) + 1;
-        let (bus, latest) = (self.bus, self.search_gen.clone());
+        let (bus, latest, catalog) = (self.bus, self.search_gen.clone(), self.catalog.clone());
         thread::spawn(move || {
-            let packages = queries::search(&query, queries::SEARCH_LIMIT);
+            // Scripts that match come first, then the pacman results.
+            let mut packages = catalog.scripts_matching(&query);
+            packages.extend(catalog.filter_visible(queries::search(&query, queries::SEARCH_LIMIT)));
             if latest.load(Ordering::SeqCst) == my_gen {
                 bus.publish(&Message::SearchResults { query, packages });
             }
@@ -134,17 +145,18 @@ impl SearchModule {
         if names.is_empty() {
             return;
         }
-        let bus = self.bus;
+        let (bus, catalog) = (self.bus, self.catalog.clone());
         thread::spawn(move || {
-            let packages = queries::packages_by_name(&names);
+            let packages = catalog.filter_visible(queries::packages_by_name(&names));
             bus.publish(&Message::AddonsReady { package, packages });
         });
     }
 
     fn installed(&self) {
-        let bus = self.bus;
+        let (bus, catalog) = (self.bus, self.catalog.clone());
         thread::spawn(move || {
-            bus.publish(&Message::InstalledReady { packages: queries::installed_packages() });
+            let packages = catalog.filter_installed(queries::installed_packages());
+            bus.publish(&Message::InstalledReady { packages });
         });
     }
 
@@ -167,7 +179,7 @@ fn build_home(catalog: &Catalog) -> Vec<Section> {
         .into_iter()
         .map(|p| (p.name.clone(), p))
         .collect();
-    catalog
+    let mut sections: Vec<Section> = catalog
         .sections
         .iter()
         .map(|def| Section {
@@ -179,7 +191,12 @@ fn build_home(catalog: &Catalog) -> Vec<Section> {
                 .filter_map(|n| by_name.get(n).cloned())
                 .collect(),
         })
-        .collect()
+        .collect();
+    let scripts = catalog.home_scripts();
+    if !scripts.is_empty() {
+        sections.push(Section { id: "scripts".into(), title: "Tools & Scripts".into(), packages: scripts });
+    }
+    sections
 }
 
 tux_abi::export_module!(SearchModule, "search");
