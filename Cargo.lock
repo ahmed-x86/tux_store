@@ -4577,6 +4577,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tux-script"
+version = "0.5.0"
+dependencies = [
+ "crossbeam-channel",
+ "libc",
+ "log",
+ "serde_json",
+ "tux-abi",
+]
+
+[[package]]
 name = "tux-search"
 version = "0.5.0"
 dependencies = [
