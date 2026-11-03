@@ -6,6 +6,7 @@ members = [
     "crates/tux-search",
     "crates/tux-thumbnail",
     "crates/tux-install",
+    "crates/tux-script",
     "crates/tux-ui",
     "crates/tux-store",
 ]
