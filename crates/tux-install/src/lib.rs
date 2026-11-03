@@ -11,17 +11,15 @@
 //! tty glibc block-buffers stdout and the output would only arrive at the very
 //! end. Privileges come from `pkexec` (polkit) unless we already are root.
 
-mod stream;
-
 use std::collections::HashMap;
 use std::io::Read;
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use stream::{LineSplitter, Utf8Stream};
+use tux_abi::stream::{LineSplitter, Utf8Stream};
 use tux_abi::sync::lock;
-use tux_abi::text::is_valid_package_name;
+use tux_abi::text::{is_valid_package_name, shell_quote};
 use tux_abi::{Bus, Message, Module, Operation};
 use tux_pacman::progress::{Kind, ProgressTracker};
 
@@ -104,10 +102,6 @@ impl InstallModule {
 fn reject(bus: &Bus, op: Operation, why: &str) {
     bus.publish(&Message::OperationOutput { text: format!("{why}\n") });
     bus.publish(&Message::OperationFinished { op, success: false, exit_code: -1 });
-}
-
-fn shell_quote(s: &str) -> String {
-    format!("'{}'", s.replace('\'', "'\\''"))
 }
 
 fn is_root() -> bool {
