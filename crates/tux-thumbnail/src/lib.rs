@@ -1,7 +1,7 @@
 //! `libtux_thumbnail.so` — turns package names into icon files and lists the
 //! home-page cover images.
 //!
-//! Handles: `IconRequested`, `CoversRequested`, `ClearIconCache` (wipes the
+//! Handles: `IconRequested`, `CoversRequested`, `ScreenshotsRequested`, `ClearIconCache` (wipes the
 //! whole `~/.cache/tux-store`), `UiReady` (warm-up). Answers: `IconReady`,
 //! `IconFailed`, `CoversReady`, `IconCacheCleared`.
 //!
@@ -11,6 +11,7 @@
 
 mod names;
 mod resolver;
+mod screenshots;
 mod themes;
 
 use crossbeam_channel::{unbounded, Receiver, Sender};
@@ -30,6 +31,8 @@ pub struct ThumbnailModule {
     bus: Bus,
     resolver: Arc<Resolver>,
     inflight: Arc<Mutex<HashSet<String>>>,
+    /// Screenshot downloads running right now.
+    shots: Arc<screenshots::Inflight>,
     local_tx: Sender<String>,
 }
 
@@ -93,7 +96,7 @@ impl Module for ThumbnailModule {
             });
         }
 
-        ThumbnailModule { bus, resolver, inflight, local_tx }
+        ThumbnailModule { bus, resolver, inflight, shots: Arc::default(), local_tx }
     }
 
     fn on_message(&self, msg: Message) {
@@ -116,6 +119,10 @@ impl Module for ThumbnailModule {
                 spawn_named("thumb-covers".into(), move || {
                     bus.publish(&Message::CoversReady { covers: scan_covers() });
                 });
+            }
+            Message::ScreenshotsRequested { name } => {
+                let (bus, shots) = (self.bus, self.shots.clone());
+                spawn_named("thumb-shots".into(), move || screenshots::serve(&bus, &shots, &name));
             }
             Message::ClearIconCache => {
                 let (bus, resolver) = (self.bus, self.resolver.clone());

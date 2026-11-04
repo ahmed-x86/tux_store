@@ -74,6 +74,8 @@ Slint structs are plain values; the UI follows read-modify-write for them (`get_
 
 **Install** — UI `InstallRequested` → installer emits `OperationStarted`, `OperationOutput…`, `OperationProgress…`, `OperationFinished` → UI updates bar/console and flips the *installed* flag in every list; search drops its caches.
 
+**Screenshots** — UI `ScreenshotsRequested` when a package page opens → thumbnail uses local files, the cache, or downloads from Flathub → `ScreenshotsReady{images}` (repeated as pictures arrive) → the slider's model is replaced. See [SCREENSHOTS.md](SCREENSHOTS.md).
+
 **Icon** — UI `IconRequested` (once per package) → thumbnail resolves it offline or with one HTTP request → `IconReady{path}` → UI patches every visible card.
 
 ## Where things are found at runtime

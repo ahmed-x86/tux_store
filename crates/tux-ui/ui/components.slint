@@ -205,6 +205,311 @@ export component HScrollBar inherits Rectangle {
     }
 }
 
+// ── Screenshot gallery ─────────────────────────────────────────────────────
+
+// Round arrow button floating over the edge of the gallery.
+component GalleryArrow inherits Rectangle {
+    in property <bool> points-right: false;
+    in property <color> accent: Theme.blue;
+    callback clicked();
+
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: arrow-ta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-width: 1px;
+    border-color: arrow-ta.has-hover ? root.accent : Theme.surface1;
+    animate background { duration: 150ms; }
+
+    Text {
+        text: root.points-right ? "›" : "‹";
+        color: Theme.text;
+        font-size: 28px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    arrow-ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+// Horizontal strip of screenshots: drag it, use the two arrows, or move the
+// slider underneath.
+export component ScreenshotGallery inherits Rectangle {
+    in property <[image]> images;
+    in property <color> accent: Theme.blue;
+    /// A picture was clicked (its index): the page opens the big viewer.
+    callback shot-clicked(int);
+
+    property <length> shot-w: 480px;
+    property <length> shot-h: 300px;
+    property <length> gap: 16px;
+    property <length> step: root.shot-w + root.gap;
+    // One arrow click moves by the pictures that fit, at least one.
+    property <length> page-w: max(1, floor(strip.width / root.step)) * root.step;
+    property <length> max-scroll: max(0px, strip.content-width - strip.width);
+
+    height: root.shot-h + 14px + 6px;
+
+    VerticalLayout {
+        spacing: 14px;
+
+        Rectangle {
+            height: root.shot-h;
+
+            strip := Flickable {
+                content-width: max(self.width, root.images.length * root.step - root.gap);
+                interactive: true;
+                HorizontalLayout {
+                    spacing: root.gap;
+                    alignment: start;
+                    for img[idx] in root.images : Rectangle {
+                        width: root.shot-w;
+                        height: root.shot-h;
+                        background: Theme.mantle;
+                        border-radius: 12px;
+                        border-width: 1px;
+                        border-color: shot-ta.has-hover ? root.accent : Theme.surface0;
+                        animate border-color { duration: 150ms; }
+                        clip: true;
+                        Image {
+                            source: img;
+                            width: parent.width;
+                            height: parent.height;
+                            image-fit: contain;
+                        }
+                        shot-ta := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => { root.shot-clicked(idx); }
+                        }
+                    }
+                }
+            }
+
+            if strip.content-x < -2px : GalleryArrow {
+                x: 12px;
+                y: (parent.height - self.height) / 2;
+                accent: root.accent;
+                clicked => { strip.content-x = min(0px, strip.content-x + root.page-w); }
+            }
+            if root.max-scroll > 0px && strip.content-x > -root.max-scroll + 2px : GalleryArrow {
+                x: parent.width - self.width - 12px;
+                y: (parent.height - self.height) / 2;
+                points-right: true;
+                accent: root.accent;
+                clicked => { strip.content-x = max(-root.max-scroll, strip.content-x - root.page-w); }
+            }
+        }
+
+        HScrollBar {
+            content-width: strip.content-width;
+            visible-width: strip.width;
+            offset <=> strip.content-x;
+            accent: root.accent;
+        }
+    }
+}
+
+// Full-window viewer for one screenshot (the page decides when to show it).
+//  * Back button or a click on the dark area closes it (Esc too).
+//  * Arrows at both edges, ← →, A / D and Vim's H / L go to the previous / next
+//    picture.
+//  * Mouse wheel, the − / + buttons and the + / − / 0 keys zoom (up to 5×); a
+//    zoomed picture is dragged to move it. While zoomed, going to another
+//    picture is off (the keys move the picture instead).
+export component ScreenshotViewer inherits Rectangle {
+    in property <image> shot;
+    in property <bool> has-prev: false;
+    in property <bool> has-next: false;
+    in property <string> counter;
+    callback close();
+    callback prev();
+    callback next();
+
+    // Fit the window, never enlarged past 100 %.
+    property <float> fit: min(
+        (root.width - 240px) / 1px / max(1, root.shot.width),
+        (root.height - 200px) / 1px / max(1, root.shot.height));
+    property <float> scale: min(1.0, root.fit);
+    property <length> frame-w: max(1px, root.shot.width * root.scale * 1px);
+    property <length> frame-h: max(1px, root.shot.height * root.scale * 1px);
+
+    // 1.0 = fitted; the picture moves inside the frame by (pan-x, pan-y) ≤ 0.
+    property <float> zoom: 1.0;
+    property <length> pan-x: 0px;
+    property <length> pan-y: 0px;
+    property <bool> zoomed: root.zoom > 1.001;
+
+    function clamp-pan(p: length, extent: length, z: float) -> length {
+        return min(0px, max(extent * (1 - z), p));
+    }
+    // Zoom to `nz` keeping the point (cx, cy) of the frame where it is.
+    function zoom-to(nz: float, cx: length, cy: length) {
+        root.pan-x = root.clamp-pan(cx - (cx - root.pan-x) * (min(5.0, max(1.0, nz)) / root.zoom), root.frame-w, min(5.0, max(1.0, nz)));
+        root.pan-y = root.clamp-pan(cy - (cy - root.pan-y) * (min(5.0, max(1.0, nz)) / root.zoom), root.frame-h, min(5.0, max(1.0, nz)));
+        root.zoom = min(5.0, max(1.0, nz));
+    }
+    function pan-by(dx: length, dy: length) {
+        root.pan-x = root.clamp-pan(root.pan-x + dx, root.frame-w, root.zoom);
+        root.pan-y = root.clamp-pan(root.pan-y + dy, root.frame-h, root.zoom);
+    }
+
+    background: Theme.crust.transparentize(0.08);
+    init => { keys.focus(); }
+
+    keys := FocusScope {
+        key-pressed(e) => {
+            if e.text == Key.Escape {
+                if root.zoomed { root.zoom-to(1.0, 0px, 0px); } else { root.close(); }
+                return EventResult.accept;
+            }
+            if e.text == "+" || e.text == "=" {
+                root.zoom-to(root.zoom * 1.25, root.frame-w / 2, root.frame-h / 2);
+                return EventResult.accept;
+            }
+            if e.text == "-" || e.text == "_" {
+                root.zoom-to(root.zoom / 1.25, root.frame-w / 2, root.frame-h / 2);
+                return EventResult.accept;
+            }
+            if e.text == "0" {
+                root.zoom-to(1.0, 0px, 0px);
+                return EventResult.accept;
+            }
+            if e.text == Key.RightArrow || e.text == "d" || e.text == "D" || e.text == "l" || e.text == "L" {
+                if root.zoomed { root.pan-by(-60px, 0px); } else if root.has-next { root.next(); }
+                return EventResult.accept;
+            }
+            if e.text == Key.LeftArrow || e.text == "a" || e.text == "A" || e.text == "h" || e.text == "H" {
+                if root.zoomed { root.pan-by(60px, 0px); } else if root.has-prev { root.prev(); }
+                return EventResult.accept;
+            }
+            if e.text == Key.DownArrow || e.text == "s" || e.text == "S" || e.text == "j" || e.text == "J" {
+                if root.zoomed { root.pan-by(0px, -60px); }
+                return EventResult.accept;
+            }
+            if e.text == Key.UpArrow || e.text == "w" || e.text == "W" || e.text == "k" || e.text == "K" {
+                if root.zoomed { root.pan-by(0px, 60px); }
+                return EventResult.accept;
+            }
+            return EventResult.reject;
+        }
+    }
+
+    // Behind everything, so the dark area closes the viewer.
+    TouchArea {
+        clicked => { root.close(); }
+    }
+
+    Rectangle {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        width: root.frame-w;
+        height: root.frame-h;
+        background: Theme.mantle;
+        border-color: Theme.surface1;
+        border-width: 1px;
+        border-radius: 12px;
+        clip: true;
+
+        Image {
+            source: root.shot;
+            x: root.pan-x;
+            y: root.pan-y;
+            width: parent.width * root.zoom;
+            height: parent.height * root.zoom;
+            image-fit: contain;
+        }
+        // Takes the clicks on the picture (they must not close the viewer),
+        // the wheel (zoom) and the drag (move while zoomed).
+        TouchArea {
+            property <length> start-x: 0px;
+            property <length> start-y: 0px;
+            mouse-cursor: root.zoomed ? MouseCursor.move : MouseCursor.default;
+            pointer-event(event) => {
+                if event.kind == PointerEventKind.down {
+                    self.start-x = root.pan-x;
+                    self.start-y = root.pan-y;
+                }
+            }
+            moved => {
+                if self.pressed && root.zoomed {
+                    root.pan-x = root.clamp-pan(self.start-x + (self.mouse-x - self.pressed-x), root.frame-w, root.zoom);
+                    root.pan-y = root.clamp-pan(self.start-y + (self.mouse-y - self.pressed-y), root.frame-h, root.zoom);
+                }
+            }
+            scroll-event(event) => {
+                if event.delta-y > 0px {
+                    root.zoom-to(root.zoom * 1.15, self.mouse-x, self.mouse-y);
+                } else if event.delta-y < 0px {
+                    root.zoom-to(root.zoom / 1.15, self.mouse-x, self.mouse-y);
+                }
+                return EventResult.accept;
+            }
+        }
+    }
+
+    // Previous / next, at the far left and far right (off while zoomed).
+    if root.has-prev && !root.zoomed : GalleryArrow {
+        x: 24px;
+        y: (root.height - self.height) / 2;
+        clicked => { root.prev(); }
+    }
+    if root.has-next && !root.zoomed : GalleryArrow {
+        x: root.width - self.width - 24px;
+        y: (root.height - self.height) / 2;
+        points-right: true;
+        clicked => { root.next(); }
+    }
+
+    PillButton {
+        x: 24px;
+        y: 20px;
+        width: 96px;
+        text: "⟨ Back";
+        clicked => { root.close(); }
+    }
+
+    HorizontalLayout {
+        x: root.width - self.width - 24px;
+        y: 20px;
+        width: 170px;
+        height: 36px;
+        spacing: 8px;
+        PillButton {
+            width: 44px;
+            text: "−";
+            enabled: root.zoomed;
+            clicked => { root.zoom-to(root.zoom / 1.25, root.frame-w / 2, root.frame-h / 2); }
+        }
+        Text {
+            text: "" + round(root.zoom * 100) + "%";
+            color: Theme.subtext0;
+            font-size: 13px;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+        PillButton {
+            width: 44px;
+            text: "+";
+            enabled: root.zoom < 4.99;
+            clicked => { root.zoom-to(root.zoom * 1.25, root.frame-w / 2, root.frame-h / 2); }
+        }
+    }
+
+    Text {
+        x: 0px;
+        y: root.height - 48px;
+        width: root.width;
+        text: root.counter;
+        color: Theme.subtext0;
+        font-size: 14px;
+        horizontal-alignment: center;
+    }
+}
+
 // ── Package cards ──────────────────────────────────────────────────────────
 
 export component AppCard inherits Rectangle {

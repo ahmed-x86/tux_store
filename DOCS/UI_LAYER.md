@@ -51,6 +51,7 @@ All sizes arrive pre-formatted and all proportions pre-computed (`convert.rs`): 
 `State` owns every model and cache for the UI thread: icon map, section/search/installed/add-on/suggestion models, covers, history, last details, console buffer. `State::handle(Message)` is the only place bus results are applied. Highlights:
 
 - **Stale answers are dropped:** search results carry their query; details/add-ons check that the package is still the current one.
+- **Screenshots:** `open_package` clears the `screenshots` model and publishes `ScreenshotsRequested`; `on_screenshots` loads the files and replaces the model (`current-screenshots`, `[image]`). `ScreenshotGallery` (components.slint) is the slider: a Flickable, two arrows, an `HScrollBar`.
 - **Icons:** `request_icons` publishes one `IconRequested` per package ever; `on_icon` loads the file once, caches the `Image`, and patches every model row with that name.
 - **Pagination:** `Paged` (35 search results first, then 20 per click; installed 60, then 60).
 - **Navigation history:** opening a package from a suggestion or add-on pushes the current one; *Back* pops it, and returns to Main when empty.

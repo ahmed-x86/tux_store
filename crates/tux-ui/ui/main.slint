@@ -51,6 +51,7 @@ export component MainWindow inherits Window {
     in property <UiPackage> current-package;
     in property <UiPackageDetails> current-details;
     in property <[UiPackage]> current-suggestions;
+    in property <[image]> current-screenshots;
     in property <UiSpecialCase> current-special-case;
     in property <[UiPackage]> addons-packages;
     in property <int> accent-idx: 4;
@@ -252,6 +253,7 @@ export component MainWindow inherits Window {
         details: root.current-details;
         install-state: root.current-install;
         suggestions: root.current-suggestions;
+        screenshots: root.current-screenshots;
         special-case: root.current-special-case;
         accent-idx: root.accent-idx;
         script-info: root.current-script-info;

@@ -1,6 +1,6 @@
 import { Theme } from "theme.slint";
 import { UiPackage, UiPackageDetails, UiInstallState, UiSpecialCase, UiScriptInfo, OpPhase } from "types.slint";
-import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar } from "components.slint";
+import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar, ScreenshotGallery, ScreenshotViewer } from "components.slint";
 
 // One choice in the "how do you want to uninstall?" dialog.
 component RemoveOption inherits Rectangle {
@@ -69,6 +69,7 @@ export component DetailsView inherits Rectangle {
     in property <UiPackageDetails> details;
     in property <UiInstallState> install-state;
     in property <[UiPackage]> suggestions;
+    in property <[image]> screenshots;
     in property <UiSpecialCase> special-case;
     in property <int> accent-idx;
     in property <UiScriptInfo> script-info;
@@ -93,6 +94,8 @@ export component DetailsView inherits Rectangle {
     // A script is shown on the same page as a package, with a few differences.
     property <bool> is-script: root.pkg.repo == "script";
     property <bool> show-uninstall-modal: false;
+    // Index of the screenshot shown big, -1 = viewer closed.
+    property <int> viewer-index: -1;
     property <color> accent: Theme.accents[mod(root.accent-idx, Theme.accents.length)];
     property <bool> busy: root.install-state.phase == OpPhase.running;
     // Is the running / finished transaction about *this* package?
@@ -580,6 +583,17 @@ export component DetailsView inherits Rectangle {
                     }
                 }
 
+                // ---- Screenshots (slider with arrows, like Google Play) ----
+                if !root.is-script && root.screenshots.length > 0 : VerticalLayout {
+                    spacing: 14px;
+                    Text { text: "Screenshots"; color: Theme.text; font-size: 18px; font-weight: 700; }
+                    ScreenshotGallery {
+                        images: root.screenshots;
+                        accent: root.accent;
+                        shot-clicked(i) => { root.viewer-index = i; }
+                    }
+                }
+
                 // ---- Dependencies ------------------------------------------
                 if !root.is-script && !root.details.is-loading && root.details.dependencies.length > 0 : Card {
                     Text {
@@ -655,6 +669,18 @@ export component DetailsView inherits Rectangle {
             }
           }
         }
+    }
+
+    // ---- Screenshot viewer ---------------------------------------------------
+    // Click outside the picture, or press Back, to close it.
+    if root.viewer-index >= 0 && root.viewer-index < root.screenshots.length : ScreenshotViewer {
+        shot: root.screenshots[root.viewer-index];
+        has-prev: root.viewer-index > 0;
+        has-next: root.viewer-index < root.screenshots.length - 1;
+        counter: "" + (root.viewer-index + 1) + " / " + root.screenshots.length;
+        prev => { root.viewer-index = root.viewer-index - 1; }
+        next => { root.viewer-index = root.viewer-index + 1; }
+        close => { root.viewer-index = -1; }
     }
 
     // ---- Uninstall dialog ----------------------------------------------------

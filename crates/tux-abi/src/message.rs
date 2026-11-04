@@ -226,6 +226,8 @@ pub enum Message {
     CoversRequested,
     IconRequested { name: String, size: u32 },
     ClearIconCache,
+    /// Ask for the screenshots of a package (`data/screenshots/<name>/`).
+    ScreenshotsRequested { name: String },
     InstallRequested { name: String },
     RemoveRequested { name: String, mode: RemoveMode },
     SystemUpgradeRequested,
@@ -253,6 +255,10 @@ pub enum Message {
     IconReady { name: String, path: String },
     IconFailed { name: String },
     IconCacheCleared { removed: u32 },
+    /// Image files (absolute paths, in display order). May be sent several
+    /// times for one package while Flathub downloads are still running; each
+    /// message holds the complete list so far.
+    ScreenshotsReady { name: String, images: Vec<String> },
 
     // ── transaction progress (installer → everyone) ──
     OperationStarted { op: Operation },

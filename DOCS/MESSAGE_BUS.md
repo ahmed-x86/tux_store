@@ -31,6 +31,8 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 | `CoversRequested` / `CoversReady{covers}` | ui / thumbnail | thumbnail / ui | home banner images |
 | `IconRequested{name, size}` | ui | thumbnail | resolve an icon (once per package) |
 | `IconReady{name, path}` / `IconFailed{name}` | thumbnail | ui | result |
+| `ScreenshotsRequested{name}` | ui | thumbnail | find / download the screenshots of a package |
+| `ScreenshotsReady{name, images}` | thumbnail | ui | complete list of picture paths so far (may repeat while downloading) |
 | `ClearIconCache` / `IconCacheCleared{removed}` | ui / thumbnail | thumbnail / ui | settings button |
 | `InstallRequested{name}` | ui | install | `pacman -S` |
 | `RemoveRequested{name, mode}` | ui | install | `pacman -R…` (see [Uninstall_Engine.md](Uninstall_Engine.md)) |

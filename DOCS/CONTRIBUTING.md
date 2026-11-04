@@ -33,6 +33,8 @@ Release: `cargo build --release`, or `make`. Install: `sudo make install`.
 | a new kind of transaction | `Operation` variant, `pacman_args()` in `tux-install`, milestone table in `progress.rs` |
 | better icon matching for one app | `alias_for()` / `fallback_hints()` in `tux-thumbnail/src/names.rs` |
 | a new field on the details page | `PackageDetails` → `convert::details` → `UiPackageDetails` in `types.slint` → `details_view.slint` |
+| screenshots for a package | a folder in `data/screenshots/` ([SCREENSHOTS.md](SCREENSHOTS.md)) |
+| an interactive add-on package (install / uninstall guide) | a JSON file in `data/scripts/` ([SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md)) |
 | a Home category or app | `data/categories.json` |
 | an add-on / language-pack set | a JSON file in `data/special_case_packages/` |
 | a theme change | `ui/theme.slint` |

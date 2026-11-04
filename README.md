@@ -10,12 +10,14 @@ In-depth documentation for contributors. If you are new to the codebase, read in
 6. **[ICON_FETCHER.md](ICON_FETCHER.md)** — `tux-thumbnail`: the two-stage icon pipeline and covers.
 7. **[UI_LAYER.md](UI_LAYER.md)** — `tux-ui`: Slint components, shared structs, state handling.
 8. **[ADDONS_SYSTEM.md](ADDONS_SYSTEM.md)** — JSON-driven add-ons and language packs.
-9. **[Home_Page_Categorization.md](Home_Page_Categorization.md)** — data-driven Home sections.
-10. **[Tab_Navigation.md](Tab_Navigation.md)** — Home / Updates / Installed tabs.
-11. **[Uninstall_Engine.md](Uninstall_Engine.md)** — the five removal modes.
-12. **[LOGGING.md](LOGGING.md)** — one log sink for every module.
-13. **[CONTRIBUTING.md](CONTRIBUTING.md)** — conventions and good first tasks.
-14. **[RELEASING.md](RELEASING.md)** — how the GitHub release workflow builds the tarball and Arch package.
+9. **[SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md)** ([عربي](SCRIPTS_SYSTEM_AR.md)) — interactive add-on packages: the JSON format, how to add one in `data/scripts`, install, uninstall and install records (receipts).
+10. **[SCREENSHOTS.md](SCREENSHOTS.md)** — the Screenshots slider on package pages and the `data/screenshots/` folder (new in 0.9.0).
+11. **[Home_Page_Categorization.md](Home_Page_Categorization.md)** — data-driven Home sections.
+12. **[Tab_Navigation.md](Tab_Navigation.md)** — Home / Updates / Installed tabs.
+13. **[Uninstall_Engine.md](Uninstall_Engine.md)** — the five removal modes.
+14. **[LOGGING.md](LOGGING.md)** — one log sink for every module.
+15. **[CONTRIBUTING.md](CONTRIBUTING.md)** — conventions and good first tasks.
+16. **[RELEASING.md](RELEASING.md)** — how the GitHub release workflow builds the tarball and Arch package.
 
 ## Module Map
 

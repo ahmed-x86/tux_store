@@ -149,6 +149,8 @@ pub struct State {
 
     addons: Rc<VecModel<UiPackage>>,
     suggestions: Rc<VecModel<UiPackage>>,
+    /// Screenshots of the package on display (the slider on its page).
+    screenshots: Rc<VecModel<Image>>,
     updates: Rc<VecModel<crate::UiUpdate>>,
 
     covers: Vec<Cover>,
@@ -203,6 +205,7 @@ impl State {
             installed_filter: String::new(),
             addons: Rc::new(VecModel::default()),
             suggestions: Rc::new(VecModel::default()),
+            screenshots: Rc::new(VecModel::default()),
             updates: Rc::new(VecModel::default()),
             covers: Vec::new(),
             cover_idx: 0,
@@ -224,6 +227,7 @@ impl State {
         ui.set_installed(ModelRc::from(self.installed.clone()));
         ui.set_addons_packages(ModelRc::from(self.addons.clone()));
         ui.set_current_suggestions(ModelRc::from(self.suggestions.clone()));
+        ui.set_current_screenshots(ModelRc::from(self.screenshots.clone()));
         ui.set_updates(ModelRc::from(self.updates.clone()));
     }
 
@@ -235,6 +239,7 @@ impl State {
             Message::SearchResults { query, packages } => self.on_search_results(query, packages),
             Message::DetailsReady { name, details, special } => self.on_details(name, details, special),
             Message::ExactReady { package } => self.open_package(package, false),
+            Message::ScreenshotsReady { name, images } => self.on_screenshots(name, images),
             Message::AddonsReady { package, packages } => self.on_addons(package, packages),
             Message::InstalledReady { packages } => {
                 self.installed_all = packages;
@@ -334,6 +339,16 @@ impl State {
             ui.set_current_special_case(convert::special(special));
         }
         self.last_details = details;
+    }
+
+    /// Screenshots arrive as complete lists (possibly several times while a
+    /// Flathub download is running); the slider is simply replaced.
+    fn on_screenshots(&mut self, name: String, images: Vec<String>) {
+        if self.current.as_ref().map(|c| c.name.as_str()) != Some(name.as_str()) {
+            return; // user already navigated elsewhere
+        }
+        let loaded: Vec<Image> = images.iter().filter_map(|p| Image::load_from_path(Path::new(p)).ok()).collect();
+        self.screenshots.set_vec(loaded);
     }
 
     fn on_addons(&mut self, package: String, packages: Vec<Package>) {
@@ -804,12 +819,14 @@ impl State {
             ui.set_current_install(UiInstallState::default());
         }
         let is_script = pkg.repo == "script";
+        self.screenshots.set_vec(Vec::new());
         if is_script {
             self.suggestions.set_vec(Vec::new());
             ui.set_current_script_info(UiScriptInfo::default());
             self.script_page = None;
         } else {
             self.build_suggestions(&pkg);
+            self.bus.publish(&Message::ScreenshotsRequested { name: pkg.name.clone() });
         }
         ui.set_view(AppView::Details);
 

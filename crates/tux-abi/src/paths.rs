@@ -94,6 +94,16 @@ pub fn user_scripts_dir() -> PathBuf {
     config_dir().join("scripts")
 }
 
+/// Screenshots shipped with the store (`<data>/screenshots/<package>/…`).
+pub fn system_screenshots_dir() -> PathBuf {
+    data_dir().join("screenshots")
+}
+
+/// Screenshots added by the user (`~/.config/tux-store/screenshots/<package>/…`).
+pub fn user_screenshots_dir() -> PathBuf {
+    config_dir().join("screenshots")
+}
+
 /// Packages to hide: shipped list and the user's own list.
 pub fn hidden_packages_files() -> Vec<PathBuf> {
     vec![data_dir().join("hidden_packages.json"), config_dir().join("hidden_packages.json")]
