@@ -72,6 +72,10 @@ UI opens a package page ─ ScreenshotsRequested{name} ─► thumbnail module (
 - `ScreenshotsReady` always carries the **complete list so far**; the UI replaces its model. Answers for a package the user already left are dropped.
 - Scripts (add-on packages) have no screenshots section.
 
+## Prefetch (0.9.1)
+
+A few seconds after the Home shelves load, the UI sends `ScreenshotsPrefetch{names}` (the first 3 apps of the first 4 shelves, add-on scripts excluded). The thumbnail module waits 4 s, then downloads — one package at a time, 1.5 s apart, at most 8 packages — the screenshots of those with a `flathub` key that are not cached yet. Nothing is published; if you open a page while its download is running, the page follows the cache folder and shows the pictures as they arrive. Each package is tried once per run. `TUX_NO_PREFETCH=1` disables it.
+
 ## Adding a package
 
 1. `mkdir data/screenshots/<package>`

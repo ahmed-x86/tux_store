@@ -228,6 +228,9 @@ pub enum Message {
     ClearIconCache,
     /// Ask for the screenshots of a package (`data/screenshots/<name>/`).
     ScreenshotsRequested { name: String },
+    /// Idle-time hint: these packages will probably be opened soon, so their
+    /// screenshots may be downloaded quietly now (nothing is answered).
+    ScreenshotsPrefetch { names: Vec<String> },
     InstallRequested { name: String },
     RemoveRequested { name: String, mode: RemoveMode },
     SystemUpgradeRequested,

@@ -158,6 +158,8 @@ pub struct State {
 
     current: Option<Package>,
     history: Vec<Package>,
+    /// Pages left with Back; "Forward" returns to them (cleared by any new navigation).
+    forward: Vec<Package>,
     last_details: PackageDetails,
 
     console: ConsoleBuffer,
@@ -211,6 +213,7 @@ impl State {
             cover_idx: 0,
             current: None,
             history: Vec::new(),
+            forward: Vec::new(),
             last_details: PackageDetails::default(),
             console: ConsoleBuffer::default(),
             console_dirty: false,
@@ -314,6 +317,19 @@ impl State {
         self.section_models = models;
         self.sections.set_vec(ui_sections);
         self.request_icons(missing);
+
+        // The first apps of the first shelves are the likeliest to be opened:
+        // let the thumbnail module fetch their screenshots while the user looks around.
+        let likely: Vec<String> = sections
+            .iter()
+            .take(4)
+            .flat_map(|s| s.packages.iter().take(3))
+            .filter(|p| p.repo != "script")
+            .map(|p| p.name.clone())
+            .collect();
+        if !likely.is_empty() {
+            self.bus.publish(&Message::ScreenshotsPrefetch { names: likely });
+        }
     }
 
     fn on_search_results(&mut self, query: String, packages: Vec<Package>) {
@@ -802,6 +818,7 @@ impl State {
         let Some(ui) = self.ui.upgrade() else { return };
         let in_package_view = matches!(ui.get_view(), AppView::Details | AppView::Addons);
         if !from_history {
+            self.forward.clear();
             if in_package_view {
                 if let Some(cur) = self.current.clone().filter(|c| c.name != pkg.name) {
                     self.history.push(cur);
@@ -838,9 +855,23 @@ impl State {
             self.bus.publish(&Message::DetailsRequested { name: pkg.name.clone() });
         }
         self.current = Some(pkg);
+        self.sync_nav();
+    }
+
+    /// Tell the window whether a Forward button makes sense.
+    fn sync_nav(&self) {
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_can_forward(!self.forward.is_empty());
+        }
     }
 
     pub fn back(&mut self) {
+        if let Some(cur) = self.current.clone() {
+            self.forward.push(cur);
+            if self.forward.len() > 50 {
+                self.forward.remove(0);
+            }
+        }
         if let Some(prev) = self.history.pop() {
             self.open_package(prev, true);
         } else {
@@ -849,6 +880,17 @@ impl State {
                 ui.set_view(AppView::Main);
             }
         }
+        self.sync_nav();
+    }
+
+    /// Undo a Back: reopen the page that was left.
+    pub fn forward(&mut self) {
+        let Some(next) = self.forward.pop() else { return };
+        if let Some(cur) = self.current.clone() {
+            self.history.push(cur);
+        }
+        self.open_package(next, true);
+        self.sync_nav();
     }
 
     pub fn show_addons(&mut self) {

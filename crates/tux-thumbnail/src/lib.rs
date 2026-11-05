@@ -124,6 +124,10 @@ impl Module for ThumbnailModule {
                 let (bus, shots) = (self.bus, self.shots.clone());
                 spawn_named("thumb-shots".into(), move || screenshots::serve(&bus, &shots, &name));
             }
+            Message::ScreenshotsPrefetch { names } => {
+                let shots = self.shots.clone();
+                spawn_named("thumb-prefetch".into(), move || screenshots::prefetch(&shots, &names));
+            }
             Message::ClearIconCache => {
                 let (bus, resolver) = (self.bus, self.resolver.clone());
                 spawn_named("thumb-clear".into(), move || {

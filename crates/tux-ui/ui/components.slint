@@ -205,6 +205,77 @@ export component HScrollBar inherits Rectangle {
     }
 }
 
+// Thin vertical scrollbar for a Flickable (bind `offset <=> flick.content-y`).
+// Drag the thumb to cross a long page quickly; hidden when nothing scrolls.
+export component VScrollBar inherits Rectangle {
+    in property <length> content-height;
+    in property <length> visible-height;
+    in-out property <length> offset;
+    in property <color> accent: Theme.blue;
+
+    width: 10px;
+    border-radius: 5px;
+    visible: root.max-scroll > 1px;
+
+    property <length> total: max(root.content-height, root.visible-height);
+    property <length> thumb-height: max(44px, root.height * (root.visible-height / root.total));
+    property <length> max-thumb-y: root.height - root.thumb-height;
+    property <length> max-scroll: root.total - root.visible-height;
+    property <length> thumb-y: root.max-thumb-y > 0px ? max(0px, min(root.max-thumb-y, (-root.offset / max(1px, root.max-scroll)) * root.max-thumb-y)) : 0px;
+
+    Rectangle {
+        x: 2px;
+        y: root.thumb-y;
+        width: root.width - 4px;
+        height: root.thumb-height;
+        border-radius: 3px;
+        background: thumb-ta.has-hover || thumb-ta.pressed ? root.accent : Theme.surface2;
+        animate background { duration: 120ms; }
+    }
+
+    thumb-ta := TouchArea {
+        property <length> press-thumb-y: 0px;
+        mouse-cursor: pointer;
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down { self.press-thumb-y = root.thumb-y; }
+        }
+        moved => {
+            if self.pressed && root.max-thumb-y > 0px {
+                root.offset = -(max(0px, min(root.max-thumb-y, self.press-thumb-y + (self.mouse-y - self.pressed-y))) / root.max-thumb-y) * root.max-scroll;
+            }
+        }
+    }
+}
+
+// Round "back to the top" button, shown by a page once it is scrolled far down.
+export component ToTopButton inherits Rectangle {
+    in property <color> accent: Theme.blue;
+    callback clicked();
+
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: top-ta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-width: 1px;
+    border-color: top-ta.has-hover ? root.accent : Theme.surface1;
+    drop-shadow-blur: 10px;
+    drop-shadow-color: #00000066;
+    animate background { duration: 150ms; }
+
+    Text {
+        text: "↑";
+        color: Theme.text;
+        font-size: 22px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+    top-ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
 // ── Screenshot gallery ─────────────────────────────────────────────────────
 
 // Round arrow button floating over the edge of the gallery.

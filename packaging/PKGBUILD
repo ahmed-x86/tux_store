@@ -1,7 +1,7 @@
 # Maintainer: you
 # Build from a local checkout:  cd packaging && makepkg -si
 pkgname=tux-store
-pkgver=0.9.0
+pkgver=0.9.1
 pkgrel=1
 pkgdesc="Native Rust + Slint package store for Arch Linux (modular .so architecture)"
 arch=('x86_64')
@@ -10,7 +10,7 @@ depends=('pacman' 'curl' 'polkit' 'util-linux' 'xdg-utils' 'fontconfig' 'libxkbc
 makedepends=('cargo' 'pkgconf')
 # makepkg's default LTO flags (-flto) are injected into the C/asm objects that
 # Rust build scripts compile, which breaks linking of the module .so files.
-options=('!lto')
+options=('!lto' '!debug')
 optdepends=('pacman-contrib: checkupdates, for a safe "Updates" tab')
 
 build() {

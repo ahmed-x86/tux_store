@@ -35,3 +35,11 @@ Typing in the search box or pressing the home button always switches to tab 0.
 ## Styling
 
 Each `TabButton` has two gradient colours. The active tab shows its gradient plus a `drop-shadow` glow and grows to 1.5× width (animated through a `grow` property bound to `horizontal-stretch`); hover shows a faded gradient.
+
+## Page navigation and scrolling (0.9.1)
+
+- **History:** `State.history` (pages you came from) and `State.forward` (pages left with Back). Opening a package from a Home/search/Installed card clears `forward`; opening one from another package page pushes the old page on `history`. Back moves the current page to `forward`; Forward moves it back to `history`. `MainWindow.can-forward` tells the UI whether to show the Forward buttons.
+- **Keys on a package page:** `Esc`, `Backspace`, `Alt+←` back · `Alt+→` forward · `PageUp` `PageDown` `Space` `Home` `End` `↑` `↓` scroll. Overlays (console, running add-on dialog, uninstall dialog, screenshot viewer) take the keys first.
+- **The main screen is only hidden** (`visible`) while a package/settings page is open, never destroyed, so Home, the search grid and the Installed list keep their scroll position. The Home area is hidden (not destroyed) while another tab or a search is shown.
+- **A package page** resets to the top whenever its package name changes (`changed shown-name`).
+- **Scroll helpers** (components.slint): `VScrollBar` (draggable, hidden when nothing scrolls) and `ToTopButton` (appears after 500 px).

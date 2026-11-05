@@ -29,9 +29,25 @@ fn main() -> ExitCode {
         println!("tux-store {}", env!("CARGO_PKG_VERSION"));
         return ExitCode::SUCCESS;
     }
+    if arg == "--check-script" || arg.starts_with("--check-script=") {
+        let file = match arg.strip_prefix("--check-script=") {
+            Some(f) => f.to_string(),
+            None => std::env::args().nth(2).unwrap_or_default(),
+        };
+        if file.is_empty() {
+            eprintln!("usage: tux-store --check-script FILE.json");
+            return ExitCode::FAILURE;
+        }
+        let report = tux_abi::script_check::check_file(std::path::Path::new(&file));
+        println!("{file}");
+        for line in &report.lines {
+            println!("{line}");
+        }
+        return if report.ok { ExitCode::SUCCESS } else { ExitCode::FAILURE };
+    }
     if arg == "--help" || arg == "-h" {
         println!(
-            "tux-store {}\n\nUSAGE:\n  tux-store                   start the store\n  tux-store openpackage NAME  open a package page directly\n\nENVIRONMENT:\n  TUX_LOG=error|warn|info|debug|trace   log level (default info)\n  TUX_MODULE_DIR=DIR                    where to look for libtux_*.so\n  TUX_DATA_DIR=DIR                      where categories.json / images live",
+            "tux-store {}\n\nUSAGE:\n  tux-store                   start the store\n  tux-store openpackage NAME  open a package page directly\n  tux-store --check-script FILE.json  validate an add-on script and explain problems\n\nENVIRONMENT:\n  TUX_LOG=error|warn|info|debug|trace   log level (default info)\n  TUX_MODULE_DIR=DIR                    where to look for libtux_*.so\n  TUX_DATA_DIR=DIR                      where categories.json / images live",
             env!("CARGO_PKG_VERSION")
         );
         return ExitCode::SUCCESS;

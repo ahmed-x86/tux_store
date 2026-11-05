@@ -54,11 +54,14 @@ struct Manifest {
     count: usize,
 }
 
-fn publish(bus: &Bus, name: &str, files: &[PathBuf]) {
-    bus.publish(&Message::ScreenshotsReady {
-        name: name.to_string(),
-        images: files.iter().map(|p| p.to_string_lossy().into_owned()).collect(),
-    });
+/// `bus` is `None` while prefetching: the pictures are only stored, nobody is told.
+fn publish(bus: Option<&Bus>, name: &str, files: &[PathBuf]) {
+    if let Some(bus) = bus {
+        bus.publish(&Message::ScreenshotsReady {
+            name: name.to_string(),
+            images: files.iter().map(|p| p.to_string_lossy().into_owned()).collect(),
+        });
+    }
 }
 
 /// `<name>-<n>.png|jpg|jpeg` files of `dir`, sorted by `n` (1, 2, … 10, not 1, 10, 2).
@@ -132,6 +135,45 @@ fn read_manifest(dir: &Path, name: &str) -> Option<Manifest> {
 /// Entry point, run on a worker thread: find the pictures and publish them.
 /// Publishes nothing when the package has none.
 pub fn serve(bus: &Bus, inflight: &Inflight, name: &str) {
+    run(Some(bus), inflight, name);
+}
+
+/// Packages already prefetched in this run (each is tried once).
+static PREFETCHED: Mutex<Vec<String>> = Mutex::new(Vec::new());
+/// At most this many packages are prefetched per request (data and politeness).
+const PREFETCH_MAX: usize = 8;
+/// Quiet time before prefetching starts, and between two packages.
+const PREFETCH_DELAY: Duration = Duration::from_secs(4);
+const PREFETCH_GAP: Duration = Duration::from_millis(1500);
+
+/// Idle-time download of the screenshots of packages the user will probably
+/// open (the Home shelves). Only packages whose manifest has a `flathub` key
+/// and that are not cached yet cost anything; set `TUX_NO_PREFETCH=1` to turn
+/// it off. Runs on its own thread; nothing is published.
+pub fn prefetch(inflight: &Inflight, names: &[String]) {
+    if std::env::var_os("TUX_NO_PREFETCH").is_some() {
+        return;
+    }
+    std::thread::sleep(PREFETCH_DELAY);
+    let mut done = 0;
+    for name in names {
+        if done >= PREFETCH_MAX {
+            break;
+        }
+        {
+            let mut seen = lock(&PREFETCHED);
+            if seen.contains(name) {
+                continue;
+            }
+            seen.push(name.clone());
+        }
+        done += 1;
+        run(None, inflight, name);
+        std::thread::sleep(PREFETCH_GAP);
+    }
+}
+
+fn run(bus: Option<&Bus>, inflight: &Inflight, name: &str) {
     if !is_valid_package_name(name) {
         return;
     }
@@ -155,7 +197,7 @@ pub fn serve(bus: &Bus, inflight: &Inflight, name: &str) {
     }
 }
 
-fn from_flathub(bus: &Bus, inflight: &Inflight, name: &str, id: &str, count: usize) {
+fn from_flathub(bus: Option<&Bus>, inflight: &Inflight, name: &str, id: &str, count: usize) {
     let cache = paths::cache_dir().join("screenshots").join(name);
     if cache.join(".complete").is_file() {
         let cached = numbered_images(&cache, name);
@@ -174,10 +216,31 @@ fn from_flathub(bus: &Bus, inflight: &Inflight, name: &str, id: &str, count: usi
     }
     // One download per package at a time (the running one keeps publishing).
     if !lock(inflight).insert(name.to_string()) {
+        // Someone else (often the idle prefetch, which tells nobody) is
+        // downloading it: follow the cache folder and show what arrives.
+        if bus.is_some() {
+            follow_download(bus, name, &cache);
+        }
         return;
     }
     download_all(bus, name, id, count, &cache);
     lock(inflight).remove(name);
+}
+
+/// Show the pictures of a download run by another thread, as they appear.
+fn follow_download(bus: Option<&Bus>, name: &str, cache: &Path) {
+    let mut shown = 0;
+    for _ in 0..80 {
+        let files = numbered_images(cache, name);
+        if files.len() != shown {
+            shown = files.len();
+            publish(bus, name, &files);
+        }
+        if cache.join(".complete").is_file() || cache.join(".none").is_file() {
+            return;
+        }
+        std::thread::sleep(Duration::from_millis(500));
+    }
 }
 
 fn mark_none(cache: &Path) {
@@ -186,7 +249,7 @@ fn mark_none(cache: &Path) {
     }
 }
 
-fn download_all(bus: &Bus, name: &str, id: &str, count: usize, cache: &Path) {
+fn download_all(bus: Option<&Bus>, name: &str, id: &str, count: usize, cache: &Path) {
     let api = format!("https://flathub.org/api/v2/appstream/{id}");
     let json = match fetch(&api, MAX_JSON_BYTES, 12) {
         Fetch::Ok(b) => b,

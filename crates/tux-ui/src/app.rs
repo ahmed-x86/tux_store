@@ -129,6 +129,9 @@ fn wire(ui: &MainWindow) {
     ui.on_back_clicked(|| {
         with_state(|st| st.back());
     });
+    ui.on_forward_clicked(|| {
+        with_state(|st| st.forward());
+    });
     ui.on_install_clicked(|| {
         with_state(|st| st.install_current());
     });

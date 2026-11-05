@@ -253,7 +253,15 @@ Notes:
 
 The command runs silently, without root, with a time limit; the **last non-empty line** of its output is used (for sizes: the first number on that line, rounded up, in MB). Scripts from the user's folder only run these after the user presses the “Calculate” button.
 
-## 9. Checklist before you ship a script
+## 9. Checking a script: `--check-script`
+
+```bash
+tux-store --check-script ~/.config/tux-store/scripts/my-tool-id-1.json
+```
+
+Uses the store's own loader, so *valid* here means the store will load it. On a problem it prints the reason and a hint (misspelled key, missing key, unknown step type, broken JSON) and exits with code 1. When the file is valid it also lists warnings: steps nothing leads to; no `finish` with `"mark": "installed"` / `"uninstalled"`; no `uninstall`; uninstall without any `record` step in the install flow; missing description / keywords; an icon file that is not next to the JSON; and the list of commands that ask for administrator rights.
+
+## 10. Checklist before you ship a script
 
 1. `uninstall` points to a step and the flow ends in `"mark": "uninstalled"`.
 2. Everything the install creates is listed in a `record` step (`files` / `packages`).
@@ -261,4 +269,4 @@ The command runs silently, without root, with a time limit; the **last non-empty
 4. Shell variables are used as `"$TUX_VAR_X"` (quoted), never pasted into the command.
 5. Every failure path ends in a `dialog` with `"tone": "error"` and a `Close` button.
 6. Run it: `TUX_LOG=debug ./target/debug/tux-store`, open the page, install, uninstall, check `~/.local/share/tux-store/addons/`.
-7. The three shipped files are good templates: `hello-test-id-2.json` (all step types), `gemini-code-1793716015029.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).
+7. The shipped files are good templates: `multimedia-codecs-id-1.json` (a choice, "only what is missing" detection, record of just the new packages, safe per-package uninstall), `hello-test-id-2.json` (all step types), `gemini-code-1793716015029.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).

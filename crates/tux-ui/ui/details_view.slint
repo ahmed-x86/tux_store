@@ -1,6 +1,6 @@
 import { Theme } from "theme.slint";
 import { UiPackage, UiPackageDetails, UiInstallState, UiSpecialCase, UiScriptInfo, OpPhase } from "types.slint";
-import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar, ScreenshotGallery, ScreenshotViewer } from "components.slint";
+import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar, ScreenshotGallery, ScreenshotViewer, VScrollBar, ToTopButton } from "components.slint";
 
 // One choice in the "how do you want to uninstall?" dialog.
 component RemoveOption inherits Rectangle {
@@ -70,6 +70,10 @@ export component DetailsView inherits Rectangle {
     in property <UiInstallState> install-state;
     in property <[UiPackage]> suggestions;
     in property <[image]> screenshots;
+    in property <bool> can-forward: false;
+    // True while an overlay (console, script dialog) owns the keyboard.
+    in property <bool> keys-blocked: false;
+    callback forward-clicked();
     in property <UiSpecialCase> special-case;
     in property <int> accent-idx;
     in property <UiScriptInfo> script-info;
@@ -94,6 +98,14 @@ export component DetailsView inherits Rectangle {
     // A script is shown on the same page as a package, with a few differences.
     property <bool> is-script: root.pkg.repo == "script";
     property <bool> show-uninstall-modal: false;
+    // A new page opens at its top, not where the previous page was scrolled to.
+    property <string> shown-name: root.pkg.name;
+    changed shown-name => { scroll.content-y = 0px; }
+
+    function scroll-to(y: length) {
+        scroll.content-y = min(0px, max(scroll.height - scroll.content-height, y));
+    }
+    init => { details-keys.focus(); }
     // Index of the screenshot shown big, -1 = viewer closed.
     property <int> viewer-index: -1;
     property <color> accent: Theme.accents[mod(root.accent-idx, Theme.accents.length)];
@@ -103,9 +115,60 @@ export component DetailsView inherits Rectangle {
 
     background: Theme.base;
 
+    // Keyboard: Esc / Backspace / Alt+← = back, Alt+→ = forward, PageUp/PageDown/
+    // Space/Home/End/↑/↓ scroll the page.
+    details-keys := FocusScope {
+        key-pressed(e) => {
+            if root.keys-blocked || root.viewer-index >= 0 {
+                return EventResult.reject;
+            }
+            if e.text == Key.Escape && root.show-uninstall-modal {
+                root.show-uninstall-modal = false;
+                return EventResult.accept;
+            }
+            if root.show-uninstall-modal {
+                return EventResult.reject;
+            }
+            if e.text == Key.Escape || e.text == Key.Backspace || (e.modifiers.alt && e.text == Key.LeftArrow) {
+                root.back-clicked();
+                return EventResult.accept;
+            }
+            if e.modifiers.alt && e.text == Key.RightArrow {
+                if root.can-forward { root.forward-clicked(); }
+                return EventResult.accept;
+            }
+            if e.text == Key.PageDown || e.text == " " {
+                root.scroll-to(scroll.content-y - scroll.height * 0.9);
+                return EventResult.accept;
+            }
+            if e.text == Key.PageUp {
+                root.scroll-to(scroll.content-y + scroll.height * 0.9);
+                return EventResult.accept;
+            }
+            if e.text == Key.Home {
+                root.scroll-to(0px);
+                return EventResult.accept;
+            }
+            if e.text == Key.End {
+                root.scroll-to(scroll.height - scroll.content-height);
+                return EventResult.accept;
+            }
+            if e.text == Key.DownArrow {
+                root.scroll-to(scroll.content-y - 90px);
+                return EventResult.accept;
+            }
+            if e.text == Key.UpArrow {
+                root.scroll-to(scroll.content-y + 90px);
+                return EventResult.accept;
+            }
+            return EventResult.reject;
+        }
+    }
+
     VerticalLayout {
         TopBar {
             PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
+            PillButton { text: "Forward ⟩"; enabled: root.can-forward; clicked => { root.forward-clicked(); } }
         }
 
         // A Flickable's own layout info is "as big as my content", so inside a
@@ -668,6 +731,23 @@ export component DetailsView inherits Rectangle {
 
             }
           }
+
+          // Drag the bar to cross a long page quickly.
+          VScrollBar {
+              x: parent.width - self.width - 3px;
+              y: 4px;
+              height: parent.height - 8px;
+              content-height: scroll.content-height;
+              visible-height: scroll.height;
+              offset <=> scroll.content-y;
+              accent: root.accent;
+          }
+          if scroll.content-y < -500px : ToTopButton {
+              x: parent.width - self.width - 28px;
+              y: parent.height - self.height - 24px;
+              accent: root.accent;
+              clicked => { scroll.content-y = 0px; }
+          }
         }
     }
 
@@ -680,7 +760,7 @@ export component DetailsView inherits Rectangle {
         counter: "" + (root.viewer-index + 1) + " / " + root.screenshots.length;
         prev => { root.viewer-index = root.viewer-index - 1; }
         next => { root.viewer-index = root.viewer-index + 1; }
-        close => { root.viewer-index = -1; }
+        close => { root.viewer-index = -1; details-keys.focus(); }
     }
 
     // ---- Uninstall dialog ----------------------------------------------------

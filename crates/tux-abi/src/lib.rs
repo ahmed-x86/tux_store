@@ -19,6 +19,7 @@ pub mod module;
 pub mod paths;
 pub mod receipt;
 pub mod script;
+pub mod script_check;
 pub mod stream;
 pub mod sync;
 pub mod text;
