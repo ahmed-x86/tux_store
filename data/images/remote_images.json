@@ -1,0 +1,126 @@
+{
+  "note": "Icon sources in order: your icon theme (names in \"theme\"), a file (\"file\": just the file name, put next to this JSON or in data/images/icons), then the \"icon\" link as a last resort. Links: https on trusted hosts only. Add your own in ~/.config/tux-store/remote_images.json.",
+  "images": {
+    "alacritty": {
+      "theme": [
+        "Alacritty",
+        "alacritty"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/Alacritty.svg",
+      "covers": [
+        "https://raw.githubusercontent.com/alacritty/alacritty/master/extra/promo/alacritty-readme.png"
+      ]
+    },
+    "android-tools": {
+      "theme": [
+        "android-tools",
+        "android-studio",
+        "android"
+      ],
+      "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/android/android-original.svg"
+    },
+    "base-devel": {
+      "theme": [
+        "base-devel",
+        "applications-development"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/applications-development.svg"
+    },
+    "bun": {
+      "theme": [
+        "bun"
+      ],
+      "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/bun/bun-original.svg"
+    },
+    "calligra": {
+      "theme": [
+        "calligrawords",
+        "calligra",
+        "org.kde.calligra"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/words.svg"
+    },
+    "checksec": {
+      "theme": [
+        "checksec",
+        "security-high"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/security-high.svg"
+    },
+    "clang": {
+      "theme": [
+        "clang",
+        "llvm"
+      ],
+      "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/llvm/llvm-original.svg"
+    },
+    "cowsay": {
+      "file": "cowsay.svg"
+    },
+    "dkms": {
+      "theme": [
+        "dkms",
+        "system-software-install"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/system-software-install.svg"
+    },
+    "docker": {
+      "theme": [
+        "docker",
+        "docker-desktop"
+      ],
+      "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg"
+    },
+    "dolphin": {
+      "theme": [
+        "org.kde.dolphin",
+        "system-file-manager"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/org.kde.dolphin.svg"
+    },
+    "epiphany": {
+      "theme": [
+        "org.gnome.Epiphany",
+        "epiphany"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/org.gnome.Epiphany.svg"
+    },
+    "gcc": {
+      "theme": [
+        "gcc"
+      ],
+      "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/gcc/gcc-original.svg"
+    },
+    "grub": {
+      "theme": [
+        "grub",
+        "grub-customizer"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/grub-customizer.svg"
+    },
+    "nodejs": {
+      "theme": [
+        "nodejs",
+        "node",
+        "node-js"
+      ],
+      "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg"
+    },
+    "onlyoffice-bin": {
+      "theme": [
+        "onlyoffice-desktopeditors",
+        "onlyoffice-editors",
+        "onlyoffice"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/asc-de.svg"
+    },
+    "wps-office": {
+      "theme": [
+        "wps-office-wpsmain",
+        "wps-office2019-kprometheus",
+        "wps-office"
+      ],
+      "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/wps-office-wpsmain.svg"
+    }
+  }
+}
