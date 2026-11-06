@@ -1,0 +1,432 @@
+{
+  "schema": 2,
+  "id": "flatpak-setup-id-1",
+  "title": "Flatpak and Flathub",
+  "description": "Install Flatpak and add the Flathub store, so Flatpak apps can be installed. Can remove Flatpak again.",
+  "author": "Tux Store",
+  "keywords": [
+    "flatpak",
+    "flathub",
+    "sandbox",
+    "apps",
+    "فلات باك",
+    "فلاتباك"
+  ],
+  "show_on_home": false,
+  "vars": {
+    "new_pkgs": "",
+    "skipped_pkgs": "",
+    "skipped_text": "",
+    "preflight": "",
+    "verify_msg": "",
+    "profile": "basic",
+    "pkgs": "flatpak"
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "shell": "pacman -Si flatpak 2>/dev/null | awk '/^Download Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+    },
+    "installed_mb": {
+      "label": "Installed size",
+      "shell": "pacman -Si flatpak 2>/dev/null | awk '/^Installed Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+    },
+    "extracted_mb": 20,
+    "note": "Sizes are read from your package database. Packages you already have are skipped."
+  },
+  "icon": [
+    {
+      "file": "flatpak-setup-id-1.svg"
+    }
+  ],
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Flatpak and Flathub",
+      "tone": "info",
+      "message": [
+        "Flatpak runs apps in a sandbox. Flathub is the main place to get them.",
+        "",
+        "This installs the flatpak package and adds the Flathub remote (system-wide). Log out and in again afterwards so Flatpak apps appear in your menu."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "shell": [
+          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
+          "for t in pkexec pacman; do",
+          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
+          "done",
+          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
+          "echo \"\""
+        ]
+      },
+      "capture": "preflight",
+      "on_success": "preflight_gate",
+      "on_failure": "error_generic"
+    },
+    "preflight_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "find_missing"
+    },
+    "problem": {
+      "type": "dialog",
+      "title": "Cannot continue",
+      "tone": "error",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "find_missing": {
+      "type": "check",
+      "command": {
+        "label": "Looking at what is already installed…",
+        "timeout_secs": 60,
+        "shell": [
+          "out=\"\"",
+          "for p in $TUX_VAR_PKGS; do",
+          "  pacman -Si \"$p\" >/dev/null 2>&1 || continue      # not in your repositories: handled below",
+          "  pacman -Qq \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
+          "done",
+          "printf '%s\\n' $out"
+        ]
+      },
+      "capture": "new_pkgs",
+      "on_success": "find_skipped",
+      "on_failure": "error_generic"
+    },
+    "find_skipped": {
+      "type": "check",
+      "command": {
+        "label": "Checking the repositories…",
+        "timeout_secs": 60,
+        "shell": [
+          "out=\"\"",
+          "for p in $TUX_VAR_PKGS; do",
+          "  pacman -Si \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
+          "done",
+          "printf '%s\\n' $out"
+        ]
+      },
+      "capture": "skipped_pkgs",
+      "on_success": "missing_gate",
+      "on_failure": "error_generic"
+    },
+    "missing_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "already_done"
+        },
+        {
+          "when": {
+            "var": "skipped_pkgs",
+            "ne": ""
+          },
+          "goto": "skipped_line"
+        }
+      ],
+      "default": "confirm"
+    },
+    "skipped_line": {
+      "type": "set",
+      "vars": {
+        "skipped_text": "Not in your repositories (skipped): ${skipped_pkgs}"
+      },
+      "next": "confirm"
+    },
+    "already_done": {
+      "type": "finish",
+      "title": "Already installed",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": [
+        "Everything in this set is already on your system, so nothing was changed.",
+        "If a video still does not play, restart the application."
+      ]
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to install",
+      "tone": "info",
+      "message": [
+        "This will be installed:",
+        "${new_pkgs}",
+        "",
+        "${skipped_text}",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "Back",
+          "goto": "welcome"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "install": {
+      "type": "run",
+      "title": "Setting up: Flatpak and Flathub",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing packages",
+          "root": true,
+          "weight": 10,
+          "expected_secs": 60,
+          "percent": 70,
+          "shell": [
+            "set -e",
+            "[ -z \"$TUX_VAR_NEW_PKGS\" ] || pacman -S --needed --noconfirm $TUX_VAR_NEW_PKGS"
+          ]
+        },
+        {
+          "label": "Adding the Flathub remote",
+          "root": true,
+          "expected_secs": 15,
+          "percent": 95,
+          "shell": [
+            "set -e",
+            "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
+          ]
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Checking the result…",
+        "timeout_secs": 60,
+        "shell": [
+          "bad=\"\"",
+          "for p in $TUX_VAR_NEW_PKGS; do",
+          "  pacman -Qq \"$p\" >/dev/null 2>&1 || bad=\"$bad $p\"",
+          "done",
+          "[ -z \"$bad\" ] || { echo \"Not installed:$bad\"; exit 1; }",
+          "echo ok"
+        ]
+      },
+      "capture": "verify_msg",
+      "on_success": "record_install",
+      "on_failure": "install_failed"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_profile": "${profile}"
+      },
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "title": "Flatpak is ready",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": [
+        "Flatpak is installed and Flathub is added.",
+        "Log out and back in once so applications show up in your menu."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "Installation failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "${verify_msg}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "Something went wrong",
+      "tone": "error",
+      "message": "The system check could not run. Please try again.",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "recorded_packages",
+            "eq": ""
+          },
+          "goto": "un_nothing"
+        }
+      ],
+      "default": "un_confirm"
+    },
+    "un_nothing": {
+      "type": "finish",
+      "title": "Nothing to remove",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": [
+        "These codecs were already on your system before, so Tux Store keeps them.",
+        "This add-on is now marked as not installed."
+      ]
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove Flatpak and Flathub?",
+      "tone": "warning",
+      "message": [
+        "Flatpak will be removed. Apps you installed through Flatpak are kept on disk but will no longer start until Flatpak is installed again.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "shell": [
+          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
+          "for t in pkexec pacman; do",
+          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
+          "done",
+          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
+          "echo \"\""
+        ]
+      },
+      "capture": "preflight",
+      "on_success": "un_gate",
+      "on_failure": "error_generic"
+    },
+    "un_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Flatpak and Flathub…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing the codec packages",
+          "root": true,
+          "expected_secs": 20,
+          "percent": 95,
+          "shell": [
+            "# Two passes: a package may only become removable after another one is gone.",
+            "for pass in 1 2; do",
+            "  for p in $TUX_VAR_RECORDED_PACKAGES; do",
+            "    pacman -Qq \"$p\" >/dev/null 2>&1 || continue",
+            "    if pacman -Rns --noconfirm \"$p\" >/dev/null 2>&1; then echo \"removed $p\"; elif [ \"$pass\" = 2 ]; then echo \"kept $p (other software needs it)\"; fi",
+            "  done",
+            "done",
+            "exit 0"
+          ]
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Codecs removed",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": "The packages this add-on installed were removed. Packages that other software needs were kept."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Removal failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    }
+  }
+}
