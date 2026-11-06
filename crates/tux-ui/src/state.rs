@@ -250,9 +250,23 @@ impl State {
             }
             Message::UpdatesReady { updates, error } => self.on_updates(updates, error),
             Message::CoversReady { covers } => {
+                // Remote covers arrive in later, longer lists: stay on the cover that is
+                // showing instead of jumping to another one.
+                let showing = self.covers.get(self.cover_idx).map(|c| c.name.clone());
                 self.covers = covers;
-                self.cover_idx = if self.covers.is_empty() { 0 } else { fastrand::usize(..self.covers.len()) };
-                self.show_cover();
+                let kept = showing.and_then(|n| self.covers.iter().position(|c| c.name == n));
+                match kept {
+                    Some(i) => {
+                        self.cover_idx = i;
+                        if let Some(ui) = self.ui.upgrade() {
+                            ui.set_cover_count(self.covers.len() as i32);
+                        }
+                    }
+                    None => {
+                        self.cover_idx = if self.covers.is_empty() { 0 } else { fastrand::usize(..self.covers.len()) };
+                        self.show_cover();
+                    }
+                }
             }
             Message::IconReady { name, path } => self.on_icon(name, path),
             Message::IconCacheCleared { removed } => {
@@ -843,8 +857,9 @@ impl State {
             self.script_page = None;
         } else {
             self.build_suggestions(&pkg);
-            self.bus.publish(&Message::ScreenshotsRequested { name: pkg.name.clone() });
         }
+        // Add-on packages can have screenshots too (declared in their JSON).
+        self.bus.publish(&Message::ScreenshotsRequested { name: pkg.name.clone() });
         ui.set_view(AppView::Details);
 
         let missing = if self.icons.contains_key(&pkg.name) { Vec::new() } else { vec![pkg.name.clone()] };
