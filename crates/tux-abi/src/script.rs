@@ -403,6 +403,37 @@ impl IconSpec {
     }
 }
 
+/// One screenshot source of an add-on package. Exactly one field is set.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ShotSource {
+    /// A `.png` / `.jpg` / `.jpeg` **file name**. Looked up next to the JSON,
+    /// then in `screenshots/<script-id>/` of the user's and the shipped data.
+    #[serde(default)]
+    pub file: Option<String>,
+    /// An `https://` link to a `.png` / `.jpg` picture on a trusted host
+    /// (see [`crate::remote::TRUSTED_HOSTS`]), downloaded once and cached.
+    #[serde(default)]
+    pub url: Option<String>,
+    /// A Flathub app id (`org.mozilla.firefox`) or flathub.org link: the app's
+    /// screenshots are shown, as for packages. Must be the only entry.
+    #[serde(default)]
+    pub flathub: Option<String>,
+}
+
+/// Most screenshots a script may declare.
+pub const MAX_SCREENSHOTS: usize = 12;
+pub const SHOT_EXTENSIONS: [&str; 3] = ["png", "jpg", "jpeg"];
+
+/// A bare, harmless file name with an allowed screenshot extension.
+pub fn is_valid_shot_file_name(f: &str) -> bool {
+    !f.is_empty()
+        && f.len() <= 128
+        && !f.starts_with('.')
+        && !f.contains(['/', '\\', '\0'])
+        && f.rsplit_once('.').is_some_and(|(_, e)| SHOT_EXTENSIONS.contains(&e.to_ascii_lowercase().as_str()))
+}
+
 pub const ICON_EXTENSIONS: [&str; 3] = ["svg", "png", "ico"];
 
 /// A bare, harmless file name with an allowed picture extension.
@@ -519,6 +550,10 @@ pub struct Script {
     /// How to get the thumbnail (format version 2).
     #[serde(default)]
     pub icon: Option<IconSpec>,
+    /// Screenshots for the add-on's page (format version 2, since 0.10.0):
+    /// files next to the JSON and/or links on trusted hosts, in display order.
+    #[serde(default)]
+    pub screenshots: Vec<ShotSource>,
     /// Initial variables.
     #[serde(default)]
     pub vars: Vars,
@@ -598,6 +633,24 @@ impl Script {
                 if src.url.as_deref().is_some_and(|u| !is_valid_icon_url(u)) {
                     return Err("icon url must be a plain https:// link".into());
                 }
+            }
+        }
+        if self.screenshots.len() > MAX_SCREENSHOTS {
+            return Err(format!("at most {MAX_SCREENSHOTS} screenshots"));
+        }
+        for shot in &self.screenshots {
+            match (&shot.file, &shot.url, &shot.flathub) {
+                (Some(f), None, None) if is_valid_shot_file_name(f) => {}
+                (Some(_), None, None) => return Err("screenshot file must be a bare .png/.jpg/.jpeg file name".into()),
+                (None, Some(u), None) if crate::remote::is_trusted_image_url(u) => {}
+                (None, Some(_), None) => return Err("screenshot url must be https:// on a trusted host (raw.githubusercontent.com, github.com, …)".into()),
+                (None, None, Some(f)) if crate::remote::flathub_app_id(f).is_some() => {
+                    if self.screenshots.len() > 1 {
+                        return Err("a flathub screenshot source must be the only entry".into());
+                    }
+                }
+                (None, None, Some(_)) => return Err("screenshot flathub must be an app id like org.mozilla.firefox or a flathub.org link".into()),
+                _ => return Err("each screenshot needs exactly one of file / url / flathub".into()),
             }
         }
         if let Some(u) = &self.uninstall {
@@ -1081,6 +1134,31 @@ mod tests {
         assert!(mk(r#"{"url":"https://a b"}"#).is_err());
         assert!(mk(r#"{"file":"a.svg","theme":"x"}"#).is_err());
         assert!(mk(r#"{}"#).is_err());
+    }
+
+    #[test]
+    fn screenshot_sources_are_checked() {
+        let mk = |shots: &str| -> Result<(), String> {
+            let s: Script = serde_json::from_str(&format!(
+                r#"{{"schema":2,"id":"x","title":"t","start":"a","screenshots":{shots},"steps":{{"a":{{"type":"finish","title":"t"}}}}}}"#
+            ))
+            .unwrap();
+            s.validate()
+        };
+        assert!(mk("[]").is_ok());
+        assert!(mk(r#"[{"file":"a-1.png"},{"url":"https://raw.githubusercontent.com/a/b/c.jpg"}]"#).is_ok());
+        assert!(mk(r#"[{"file":"../a.png"}]"#).is_err());
+        assert!(mk(r#"[{"file":"a.svg"}]"#).is_err());
+        assert!(mk(r#"[{"url":"https://evil.com/a.png"}]"#).is_err());
+        assert!(mk(r#"[{"url":"http://github.com/a.png"}]"#).is_err());
+        assert!(mk(r#"[{"file":"a.png","url":"https://github.com/a.png"}]"#).is_err());
+        assert!(mk(r#"[{}]"#).is_err());
+        assert!(mk(r#"[{"flathub":"org.mozilla.firefox"}]"#).is_ok());
+        assert!(mk(r#"[{"flathub":"https://flathub.org/en/apps/org.mozilla.firefox"}]"#).is_ok());
+        assert!(mk(r#"[{"flathub":"bad id!"}]"#).is_err());
+        assert!(mk(r#"[{"flathub":"org.a.b"},{"file":"a.png"}]"#).is_err(), "flathub cannot be mixed");
+        let many = format!("[{}]", vec![r#"{"file":"a.png"}"#; MAX_SCREENSHOTS + 1].join(","));
+        assert!(mk(&many).is_err());
     }
 
     #[test]
