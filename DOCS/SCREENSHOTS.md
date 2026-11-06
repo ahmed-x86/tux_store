@@ -84,3 +84,19 @@ A few seconds after the Home shelves load, the UI sends `ScreenshotsPrefetch{nam
 4. Rebuild is **not** needed for data; `make install` copies `data/` to `/usr/share/tux-store/`.
 
 Shipped examples: ~26 packages in Flathub mode (all browsers of the Home page and more), plus `fastfetch`, `htop`, `neovim` with local placeholder pictures that show the slider offline. Replace the placeholders with real screenshots (same names) or run the fetch tool after switching their JSON to a `flathub` key.
+
+## Screenshots for add-on scripts (0.10.0)
+
+Add-ons use the **same code** as packages. Pick one way:
+
+1. **Files in the screenshots folder** — put `data/screenshots/<script-id>/…png` (or in `~/.local/share/tux-store/screenshots/<script-id>/`). `<script-id>-1.png`, `-2.png`… are found automatically; or list any names in the JSON (way 2).
+2. **Names in the JSON** — a `screenshots` list; each `file` is just a file name, found **next to the JSON**, then in `screenshots/<script-id>/`:
+
+```json
+"screenshots": [ { "file": "one.png" }, { "file": "two.jpg" } ]
+```
+
+3. **Raw link** — `{ "url": "https://raw.githubusercontent.com/me/repo/main/shot.png" }` (https on a trusted host; downloaded once, cached; can be mixed with `file` entries, order kept).
+4. **Flathub** — `{ "flathub": "org.mozilla.firefox" }` (app id or flathub.org link): the app's Flathub screenshots, as for packages. It must be the only entry.
+
+Max 12 entries; files must really be PNG/JPEG, ≤ 8 MiB. `tux-store --check-script` warns about a missing `file`.
