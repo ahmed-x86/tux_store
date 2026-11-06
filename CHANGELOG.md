@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.10.0
+
+- **Remote thumbnails and covers.** `data/images/remote_images.json` (and the user's `~/.config/tux-store/remote_images.json`, which wins) maps a package to an `icon` link and/or up to 3 `covers` links. Only `https://` links on trusted hosts (`raw.githubusercontent.com`, `github.com`, `gitlab.com`, `upload.wikimedia.org`, `flathub.org`, `dl.flathub.org`, `cdn.jsdelivr.net`, `invent.kde.org`, `user-images.githubusercontent.com`) are ever followed; PNG/SVG/JPEG only; everything is downloaded once and cached. An installed theme icon or a local file still wins; a declared link is tried exactly (no shortened-name guesses such as `base-devel` → `base`) and overrides an old "not found" verdict. New module `tux_abi::remote`.
+- **Icon sources (Plan B):** an entry can also list `"theme"` (icon names looked up in the icon theme you run, e.g. `onlyoffice-desktopeditors`) and `"file"` (just a file name: put the png/svg/jpg **next to `remote_images.json`**, or in `data/images/icons/`; the user's own JSON looks beside itself in `~/.config/tux-store/`). Order: theme names → file → `icon` link as the last resort. So a broken or blocked link no longer matters when your theme already has the icon.
+- Remote icons now declared for `onlyoffice-bin`, `wps-office`, `alacritty`, `calligra`, `epiphany`, `gcc`, `base-devel`, `nodejs`, `docker`, `android-tools`, `bun`, `clang`, `dkms`, `checksec`, `dolphin`, `grub`, and a remote Home cover for `alacritty`. Every link was fetched and its content checked (a Papirus *symlink* answers HTTP 200 with a 10-byte text, which the first version of this list missed for `onlyoffice-bin` and `calligra`; both now point at the real files).
+- Home covers: local covers are shown immediately; remote ones are downloaded in the background and added without changing the cover you are looking at (`tux-thumbnail/src/covers.rs`).
+- Icon downloads and caches accept JPEG as well as PNG/SVG.
+- **Screenshots for add-on scripts.** A script may declare `"screenshots"` as file **names** (found next to the JSON, then in `screenshots/<script-id>/`), `url` links (trusted hosts) or one `flathub` app id; max 12, order kept. The Screenshots slider and full-window viewer now also appear on script pages. The classic `data/screenshots/<script-id>/` folder works for scripts too. `--check-script` reports missing screenshot files. Format version stays 2; older stores reject the new key (unknown keys are errors).
+- **Eight new add-on scripts:** Developer toolchain, Fonts pack, Gaming setup (Steam, GameMode, MangoHud), Flatpak and Flathub, Docker, AUR helper (yay), Faster mirrors (reflector), System cleanup. Each has an SVG icon, and all but System cleanup (a one-shot tool) support uninstall.
+
 ## 0.9.1
 
 - **Page navigation:** *Back* and *Forward* buttons on package pages (and a ⟩ button next to Home after going back). Keys: `Esc` / `Backspace` / `Alt+←` back, `Alt+→` forward. See `DOCS/Tab_Navigation.md`.
