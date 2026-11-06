@@ -148,6 +148,21 @@ pub fn check_text(text: &str, dir: &Path) -> Report {
         }
     }
 
+    for shot in &script.screenshots {
+        if let Some(f) = &shot.file {
+            let found = dir.join(f).is_file()
+                || [crate::paths::user_screenshots_dir(), crate::paths::system_screenshots_dir()]
+                    .iter()
+                    .any(|r| r.join(&script.id).join(f).is_file());
+            if !found {
+                lines.push(format!("⚠ screenshot file \"{f}\" is neither next to the JSON file nor in screenshots/{}/", script.id));
+            }
+        }
+    }
+    if !script.screenshots.is_empty() {
+        lines.push(format!("✔ {} screenshot(s) declared", script.screenshots.len()));
+    }
+
     let root = script.root_command_summaries();
     if root.is_empty() {
         lines.push("✔ no command asks for administrator rights".into());
