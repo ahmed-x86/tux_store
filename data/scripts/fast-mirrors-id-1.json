@@ -1,0 +1,412 @@
+{
+  "schema": 2,
+  "id": "fast-mirrors-id-1",
+  "title": "Faster mirrors",
+  "description": "Rank the 20 most recently updated HTTPS mirrors by speed with reflector and save them as your pacman mirrorlist. Your old list is backed up and can be restored.",
+  "author": "Tux Store",
+  "keywords": [
+    "mirror",
+    "mirrors",
+    "mirrorlist",
+    "reflector",
+    "slow download",
+    "slow updates",
+    "pacman",
+    "speed",
+    "مرايا",
+    "سرعة التحميل",
+    "بطء"
+  ],
+  "show_on_home": false,
+  "vars": {
+    "new_pkgs": "",
+    "skipped_pkgs": "",
+    "skipped_text": "",
+    "preflight": "",
+    "verify_msg": "",
+    "profile": "basic",
+    "pkgs": "reflector"
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "shell": "pacman -Si reflector 2>/dev/null | awk '/^Download Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+    },
+    "installed_mb": {
+      "label": "Installed size",
+      "shell": "pacman -Si reflector 2>/dev/null | awk '/^Installed Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+    },
+    "extracted_mb": 20,
+    "note": "Sizes are read from your package database. Packages you already have are skipped."
+  },
+  "icon": [
+    {
+      "file": "fast-mirrors-id-1.svg"
+    }
+  ],
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Faster mirrors",
+      "tone": "info",
+      "message": [
+        "Slow downloads or failed updates are often a mirror problem.",
+        "",
+        "This installs reflector, backs up /etc/pacman.d/mirrorlist and replaces it with the 20 most recently synchronised HTTPS mirrors, sorted by speed.",
+        "It needs a working internet connection and takes about a minute. Run it again any time to refresh."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "shell": [
+          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
+          "for t in pkexec pacman; do",
+          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
+          "done",
+          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
+          "echo \"\""
+        ]
+      },
+      "capture": "preflight",
+      "on_success": "preflight_gate",
+      "on_failure": "error_generic"
+    },
+    "preflight_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "find_missing"
+    },
+    "problem": {
+      "type": "dialog",
+      "title": "Cannot continue",
+      "tone": "error",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "find_missing": {
+      "type": "check",
+      "command": {
+        "label": "Looking at what is already installed…",
+        "timeout_secs": 60,
+        "shell": [
+          "out=\"\"",
+          "for p in $TUX_VAR_PKGS; do",
+          "  pacman -Si \"$p\" >/dev/null 2>&1 || continue      # not in your repositories: handled below",
+          "  pacman -Qq \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
+          "done",
+          "printf '%s\\n' $out"
+        ]
+      },
+      "capture": "new_pkgs",
+      "on_success": "find_skipped",
+      "on_failure": "error_generic"
+    },
+    "find_skipped": {
+      "type": "check",
+      "command": {
+        "label": "Checking the repositories…",
+        "timeout_secs": 60,
+        "shell": [
+          "out=\"\"",
+          "for p in $TUX_VAR_PKGS; do",
+          "  pacman -Si \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
+          "done",
+          "printf '%s\\n' $out"
+        ]
+      },
+      "capture": "skipped_pkgs",
+      "on_success": "missing_gate",
+      "on_failure": "error_generic"
+    },
+    "missing_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "skipped_pkgs",
+            "ne": ""
+          },
+          "goto": "skipped_line"
+        }
+      ],
+      "default": "confirm"
+    },
+    "skipped_line": {
+      "type": "set",
+      "vars": {
+        "skipped_text": "Not in your repositories (skipped): ${skipped_pkgs}"
+      },
+      "next": "confirm"
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to install",
+      "tone": "info",
+      "message": [
+        "This will be installed:",
+        "${new_pkgs}",
+        "",
+        "${skipped_text}",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "Back",
+          "goto": "welcome"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "install": {
+      "type": "run",
+      "title": "Setting up: Faster mirrors",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing packages",
+          "root": true,
+          "weight": 10,
+          "expected_secs": 60,
+          "percent": 70,
+          "shell": [
+            "set -e",
+            "[ -z \"$TUX_VAR_NEW_PKGS\" ] || pacman -S --needed --noconfirm $TUX_VAR_NEW_PKGS"
+          ]
+        },
+        {
+          "label": "Ranking mirrors (this takes a while)",
+          "root": true,
+          "expected_secs": 60,
+          "percent": 95,
+          "shell": [
+            "set -e",
+            "[ -e /etc/pacman.d/mirrorlist.tux-backup ] || cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.tux-backup",
+            "reflector --latest 20 --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
+          ]
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Checking the result…",
+        "timeout_secs": 60,
+        "shell": [
+          "bad=\"\"",
+          "for p in $TUX_VAR_NEW_PKGS; do",
+          "  pacman -Qq \"$p\" >/dev/null 2>&1 || bad=\"$bad $p\"",
+          "done",
+          "[ -z \"$bad\" ] || { echo \"Not installed:$bad\"; exit 1; }",
+          "echo ok"
+        ]
+      },
+      "capture": "verify_msg",
+      "on_success": "record_install",
+      "on_failure": "install_failed"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_profile": "${profile}"
+      },
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "title": "Mirrors updated",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": [
+        "Your mirrorlist now holds the fastest recent mirrors.",
+        "The previous list is saved as /etc/pacman.d/mirrorlist.tux-backup."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "Installation failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "${verify_msg}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "Something went wrong",
+      "tone": "error",
+      "message": "The system check could not run. Please try again.",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "branch",
+      "cases": [],
+      "default": "un_confirm"
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove Faster mirrors?",
+      "tone": "warning",
+      "message": [
+        "Your original mirror list will be restored (if this add-on saved one), and reflector will be removed if this add-on installed it.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "shell": [
+          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
+          "for t in pkexec pacman; do",
+          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
+          "done",
+          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
+          "echo \"\""
+        ]
+      },
+      "capture": "preflight",
+      "on_success": "un_gate",
+      "on_failure": "error_generic"
+    },
+    "un_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Faster mirrors…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Restoring your old mirror list",
+          "root": true,
+          "expected_secs": 5,
+          "percent": 30,
+          "shell": [
+            "if [ -e /etc/pacman.d/mirrorlist.tux-backup ]; then mv -f /etc/pacman.d/mirrorlist.tux-backup /etc/pacman.d/mirrorlist && echo \"restored\"; fi",
+            "exit 0"
+          ]
+        },
+        {
+          "label": "Removing the codec packages",
+          "root": true,
+          "expected_secs": 20,
+          "percent": 95,
+          "shell": [
+            "# Two passes: a package may only become removable after another one is gone.",
+            "for pass in 1 2; do",
+            "  for p in $TUX_VAR_RECORDED_PACKAGES; do",
+            "    pacman -Qq \"$p\" >/dev/null 2>&1 || continue",
+            "    pacman -Rns --noconfirm \"$p\" >/dev/null 2>&1 && echo \"removed $p\"",
+            "  done",
+            "done",
+            "exit 0"
+          ]
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Codecs removed",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": "The packages this add-on installed were removed. Packages that other software needs were kept."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Removal failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    }
+  }
+}
