@@ -104,6 +104,16 @@ pub fn user_screenshots_dir() -> PathBuf {
     config_dir().join("screenshots")
 }
 
+/// Remote image links shipped with the store (`<data>/images/remote_images.json`).
+pub fn system_remote_images_file() -> PathBuf {
+    data_dir().join("images/remote_images.json")
+}
+
+/// The user's own remote image links (`~/.config/tux-store/remote_images.json`).
+pub fn user_remote_images_file() -> PathBuf {
+    config_dir().join("remote_images.json")
+}
+
 /// Packages to hide: shipped list and the user's own list.
 pub fn hidden_packages_files() -> Vec<PathBuf> {
     vec![data_dir().join("hidden_packages.json"), config_dir().join("hidden_packages.json")]
