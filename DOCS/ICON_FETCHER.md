@@ -72,3 +72,16 @@ No Qt, no per-file index: the `…/apps` directories of the chosen themes are co
 ## Debugging
 
 `TUX_LOG=debug` prints the detected icon theme and the number of indexed directories; failed cache writes are warnings.
+
+## Remote icon and cover links (0.10.0)
+
+`data/images/remote_images.json` (shipped) and `~/.config/tux-store/remote_images.json` (yours; wins per package):
+
+```json
+{ "images": { "gcc": { "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/gcc/gcc-original.svg" },
+              "alacritty": { "icon": "https://…/Alacritty.svg", "covers": ["https://…/shot.png"] } } }
+```
+
+Each entry may also have `"theme": ["icon-name", …]` (looked up in your icon theme) and `"file": "icon.svg"` (only the file name: the picture sits **next to the JSON** that names it, otherwise it is looked up in `data/images/icons/`). Sources are tried theme → file → link.
+
+Order for icons: add-on script declaration → exact bundled icon → your icon theme (exact package name when a link is declared) → files shipped in `data/images/icons` → hicolor/pixmaps → earlier download → **the declared link**. Only `https://` links on trusted hosts are used; PNG, SVG and JPEG are accepted. Covers: a local `data/images/cover/<name>/` folder always wins; remote covers are cached in `~/.cache/tux-store/covers/<name>/`. Wrong or unreachable links are skipped and logged; a link that returns 404 is not retried for 7 days.
