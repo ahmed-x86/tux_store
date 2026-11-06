@@ -21,6 +21,7 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
+use tux_abi::remote::{RemoteEntry, RemoteMap};
 use tux_abi::paths;
 use tux_abi::script::{is_valid_icon_file_name, IconSource};
 
@@ -61,6 +62,8 @@ pub struct Resolver {
     theme: Mutex<Option<Arc<ThemeDirs>>>,
     warned_curl: AtomicBool,
     script_icons: Mutex<Option<Arc<Vec<ScriptIcon>>>>,
+    /// Remote icon links (`remote_images.json`), read once and again after a cache clear.
+    remote: Mutex<Option<Arc<RemoteMap>>>,
 }
 
 impl Resolver {
@@ -80,6 +83,7 @@ impl Resolver {
             theme: Mutex::new(None),
             warned_curl: AtomicBool::new(false),
             script_icons: Mutex::new(None),
+            remote: Mutex::new(None),
         }
     }
 
@@ -94,8 +98,14 @@ impl Resolver {
         g.get_or_insert_with(|| Arc::new(ThemeDirs::discover())).clone()
     }
 
+    /// What `remote_images.json` declares for this package's icon (theme names, file, link), if anything.
+    fn declared_icon(&self, name: &str) -> Option<RemoteEntry> {
+        let map = tux_abi::sync::lock(&self.remote).get_or_insert_with(|| Arc::new(tux_abi::remote::load())).clone();
+        map.get(name).filter(|e| e.has_icon_source()).cloned()
+    }
+
     fn cached(&self, name: &str) -> Option<PathBuf> {
-        ["svg", "png"]
+        ["svg", "png", "jpg"]
             .iter()
             .map(|e| self.cache_dir.join(format!("{name}.{e}")))
             .find(|p| p.is_file())
@@ -196,7 +206,11 @@ impl Resolver {
     }
 
     pub fn resolve_offline(&self, name: &str) -> Offline {
-        let cands = candidates(name);
+        // A remote link says "this is the icon of exactly this package", so the
+        // shortened guesses (`base-devel` → `base`, the LibreOffice icon) are not tried.
+        let declared = self.declared_icon(name);
+        let has_url = declared.as_ref().is_some_and(|e| e.icon.is_some());
+        let cands = if declared.is_some() { vec![name.to_string()] } else { candidates(name) };
 
         // 00. an add-on package says in its JSON where its icon comes from:
         //     file next to the JSON, icon theme, or a link — tried in that order.
@@ -237,6 +251,22 @@ impl Resolver {
         if let Some(p) = theme.find_primary(&cands) {
             return Offline::Hit(p);
         }
+        // 1b. Plan B names from `remote_images.json`: the theme's own name for the
+        //     icon (e.g. `onlyoffice-desktopeditors`), then a file shipped with the store.
+        if let Some(e) = &declared {
+            if !e.theme.is_empty() {
+                if let Some(p) = theme.find_primary(&e.theme).or_else(|| theme.find_fallback(&e.theme)) {
+                    return Offline::Hit(p);
+                }
+            }
+            if let Some(f) = &e.file {
+                // next to the JSON that declared it first, then `data/images/icons/`
+                let beside = e.dir.as_ref().map(|d| d.join(f));
+                if let Some(p) = beside.into_iter().chain([self.local_root.join(f)]).find(|p| p.is_file()) {
+                    return Offline::Hit(p);
+                }
+            }
+        }
         // 2. icons shipped with the store (apps most themes lack)
         for c in &cands {
             if let Some(p) = self.bundled(c) {
@@ -251,6 +281,10 @@ impl Resolver {
         if let Some(p) = self.cached(name) {
             return Offline::Hit(p);
         }
+        // 5. a declared link is always worth one try, even after an old "not found"
+        if has_url {
+            return Offline::Miss;
+        }
         if self.is_known_missing(name) {
             Offline::KnownMissing
         } else {
@@ -264,7 +298,8 @@ impl Resolver {
         let declared = self
             .script_icon(name)
             .and_then(|(_, sources)| sources.into_iter().find_map(|s| s.url))
-            .filter(|u| tux_abi::script::is_valid_icon_url(u));
+            .filter(|u| tux_abi::script::is_valid_icon_url(u))
+            .or_else(|| self.declared_icon(name).and_then(|e| e.icon).filter(|u| tux_abi::remote::is_trusted_image_url(u)));
         let result = match declared {
             Some(url) => self.download_url(&url),
             None => {
@@ -274,7 +309,13 @@ impl Resolver {
         };
         match result {
             Download::Ok(bytes) => {
-                let ext = if bytes.starts_with(b"\x89PNG") { "png" } else { "svg" };
+                let ext = if bytes.starts_with(b"\x89PNG") {
+                    "png"
+                } else if bytes.starts_with(&[0xFF, 0xD8, 0xFF]) {
+                    "jpg"
+                } else {
+                    "svg"
+                };
                 let path = self.cache_dir.join(format!("{name}.{ext}"));
                 let tmp = self.cache_dir.join(format!("{name}.{ext}.tmp"));
                 let _ = fs::create_dir_all(&self.cache_dir);
@@ -353,6 +394,7 @@ impl Resolver {
         let _ = fs::create_dir_all(&self.cache_dir);
         *tux_abi::sync::lock(&self.theme) = None;
         *tux_abi::sync::lock(&self.script_icons) = None;
+        *tux_abi::sync::lock(&self.remote) = None;
         removed
     }
 }
@@ -428,7 +470,7 @@ pub fn is_valid_image(bytes: &[u8]) -> bool {
     if bytes.len() < 8 {
         return false;
     }
-    if bytes.starts_with(b"\x89PNG") {
+    if bytes.starts_with(b"\x89PNG") || bytes.starts_with(&[0xFF, 0xD8, 0xFF]) {
         return true;
     }
     let head = String::from_utf8_lossy(&bytes[..bytes.len().min(512)]).to_lowercase();
@@ -457,9 +499,86 @@ mod tests {
             theme: Mutex::new(None),
             warned_curl: AtomicBool::new(false),
             script_icons: Mutex::new(None),
+            remote: Mutex::new(None),
         };
         assert_eq!(r.exact_bundled("libreoffice-fresh-ar"), Some(dir.join("libreoffice-fresh-ar.svg")));
         assert_eq!(r.exact_bundled("libreoffice-fresh-xx"), None);
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn declared_remote_link_overrides_old_not_found() {
+        let base = std::env::temp_dir().join(format!("tux-remote-test-{}", std::process::id()));
+        fs::create_dir_all(base.join("icons")).unwrap();
+        let mut map = RemoteMap::new();
+        map.insert(
+            "zz-remote-test".into(),
+            RemoteEntry { icon: Some("https://raw.githubusercontent.com/a/b/c.svg".into()), ..Default::default() },
+        );
+        let r = Resolver {
+            cache_root: base.clone(),
+            cache_dir: base.join("icons"),
+            local_root: base.clone(),
+            custom: vec![],
+            theme: Mutex::new(None),
+            warned_curl: AtomicBool::new(false),
+            script_icons: Mutex::new(None),
+            remote: Mutex::new(Some(Arc::new(map))),
+        };
+        // an old "not found" verdict (e.g. from the Papirus guess) is ignored …
+        fs::write(r.negative_marker("zz-remote-test"), b"").unwrap();
+        assert!(matches!(r.resolve_offline("zz-remote-test"), Offline::Miss));
+        // … but still honoured for packages without a declared link
+        fs::write(r.negative_marker("zz-other-test"), b"").unwrap();
+        assert!(matches!(r.resolve_offline("zz-other-test"), Offline::KnownMissing));
+        // once downloaded, the cached file is used
+        fs::write(base.join("icons/zz-remote-test.svg"), b"<svg/>").unwrap();
+        assert!(matches!(r.resolve_offline("zz-remote-test"), Offline::Hit(_)));
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn declared_file_is_found_without_network() {
+        let base = std::env::temp_dir().join(format!("tux-remote-file-{}", std::process::id()));
+        fs::create_dir_all(base.join("sub")).unwrap();
+        fs::write(base.join("sub/zz.svg"), b"<svg/>").unwrap();
+        let mut map = RemoteMap::new();
+        map.insert("zz-file-test".into(), RemoteEntry { file: Some("sub/zz.svg".into()), theme: vec!["zz-no-such-theme-icon".into()], ..Default::default() });
+        let r = Resolver {
+            cache_root: base.clone(),
+            cache_dir: base.join("icons"),
+            local_root: base.clone(),
+            custom: vec![],
+            theme: Mutex::new(None),
+            warned_curl: AtomicBool::new(false),
+            script_icons: Mutex::new(None),
+            remote: Mutex::new(Some(Arc::new(map))),
+        };
+        assert!(matches!(r.resolve_offline("zz-file-test"), Offline::Hit(p) if p.ends_with("sub/zz.svg")));
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn declared_file_beside_the_json_wins_over_icons_dir() {
+        let base = std::env::temp_dir().join(format!("tux-remote-beside-{}", std::process::id()));
+        let (beside, icons) = (base.join("images"), base.join("icons"));
+        fs::create_dir_all(&beside).unwrap();
+        fs::create_dir_all(&icons).unwrap();
+        fs::write(beside.join("zz.svg"), b"<svg/>").unwrap();
+        fs::write(icons.join("zz.svg"), b"<svg/>").unwrap();
+        let mut map = RemoteMap::new();
+        map.insert("zz-beside".into(), RemoteEntry { file: Some("zz.svg".into()), dir: Some(beside.clone()), ..Default::default() });
+        let r = Resolver {
+            cache_root: base.clone(),
+            cache_dir: base.join("cache"),
+            local_root: icons,
+            custom: vec![],
+            theme: Mutex::new(None),
+            warned_curl: AtomicBool::new(false),
+            script_icons: Mutex::new(None),
+            remote: Mutex::new(Some(Arc::new(map))),
+        };
+        assert!(matches!(r.resolve_offline("zz-beside"), Offline::Hit(p) if p.starts_with(&beside)));
         let _ = fs::remove_dir_all(&base);
     }
 
@@ -499,6 +618,7 @@ mod tests {
     fn sniffing() {
         assert!(is_valid_image(b"<svg xmlns='x'></svg>"));
         assert!(is_valid_image(b"\x89PNG\r\n\x1a\n...."));
+        assert!(is_valid_image(b"\xFF\xD8\xFF\xE0\x00\x10JFIF"));
         assert!(!is_valid_image(b"<!DOCTYPE html><html></html>"));
         assert!(!is_valid_image(b"404: Not Found"));
     }
