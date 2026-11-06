@@ -270,3 +270,13 @@ Uses the store's own loader, so *valid* here means the store will load it. On a 
 5. Every failure path ends in a `dialog` with `"tone": "error"` and a `Close` button.
 6. Run it: `TUX_LOG=debug ./target/debug/tux-store`, open the page, install, uninstall, check `~/.local/share/tux-store/addons/`.
 7. The shipped files are good templates: `multimedia-codecs-id-1.json` (a choice, "only what is missing" detection, record of just the new packages, safe per-package uninstall), `hello-test-id-2.json` (all step types), `gemini-code-1793716015029.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).
+
+## Screenshots (0.10.0)
+
+Optional top-level key, shown as the Screenshots slider on the script's page:
+
+```json
+"screenshots": [ { "file": "my-script-id-1.png" }, { "url": "https://raw.githubusercontent.com/me/repo/main/2.png" } ]
+```
+
+Each item has exactly one of `file` (bare `.png`/`.jpg`/`.jpeg` name next to the JSON) or `url` (`https://` on a trusted host). Max 12, order kept. Details: `SCREENSHOTS.md`. Stores older than 0.10.0 reject the key, as with every unknown key.
