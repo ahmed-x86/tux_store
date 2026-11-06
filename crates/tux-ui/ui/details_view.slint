@@ -647,7 +647,7 @@ export component DetailsView inherits Rectangle {
                 }
 
                 // ---- Screenshots (slider with arrows, like Google Play) ----
-                if !root.is-script && root.screenshots.length > 0 : VerticalLayout {
+                if root.screenshots.length > 0 : VerticalLayout {
                     spacing: 14px;
                     Text { text: "Screenshots"; color: Theme.text; font-size: 18px; font-weight: 700; }
                     ScreenshotGallery {
