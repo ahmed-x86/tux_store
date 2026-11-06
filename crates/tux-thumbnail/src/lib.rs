@@ -9,6 +9,7 @@
 //! "local" thread (cache / bundled / theme), and only true misses go to a pool
 //! of network workers — so a slow GitHub never delays a local icon.
 
+mod covers;
 mod names;
 mod resolver;
 mod screenshots;
@@ -23,7 +24,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use tux_abi::sync::lock;
 use tux_abi::text::is_valid_package_name;
-use tux_abi::{paths, Bus, Cover, Message, Module};
+use tux_abi::{paths, Bus, Message, Module};
 
 const NET_WORKERS: usize = 8;
 
@@ -117,7 +118,7 @@ impl Module for ThumbnailModule {
             Message::CoversRequested => {
                 let bus = self.bus;
                 spawn_named("thumb-covers".into(), move || {
-                    bus.publish(&Message::CoversReady { covers: scan_covers() });
+                    covers::serve(&bus);
                 });
             }
             Message::ScreenshotsRequested { name } => {
@@ -137,37 +138,6 @@ impl Module for ThumbnailModule {
             _ => {}
         }
     }
-}
-
-/// `data/images/cover/<app>/*.{png,jpg,jpeg}` → one [`Cover`] per app, sorted.
-fn scan_covers() -> Vec<Cover> {
-    let root = paths::data_dir().join("images/cover");
-    let mut covers: Vec<Cover> = Vec::new();
-    let Ok(rd) = fs::read_dir(&root) else {
-        return covers;
-    };
-    for dir in rd.flatten().filter(|d| d.path().is_dir()) {
-        let mut images: Vec<String> = fs::read_dir(dir.path())
-            .map(|rd| {
-                rd.flatten()
-                    .map(|e| e.path())
-                    .filter(|p| {
-                        p.extension()
-                            .and_then(|e| e.to_str())
-                            .is_some_and(|e| matches!(e.to_ascii_lowercase().as_str(), "png" | "jpg" | "jpeg"))
-                    })
-                    .map(|p| p.to_string_lossy().into_owned())
-                    .collect()
-            })
-            .unwrap_or_default();
-        if images.is_empty() {
-            continue;
-        }
-        images.sort();
-        covers.push(Cover { name: dir.file_name().to_string_lossy().into_owned(), images });
-    }
-    covers.sort_by(|a, b| a.name.cmp(&b.name));
-    covers
 }
 
 tux_abi::export_module!(ThumbnailModule, "thumbnail");
