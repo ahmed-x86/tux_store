@@ -40,3 +40,4 @@ In-depth documentation for contributors. If you are new to the codebase, read in
 - **Read the local database directly.** The installed set comes from `/var/lib/pacman/local`, not from spawning `pacman -Q`.
 - **Defensive by default.** Package names are allow-listed and passed after `--`; every external process has a timeout; every module entry point is wrapped in `catch_unwind`.
 - **Plain data across the Rust/Slint boundary.** The UI works with Slint-generated `Ui*` structs; strings are pre-formatted and ratios pre-computed in Rust.
+ 
