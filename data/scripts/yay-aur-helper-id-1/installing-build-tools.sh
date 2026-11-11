@@ -1,0 +1,3 @@
+#!/bin/bash
+set -e
+pacman -S --needed --noconfirm base-devel git
