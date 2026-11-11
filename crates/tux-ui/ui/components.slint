@@ -1069,6 +1069,9 @@ component ScriptOptionCard inherits Rectangle {
     in property <string> label;
     in property <string> hint;
     in property <bool> selected;
+    in property <bool> multi;
+    in property <bool> has-icon;
+    in property <image> icon;
     in property <color> accent;
     callback clicked();
 
@@ -1089,8 +1092,8 @@ component ScriptOptionCard inherits Rectangle {
         spacing: 14px;
         VerticalLayout {
             alignment: start;
-            // radio dot
-            Rectangle {
+            // radio dot (one choice)
+            if !root.multi : Rectangle {
                 width: 20px;
                 height: 20px;
                 border-radius: 10px;
@@ -1103,6 +1106,42 @@ component ScriptOptionCard inherits Rectangle {
                     height: 8px;
                     border-radius: 4px;
                     background: root.selected ? root.accent : transparent;
+                }
+            }
+            // check box (any number)
+            if root.multi : Rectangle {
+                width: 20px;
+                height: 20px;
+                border-radius: 6px;
+                border-width: 2px;
+                border-color: root.selected ? root.accent : Theme.overlay0;
+                background: root.selected ? root.accent : transparent;
+                animate background { duration: 120ms; }
+                if root.selected : Image {
+                    source: @image-url("check.svg");
+                    width: 14px;
+                    height: 14px;
+                    x: 1px;
+                    y: 1px;
+                    colorize: Theme.crust;
+                }
+            }
+        }
+        // small picture of the option
+        if root.has-icon : VerticalLayout {
+            alignment: start;
+            Rectangle {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                background: Theme.mantle;
+                Image {
+                    source: root.icon;
+                    x: 4px;
+                    y: 4px;
+                    width: parent.width - 8px;
+                    height: parent.height - 8px;
+                    image-fit: contain;
                 }
             }
         }
@@ -1122,6 +1161,8 @@ export component ScriptDialog inherits Rectangle {
     in property <string> progress-label;
     in property <bool> has-output;
     in-out property <int> selected: -1;
+    in property <int> checked-count;
+    callback option-toggled(int);
     callback button-clicked(int);
     callback details-clicked();
     callback minimize-clicked();
@@ -1182,9 +1223,14 @@ export component ScriptDialog inherits Rectangle {
                         for opt[i] in root.view.options : ScriptOptionCard {
                             label: opt.label;
                             hint: opt.hint;
-                            selected: root.selected == i;
+                            multi: root.view.multi;
+                            has-icon: opt.has-icon;
+                            icon: opt.icon;
+                            selected: root.view.multi ? opt.checked : root.selected == i;
                             accent: root.tone-color;
-                            clicked => { root.selected = i; }
+                            clicked => {
+                                if root.view.multi { root.option-toggled(i); } else { root.selected = i; }
+                            }
                         }
 
                         if root.view.busy : VerticalLayout {
@@ -1238,7 +1284,8 @@ export component ScriptDialog inherits Rectangle {
                     text: b.label;
                     primary: b.style == 0 || b.style == 2;
                     accent: b.style == 2 ? Theme.red : Theme.blue;
-                    enabled: !b.needs-selection || root.selected >= 0;
+                    enabled: !b.needs-selection
+                        || (root.view.multi ? root.checked-count >= root.view.min-select : root.selected >= 0);
                     clicked => { root.button-clicked(i); }
                 }
             }
