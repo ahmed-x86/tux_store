@@ -142,17 +142,26 @@ impl Resolver {
     fn script_icon_table(&self) -> Arc<Vec<ScriptIcon>> {
         let mut g = tux_abi::sync::lock(&self.script_icons);
         g.get_or_insert_with(|| {
-            let list = tux_abi::script::load_all()
-                .into_iter()
-                .filter_map(|l| {
-                    let icon = l.script.icon.as_ref()?;
-                    Some(ScriptIcon {
+            let mut list = Vec::new();
+            for l in tux_abi::script::load_all() {
+                let Some(dir) = l.path.parent().map(Path::to_path_buf) else { continue };
+                // the add-on's own icon is asked for by its id…
+                if let Some(icon) = l.script.icon.as_ref() {
+                    list.push(ScriptIcon {
                         id: l.script.id.clone(),
-                        dir: l.path.parent()?.to_path_buf(),
+                        dir: dir.clone(),
                         sources: icon.sources().into_iter().cloned().collect(),
-                    })
-                })
-                .collect();
+                    });
+                }
+                // …and the pictures of its choice options by their keys
+                // (`<id>.opt-<hash>`, see `tux_abi::script::option_icon_key`).
+                // Two options with the same picture share one entry.
+                for (key, _step, _idx, icon) in l.script.option_icons() {
+                    if !list.iter().any(|s| s.id == key) {
+                        list.push(ScriptIcon { id: key, dir: dir.clone(), sources: icon.sources().into_iter().cloned().collect() });
+                    }
+                }
+            }
             Arc::new(list)
         })
         .clone()
@@ -234,6 +243,12 @@ impl Resolver {
             }
             if wants_download && !self.is_known_missing(name) {
                 return Offline::Miss; // the network stage fetches the link
+            }
+            // A choice option's picture is exactly what its JSON says: when none of
+            // the sources works there is nothing to guess (no Papirus lookup by a
+            // made-up name).
+            if name.contains(".opt-") {
+                return Offline::KnownMissing;
             }
         }
 
