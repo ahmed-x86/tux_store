@@ -178,6 +178,13 @@ pub struct ScriptValues {
 pub struct ScriptOptionView {
     pub label: String,
     pub hint: String,
+    /// Key to ask the thumbnail module for this option's picture
+    /// (`IconRequested { name: icon }`); empty = the option has no picture.
+    #[serde(default)]
+    pub icon: String,
+    /// Ticked from the start (only used by `multiple` choices).
+    #[serde(default)]
+    pub checked: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -201,6 +208,13 @@ pub struct ScriptViewData {
     pub tone: Tone,
     pub options: Vec<ScriptOptionView>,
     pub preselected: Option<usize>,
+    /// The options are check boxes (any number can be ticked) instead of
+    /// radio buttons (exactly one).
+    #[serde(default)]
+    pub multi: bool,
+    /// For `multi`: how many options must be ticked before "Continue" works.
+    #[serde(default)]
+    pub min_select: u32,
     pub buttons: Vec<ScriptButtonView>,
     /// A command is running: no buttons, progress bar instead.
     pub busy: bool,
@@ -243,8 +257,15 @@ pub enum Message {
     ScriptUninstallRequested { id: String },
     /// Start the interactive script with this id.
     ScriptStartRequested { id: String },
-    /// A button was pressed on screen `seq` (`selected` = chosen option).
-    ScriptAction { seq: u64, button: usize, selected: Option<usize> },
+    /// A button was pressed on screen `seq` (`selected` = the chosen option of
+    /// a radio list, `checked` = the ticked options of a check-box list).
+    ScriptAction {
+        seq: u64,
+        button: usize,
+        selected: Option<usize>,
+        #[serde(default)]
+        checked: Vec<usize>,
+    },
 
     // ── answers (backends → UI) ──
     HomeReady { sections: Vec<Section> },
