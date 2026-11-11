@@ -126,6 +126,9 @@ fn wire(ui: &MainWindow) {
     ui.on_script_button_clicked(|i| {
         with_state(|st| st.script_button(usize::try_from(i).unwrap_or(usize::MAX)));
     });
+    ui.on_script_option_toggled(|i| {
+        with_state(|st| st.script_option_toggled(usize::try_from(i).unwrap_or(usize::MAX)));
+    });
     ui.on_back_clicked(|| {
         with_state(|st| st.back());
     });
