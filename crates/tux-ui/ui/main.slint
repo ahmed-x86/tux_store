@@ -68,6 +68,7 @@ export component MainWindow inherits Window {
     in property <UiScriptView> script-view;
     in property <UiScriptInfo> current-script-info;
     in-out property <int> script-selected: -1;
+    in property <int> script-checked-count;
     in property <float> script-progress;
     in property <string> script-progress-label;
     in property <bool> script-has-output;
@@ -100,6 +101,7 @@ export component MainWindow inherits Window {
     callback theme-changed(bool);
     callback clear-icon-cache();
     callback script-button-clicked(int);
+    callback script-option-toggled(int);
     callback run-script-clicked();
     callback uninstall-script-clicked();
     callback eval-script-clicked();
@@ -355,6 +357,8 @@ export component MainWindow inherits Window {
         progress-label: root.script-progress-label;
         has-output: root.script-has-output;
         selected <=> root.script-selected;
+        checked-count: root.script-checked-count;
+        option-toggled(i) => { root.script-option-toggled(i); }
         button-clicked(i) => { root.script-button-clicked(i); }
         details-clicked => { root.show-console = true; }
         minimize-clicked => { root.script-minimized = true; }
