@@ -20,7 +20,7 @@
     "خط",
     "خطوط",
     "الخطوط",
-    "اسطوانة"
+    "خط عربي"
   ],
   "show_on_home": false,
   "vars": {
@@ -35,11 +35,11 @@
   "info": {
     "download_mb": {
       "label": "Download size",
-      "shell": "pacman -Si ttf-dejavu ttf-liberation noto-fonts noto-fonts-emoji 2>/dev/null | awk '/^Download Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      "script": "download-size.sh"
     },
     "installed_mb": {
       "label": "Installed size",
-      "shell": "pacman -Si ttf-dejavu ttf-liberation noto-fonts noto-fonts-emoji 2>/dev/null | awk '/^Installed Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      "script": "installed-size.sh"
     },
     "extracted_mb": 20,
     "note": "Sizes are read from your package database. Packages you already have are skipped."
@@ -124,14 +124,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
-          "for t in pkexec pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system.sh"
       },
       "capture": "preflight",
       "on_success": "preflight_gate",
@@ -167,14 +160,7 @@
       "command": {
         "label": "Looking at what is already installed…",
         "timeout_secs": 60,
-        "shell": [
-          "out=\"\"",
-          "for p in $TUX_VAR_PKGS; do",
-          "  pacman -Si \"$p\" >/dev/null 2>&1 || continue      # not in your repositories: handled below",
-          "  pacman -Qq \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
-          "done",
-          "printf '%s\\n' $out"
-        ]
+        "script": "looking-at-what-is-already-installed.sh"
       },
       "capture": "new_pkgs",
       "on_success": "find_skipped",
@@ -185,13 +171,7 @@
       "command": {
         "label": "Checking the repositories…",
         "timeout_secs": 60,
-        "shell": [
-          "out=\"\"",
-          "for p in $TUX_VAR_PKGS; do",
-          "  pacman -Si \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
-          "done",
-          "printf '%s\\n' $out"
-        ]
+        "script": "checking-the-repositories.sh"
       },
       "capture": "skipped_pkgs",
       "on_success": "missing_gate",
@@ -230,10 +210,7 @@
       "success": true,
       "mark": "installed",
       "button": "Close",
-      "message": [
-        "Everything in this set is already on your system, so nothing was changed.",
-        "If a video still does not play, restart the application."
-      ]
+      "message": "Everything in this set is already installed, so nothing was changed."
     },
     "confirm": {
       "type": "dialog",
@@ -274,10 +251,7 @@
           "weight": 10,
           "expected_secs": 60,
           "percent": 90,
-          "shell": [
-            "set -e",
-            "[ -z \"$TUX_VAR_NEW_PKGS\" ] || pacman -S --needed --noconfirm $TUX_VAR_NEW_PKGS"
-          ]
+          "script": "installing-packages.sh"
         }
       ],
       "on_success": "verify",
@@ -288,14 +262,7 @@
       "command": {
         "label": "Checking the result…",
         "timeout_secs": 60,
-        "shell": [
-          "bad=\"\"",
-          "for p in $TUX_VAR_NEW_PKGS; do",
-          "  pacman -Qq \"$p\" >/dev/null 2>&1 || bad=\"$bad $p\"",
-          "done",
-          "[ -z \"$bad\" ] || { echo \"Not installed:$bad\"; exit 1; }",
-          "echo ok"
-        ]
+        "script": "checking-the-result.sh"
       },
       "capture": "verify_msg",
       "on_success": "record_install",
@@ -371,7 +338,7 @@
       "mark": "uninstalled",
       "button": "Close",
       "message": [
-        "These codecs were already on your system before, so Tux Store keeps them.",
+        "These fonts were already on your system before this add-on, so Tux Store keeps them.",
         "This add-on is now marked as not installed."
       ]
     },
@@ -403,14 +370,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
-          "for t in pkexec pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system-2.sh"
       },
       "capture": "preflight",
       "on_success": "un_gate",
@@ -435,20 +395,11 @@
       "message": "Please don't turn off the computer until I'm finished.",
       "commands": [
         {
-          "label": "Removing the codec packages",
+          "label": "Removing the fonts",
           "root": true,
           "expected_secs": 20,
           "percent": 95,
-          "shell": [
-            "# Two passes: a package may only become removable after another one is gone.",
-            "for pass in 1 2; do",
-            "  for p in $TUX_VAR_RECORDED_PACKAGES; do",
-            "    pacman -Qq \"$p\" >/dev/null 2>&1 || continue",
-            "    if pacman -Rns --noconfirm \"$p\" >/dev/null 2>&1; then echo \"removed $p\"; elif [ \"$pass\" = 2 ]; then echo \"kept $p (other software needs it)\"; fi",
-            "  done",
-            "done",
-            "exit 0"
-          ]
+          "script": "removing-the-fonts.sh"
         }
       ],
       "on_success": "un_done",
@@ -456,11 +407,11 @@
     },
     "un_done": {
       "type": "finish",
-      "title": "Codecs removed",
+      "title": "Fonts removed",
       "success": true,
       "mark": "uninstalled",
       "button": "Close",
-      "message": "The packages this add-on installed were removed. Packages that other software needs were kept."
+      "message": "The fonts this add-on installed were removed. Fonts that other software needs were kept."
     },
     "un_failed": {
       "type": "dialog",
