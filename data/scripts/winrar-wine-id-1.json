@@ -5,12 +5,7 @@
   "description": "Downloads the official WinRAR installer from rarlab.com and installs it silently inside Wine. Can be removed again with WinRAR's own uninstaller or the Wine uninstaller window.",
   "version": {
     "label": "Latest WinRAR version",
-    "shell": [
-      "code=$(curl -fsL --max-time 15 https://www.rarlab.com/download.htm 2>/dev/null | grep -o 'winrar-x64-[0-9]*\\.exe' | head -n 1 | sed 's/^winrar-x64-//; s/\\.exe$//')",
-      "case \"$code\" in ''|*[!0-9]*) echo unknown; exit 0 ;; esac",
-      "a=${code%??}",
-      "printf '%s.%s\\n' \"$a\" \"${code#\"$a\"}\""
-    ]
+    "script": "latest-winrar-version.sh"
   },
   "author": "Tux Store",
   "keywords": [
@@ -83,18 +78,7 @@
       "command": {
         "label": "Checking your system…",
         "timeout_secs": 30,
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Wine must run as a normal user, so start Tux Store without sudo.\"; exit 0; }",
-          "for t in wine curl; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing. Install it first (for Wine: the 'wine' package).\"; exit 0; }",
-          "done",
-          "p=\"${WINEPREFIX:-$HOME/.wine}\"",
-          "if [ -f \"$p/system.reg\" ] && head -n 5 \"$p/system.reg\" | grep -q '^#arch=win32'; then",
-          "  echo \"Your Wine prefix ($p) is 32-bit, but WinRAR 64-bit needs a 64-bit prefix. Use another prefix (WINEPREFIX=...) or recreate this one.\"; exit 0",
-          "fi",
-          "curl -fsI --max-time 10 https://www.rarlab.com >/dev/null 2>&1 || { echo \"No internet connection (www.rarlab.com is unreachable).\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system.sh"
       },
       "capture": "preflight_err",
       "on_success": "preflight_gate",
@@ -130,7 +114,7 @@
       "type": "check",
       "command": {
         "label": "Looking for your Wine prefix…",
-        "shell": "printf '%s\\n' \"${WINEPREFIX:-$HOME/.wine}\""
+        "script": "looking-for-your-wine-prefix.sh"
       },
       "capture": "wine_prefix",
       "on_success": "find_version",
@@ -141,12 +125,7 @@
       "command": {
         "label": "Looking for the latest WinRAR version…",
         "timeout_secs": 30,
-        "shell": [
-          "code=$(curl -fsL --max-time 20 https://www.rarlab.com/download.htm 2>/dev/null | grep -o 'winrar-x64-[0-9]*\\.exe' | head -n 1 | sed 's/^winrar-x64-//; s/\\.exe$//')",
-          "# If the page could not be read, fall back to a known good release.",
-          "case \"$code\" in ''|*[!0-9]*) code=713 ;; esac",
-          "echo \"$code\""
-        ]
+        "script": "looking-for-the-latest-winrar-version.sh"
       },
       "capture": "winrar_code",
       "on_success": "pretty_version",
@@ -156,11 +135,7 @@
       "type": "check",
       "command": {
         "label": "Reading the version…",
-        "shell": [
-          "v=\"$TUX_VAR_WINRAR_CODE\"",
-          "a=${v%??}",
-          "printf '%s.%s\\n' \"$a\" \"${v#\"$a\"}\""
-        ]
+        "script": "reading-the-version.sh"
       },
       "capture": "winrar_pretty",
       "on_success": "choose_lang",
@@ -197,7 +172,7 @@
       "type": "check",
       "command": {
         "label": "Checking for an existing WinRAR…",
-        "shell": "[ -f \"$TUX_VAR_WINE_PREFIX/drive_c/Program Files/WinRAR/WinRAR.exe\" ] && echo yes || echo no"
+        "script": "checking-for-an-existing-winrar.sh"
       },
       "capture": "existing",
       "on_success": "existing_gate",
@@ -278,18 +253,7 @@
           "weight": 3,
           "expected_secs": 15,
           "percent": 30,
-          "shell": [
-            "set -e",
-            "case \"$TUX_VAR_LANG_CODE\" in ar) sfx=ar ;; *) sfx=\"\" ;; esac",
-            "cache=\"${XDG_CACHE_HOME:-$HOME/.cache}/tux-store/winrar\"",
-            "mkdir -p \"$cache\"",
-            "rm -f \"$cache/winrar-setup.exe\"",
-            "url=\"https://www.rarlab.com/rar/winrar-x64-${TUX_VAR_WINRAR_CODE}${sfx}.exe\"",
-            "echo \"Downloading $url\"",
-            "curl -fL --retry 2 --connect-timeout 15 -o \"$cache/winrar-setup.exe\" \"$url\"",
-            "[ \"$(head -c 2 \"$cache/winrar-setup.exe\")\" = \"MZ\" ] || { echo \"The downloaded file is not a Windows program.\"; exit 1; }",
-            "echo \"Download finished.\""
-          ]
+          "script": "downloading-winrar-winrar-pretty.sh"
         },
         {
           "label": "Preparing the Wine prefix",
@@ -297,17 +261,7 @@
           "expected_secs": 30,
           "percent": 50,
           "timeout_secs": 300,
-          "shell": [
-            "set -e",
-            "export WINEPREFIX=\"$TUX_VAR_WINE_PREFIX\" WINEDEBUG=-all WINEDLLOVERRIDES=\"mscoree,mshtml=\"",
-            "if [ -d \"$WINEPREFIX/drive_c\" ]; then",
-            "  echo \"The Wine prefix already exists.\"",
-            "else",
-            "  echo \"Creating the Wine prefix…\"",
-            "  wineboot -u",
-            "  wineserver -w 2>/dev/null || true",
-            "fi"
-          ]
+          "script": "preparing-the-wine-prefix.sh"
         },
         {
           "label": "Installing WinRAR in Wine",
@@ -315,25 +269,13 @@
           "expected_secs": 25,
           "percent": 90,
           "timeout_secs": 600,
-          "shell": [
-            "set -e",
-            "export WINEPREFIX=\"$TUX_VAR_WINE_PREFIX\" WINEDEBUG=-all WINEDLLOVERRIDES=\"mscoree,mshtml=\"",
-            "cache=\"${XDG_CACHE_HOME:-$HOME/.cache}/tux-store/winrar\"",
-            "wine \"$cache/winrar-setup.exe\" /S",
-            "wineserver -w 2>/dev/null || true",
-            "echo \"The installer finished.\""
-          ]
+          "script": "installing-winrar-in-wine.sh"
         },
         {
           "label": "Removing the downloaded installer",
           "ignore_failure": true,
           "percent": 95,
-          "shell": [
-            "cache=\"${XDG_CACHE_HOME:-$HOME/.cache}/tux-store/winrar\"",
-            "rm -f \"$cache/winrar-setup.exe\"",
-            "rmdir \"$cache\" 2>/dev/null || true",
-            "exit 0"
-          ]
+          "script": "removing-the-downloaded-installer.sh"
         }
       ],
       "on_success": "verify",
@@ -343,10 +285,7 @@
       "type": "check",
       "command": {
         "label": "Checking the result…",
-        "shell": [
-          "[ -f \"$TUX_VAR_WINE_PREFIX/drive_c/Program Files/WinRAR/WinRAR.exe\" ] || { echo \"WinRAR.exe was not found after the installation.\"; exit 1; }",
-          "echo ok"
-        ]
+        "script": "checking-the-result.sh"
       },
       "capture": "verify_msg",
       "on_success": "set_version",
@@ -422,7 +361,7 @@
       "type": "check",
       "command": {
         "label": "Looking for Wine…",
-        "shell": "command -v wine >/dev/null 2>&1"
+        "script": "looking-for-wine.sh"
       },
       "on_success": "un_probe",
       "on_failure": "un_no_wine"
@@ -452,10 +391,7 @@
       "type": "check",
       "command": {
         "label": "Looking for WinRAR…",
-        "shell": [
-          "P=\"${TUX_VAR_WINRAR_PREFIX:-${WINEPREFIX:-$HOME/.wine}}\"",
-          "[ -f \"$P/drive_c/Program Files/WinRAR/WinRAR.exe\" ] && echo yes || echo no"
-        ]
+        "script": "looking-for-winrar.sh"
       },
       "capture": "un_present",
       "on_success": "un_probe_gate",
@@ -550,19 +486,7 @@
           "expected_secs": 15,
           "percent": 60,
           "timeout_secs": 300,
-          "shell": [
-            "P=\"${TUX_VAR_WINRAR_PREFIX:-${WINEPREFIX:-$HOME/.wine}}\"",
-            "export WINEPREFIX=\"$P\" WINEDEBUG=-all WINEDLLOVERRIDES=\"mscoree,mshtml=\"",
-            "exe=\"$P/drive_c/Program Files/WinRAR/uninstall.exe\"",
-            "if [ -f \"$exe\" ]; then",
-            "  wine \"$exe\" /S || echo \"The uninstaller reported an error.\"",
-            "  wineserver -w 2>/dev/null || true",
-            "  sleep 2",
-            "else",
-            "  echo \"uninstall.exe was not found.\"",
-            "fi",
-            "exit 0"
-          ]
+          "script": "running-winrar-s-uninstaller.sh"
         }
       ],
       "on_success": "un_verify",
@@ -582,13 +506,7 @@
           "percent": 60,
           "expected_secs": 60,
           "timeout_secs": 3600,
-          "shell": [
-            "P=\"${TUX_VAR_WINRAR_PREFIX:-${WINEPREFIX:-$HOME/.wine}}\"",
-            "export WINEPREFIX=\"$P\" WINEDEBUG=-all WINEDLLOVERRIDES=\"mscoree,mshtml=\"",
-            "wine uninstaller",
-            "wineserver -w 2>/dev/null || true",
-            "exit 0"
-          ]
+          "script": "waiting-for-the-wine-uninstaller-window.sh"
         }
       ],
       "on_success": "un_verify",
@@ -598,10 +516,7 @@
       "type": "check",
       "command": {
         "label": "Checking that WinRAR is gone…",
-        "shell": [
-          "P=\"${TUX_VAR_WINRAR_PREFIX:-${WINEPREFIX:-$HOME/.wine}}\"",
-          "[ ! -f \"$P/drive_c/Program Files/WinRAR/WinRAR.exe\" ]"
-        ]
+        "script": "checking-that-winrar-is-gone.sh"
       },
       "on_success": "un_cleanup",
       "on_failure": "un_still"
@@ -640,41 +555,14 @@
         {
           "label": "Removing leftover files and shortcuts",
           "percent": 70,
-          "shell": [
-            "P=\"${TUX_VAR_WINRAR_PREFIX:-${WINEPREFIX:-$HOME/.wine}}\"",
-            "dir=\"$P/drive_c/Program Files/WinRAR\"",
-            "if [ -d \"$P/drive_c\" ] && [ -d \"$dir\" ]; then rm -rf -- \"$dir\"; echo \"removed $dir\"; fi",
-            "apps=\"$HOME/.local/share/applications\"",
-            "for d in \"$apps/wine/Programs/WinRAR\" \"$HOME/Desktop/WinRAR.desktop\" \"$HOME/Desktop/WinRAR.lnk\"; do",
-            "  if [ -e \"$d\" ]; then rm -rf -- \"$d\"; echo \"removed $d\"; fi",
-            "done",
-            "# File-association launchers Wine created for WinRAR (only those that mention it).",
-            "for f in \"$apps\"/wine-extension-*.desktop \"$apps\"/wine/*.desktop; do",
-            "  [ -f \"$f\" ] || continue",
-            "  if grep -qi winrar \"$f\"; then rm -f -- \"$f\"; echo \"removed $f\"; fi",
-            "done",
-            "find \"$apps\" -maxdepth 3 -type f -iname '*winrar*.desktop' -delete 2>/dev/null",
-            "find \"$HOME/.local/share/icons\" -type f -iname '*winrar*' -delete 2>/dev/null",
-            "command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database \"$apps\" 2>/dev/null",
-            "exit 0"
-          ]
+          "script": "removing-leftover-files-and-shortcuts.sh"
         },
         {
           "label": "Cleaning Wine registry entries",
           "ignore_failure": true,
           "percent": 95,
           "timeout_secs": 120,
-          "shell": [
-            "P=\"${TUX_VAR_WINRAR_PREFIX:-${WINEPREFIX:-$HOME/.wine}}\"",
-            "command -v wine >/dev/null 2>&1 || { echo \"wine not found: skipping the registry cleanup\"; exit 0; }",
-            "[ -d \"$P/drive_c\" ] || { echo \"no Wine prefix: skipping the registry cleanup\"; exit 0; }",
-            "export WINEPREFIX=\"$P\" WINEDEBUG=-all WINEDLLOVERRIDES=\"mscoree,mshtml=\"",
-            "for k in 'HKCU\\Software\\WinRAR' 'HKLM\\Software\\WinRAR' 'HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WinRAR archiver'; do",
-            "  wine reg delete \"$k\" /f >/dev/null 2>&1 && echo \"removed registry key $k\"",
-            "done",
-            "wineserver -w 2>/dev/null || true",
-            "exit 0"
-          ]
+          "script": "cleaning-wine-registry-entries.sh"
         }
       ],
       "on_success": "un_done",
