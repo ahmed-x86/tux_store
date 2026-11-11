@@ -3,11 +3,20 @@
 //! Handles: `ScriptStartRequested`, `ScriptAction`.
 //! Emits: `ScriptView`, `ScriptOutput`, `ScriptProgress`, `ScriptEnded`.
 //!
+//! Besides running the script, a session keeps a log file of every install /
+//! uninstall (see `logfile`) and follows the real progress of the commands
+//! (see `progress`).
+//!
 //! Scripts are JSON files (see `tux_abi::script` and `DOCS/SCRIPTS_SYSTEM.md`).
 //! One session runs at a time, on its own thread; the UI only renders the
 //! screens the session publishes and reports button clicks.
 
+mod addonscript;
+mod clock;
 mod eval;
+mod logfile;
+mod output;
+mod progress;
 mod runner;
 mod session;
 
@@ -39,9 +48,9 @@ impl Module for ScriptModule {
                 let bus = self.bus;
                 thread::spawn(move || eval::run(bus, &id, confirmed));
             }
-            Message::ScriptAction { seq, button, selected } => {
+            Message::ScriptAction { seq, button, selected, checked } => {
                 if let Some(tx) = lock(&self.input).as_ref() {
-                    let _ = tx.send(Input { seq, button, selected });
+                    let _ = tx.send(Input { seq, button, selected, checked });
                 }
             }
             _ => {}
