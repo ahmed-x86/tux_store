@@ -84,6 +84,12 @@ fn hint(err: &str) -> Option<&'static str> {
 
 /// Check the script in `text`. `dir` is where its icon files must sit.
 pub fn check_text(text: &str, dir: &Path) -> Report {
+    check_named(text, dir, None)
+}
+
+/// Like [`check_text`]; `stem` is the JSON's file name without `.json`, which
+/// names the folder of its script files (default: the script's id).
+pub fn check_named(text: &str, dir: &Path, stem: Option<&str>) -> Report {
     let mut lines: Vec<String> = Vec::new();
     let fail = |mut lines: Vec<String>, msg: String| {
         lines.push(format!("✖ {msg}"));
@@ -148,6 +154,41 @@ pub fn check_text(text: &str, dir: &Path) -> Report {
         }
     }
 
+    // ── script files of the add-on's folder ──
+    let stem = stem.unwrap_or(&script.id).to_string();
+    let folder = dir.join(&stem);
+    let mut wanted: BTreeSet<&str> = BTreeSet::new();
+    for step in script.steps.values() {
+        match step {
+            Step::Run(r) => wanted.extend(r.commands.iter().filter_map(|c| c.script.as_deref())),
+            Step::Check(c) => wanted.extend(c.command.script.as_deref()),
+            _ => {}
+        }
+    }
+    wanted.extend(script.dynamic_commands().into_iter().filter_map(|c| c.script.as_deref()));
+    if !wanted.is_empty() {
+        lines.push(format!("ℹ script files are looked up in the folder \"{stem}/\" next to the JSON"));
+    }
+    for f in wanted {
+        match std::fs::read(folder.join(f)) {
+            Err(_) => lines.push(format!("⚠ script \"{f}\" not found in \"{stem}/\"")),
+            Ok(bytes) if !bytes.starts_with(b"#!") => {
+                lines.push(format!("⚠ script \"{f}\" does not start with a #! line (e.g. #!/bin/bash): the store cannot run it"))
+            }
+            Ok(_) => {}
+        }
+    }
+
+    for (_, step, _, icon) in script.option_icons() {
+        for src in icon.sources() {
+            if let Some(f) = &src.file {
+                if !dir.join(f).is_file() {
+                    lines.push(format!("⚠ option icon file \"{f}\" (step \"{step}\") is not next to the JSON file"));
+                }
+            }
+        }
+    }
+
     for shot in &script.screenshots {
         if let Some(f) = &shot.file {
             let found = dir.join(f).is_file()
@@ -187,7 +228,11 @@ pub fn check_text(text: &str, dir: &Path) -> Report {
 /// Read and check a file (what the command line calls).
 pub fn check_file(path: &Path) -> Report {
     match std::fs::read_to_string(path) {
-        Ok(text) => check_text(&text, path.parent().unwrap_or_else(|| Path::new("."))),
+        Ok(text) => check_named(
+            &text,
+            path.parent().unwrap_or_else(|| Path::new(".")),
+            path.file_stem().and_then(|s| s.to_str()),
+        ),
         Err(e) => Report { ok: false, lines: vec![format!("✖ cannot read {}: {e}", path.display())] },
     }
 }
