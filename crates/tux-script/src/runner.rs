@@ -10,16 +10,23 @@
 //! Variables reach the command as environment variables
 //! (`TUX_VAR_<NAME>`), never by pasting text into a shell line, so a value can
 //! not change the structure of a command.
+//!
+//! While a visible command runs, its output is read by the [`Scanner`], which
+//! reports the command's own progress (`TUX_PROGRESS=NN` lines, or `NN%` for
+//! commands declared with `"progress": "percent"`) through an atomic number.
 
+use crate::output::Output;
+use crate::progress::Scanner;
 use std::io::Read;
 use std::os::unix::process::CommandExt;
 use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-use tux_abi::script::{interpolate, CommandSpec, Vars};
+use tux_abi::script::{interpolate, CommandSpec, ProgressMode, Vars};
 use tux_abi::stream::Utf8Stream;
 use tux_abi::text::shell_quote;
-use tux_abi::{Bus, Message};
 
 pub const DEFAULT_CHECK_TIMEOUT: Duration = Duration::from_secs(20);
 const CAPTURE_LIMIT: usize = 64 * 1024;
@@ -123,8 +130,11 @@ pub fn run_check(spec: &CommandSpec, vars: &Vars) -> Outcome {
     Outcome { code, stdout: String::from_utf8_lossy(&stdout).trim().to_string(), timed_out }
 }
 
-/// Run `spec` with live output on the bus; returns the exit code.
-pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus, echo: bool) -> i32 {
+/// Run `spec` with live output (console + log); returns the exit code.
+///
+/// `real` receives the command's own progress as `tenths of a percent + 1`
+/// (so 0 still means "nothing reported yet"); it only ever grows.
+pub fn run_visible(spec: &CommandSpec, vars: &Vars, out: &Arc<Output>, echo: bool, real: &Arc<AtomicU32>) -> i32 {
     let inner = build_inner(spec, vars).iter().map(|a| shell_quote(a)).collect::<Vec<_>>().join(" ");
     let (program, argv): (&str, Vec<String>) = if spec.root && !is_root() {
         ("pkexec", vec!["script".into(), "-qec".into(), inner, "/dev/null".into()])
@@ -142,17 +152,18 @@ pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus, echo: bool) -> i3
     let mut child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => {
-            bus.publish(&Message::ScriptOutput { text: format!("failed to start {program}: {e}\n") });
+            out.text(&format!("failed to start {program}: {e}\n"));
             return -1;
         }
     };
     let _stdin_guard = child.stdin.take();
+    let percent_mode = spec.progress == ProgressMode::Percent;
     let pumps: Vec<_> = [child.stdout.take().map(|s| Box::new(s) as Box<dyn Read + Send>), child.stderr.take().map(|s| Box::new(s) as Box<dyn Read + Send>)]
         .into_iter()
         .flatten()
         .map(|s| {
-            let bus = *bus;
-            thread::spawn(move || pump(s, bus, echo))
+            let (out, real) = (out.clone(), real.clone());
+            thread::spawn(move || pump(s, &out, echo, &real, percent_mode))
         })
         .collect();
 
@@ -162,7 +173,7 @@ pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus, echo: bool) -> i3
         match child.try_wait() {
             Ok(Some(status)) => break status.code().unwrap_or(-1),
             Ok(None) if deadline.is_some_and(|d| Instant::now() >= d) => {
-                bus.publish(&Message::ScriptOutput { text: "\n[timed out — stopping the command]\n".into() });
+                out.text("\n[timed out — stopping the command]\n");
                 kill_group(child.id());
                 let _ = child.kill();
                 let _ = child.wait();
@@ -178,9 +189,20 @@ pub fn run_visible(spec: &CommandSpec, vars: &Vars, bus: &Bus, echo: bool) -> i3
     code
 }
 
-fn pump(mut reader: Box<dyn Read + Send>, bus: Bus, echo: bool) {
+fn pump(mut reader: Box<dyn Read + Send>, out: &Output, echo: bool, real: &AtomicU32, percent_mode: bool) {
     let mut buf = [0u8; 8192];
     let mut utf8 = Utf8Stream::default();
+    let mut scanner = Scanner::new(percent_mode);
+    let show = |text: &str| {
+        if text.is_empty() {
+            return;
+        }
+        if echo {
+            use std::io::Write;
+            let _ = std::io::stderr().write_all(text.as_bytes());
+        }
+        out.text(text);
+    };
     loop {
         let n = match reader.read(&mut buf) {
             Ok(0) => break,
@@ -189,14 +211,16 @@ fn pump(mut reader: Box<dyn Read + Send>, bus: Bus, echo: bool) {
             Err(_) => break,
         };
         let text = utf8.push(&buf[..n]);
-        if !text.is_empty() {
-            if echo {
-                use std::io::Write;
-                let _ = std::io::stderr().write_all(text.as_bytes());
-            }
-            bus.publish(&Message::ScriptOutput { text });
+        if text.is_empty() {
+            continue;
         }
+        let fed = scanner.feed(&text);
+        if let Some(permille) = fed.permille {
+            real.fetch_max(permille + 1, Ordering::Relaxed);
+        }
+        show(&fed.text);
     }
+    show(&scanner.finish());
 }
 
 #[cfg(test)]
