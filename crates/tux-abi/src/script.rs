@@ -146,13 +146,34 @@ pub struct Choice {
     /// Variables set when this option is picked (besides `store_as`).
     #[serde(default)]
     pub set: Vars,
-    /// Overrides the step's `next` for this option.
+    /// Overrides the step's `next` for this option (not allowed in a
+    /// `multiple` choice, where several options are picked at once).
     #[serde(default)]
     pub goto: Option<String>,
+    /// A small picture shown beside the option. Same sources as the add-on's
+    /// own `icon`: `{"file": "x.svg"}`, `{"theme": "firefox"}`, `{"url": "https://…png"}`,
+    /// or a list of them tried in order.
+    #[serde(default)]
+    pub icon: Option<IconSpec>,
 }
 
 fn one() -> u32 {
     1
+}
+
+/// Where a command's *real* progress comes from. Whatever the mode, a command
+/// can also print a line `TUX_PROGRESS=42` (0–100); the store moves the bar and
+/// hides that line.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ProgressMode {
+    /// The bar creeps toward the command's end (shaped by `expected_secs`)
+    /// until the command finishes.
+    #[default]
+    Estimate,
+    /// Read `NN%` from the command's own output (`curl -#`, `wget`, `rsync
+    /// --info=progress2`…): the bar follows the real progress.
+    Percent,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -169,6 +190,18 @@ pub struct CommandSpec {
     /// interpolated into each element.
     #[serde(default)]
     pub argv: Option<Vec<String>>,
+    /// A script file from the add-on's own folder (the folder named like the
+    /// JSON without `.json`, next to it). Give the bare file name only. The file
+    /// must start with a `#!` line (`#!/bin/bash`, `#!/usr/bin/env python3`…);
+    /// it need not be executable.
+    #[serde(default)]
+    pub script: Option<String>,
+    /// Arguments for `script`. `${var}` is replaced by the variable's value (one
+    /// argument); `@{var}` as a whole element becomes one argument per
+    /// space-separated word (what a `multiple` choice stores). Variables are also
+    /// available to the script as `$TUX_VAR_<NAME>`, and `$TUX_ADDON_DIR` is its folder.
+    #[serde(default)]
+    pub args: Vec<String>,
     /// Run with administrator rights through polkit (`pkexec`).
     #[serde(default)]
     pub root: bool,
@@ -192,6 +225,9 @@ pub struct CommandSpec {
     /// finished. Absolute, so it also works across several `run` steps.
     #[serde(default)]
     pub percent: Option<u8>,
+    /// How the bar moves while this command runs (see [`ProgressMode`]).
+    #[serde(default)]
+    pub progress: ProgressMode,
 }
 
 impl CommandSpec {
@@ -200,9 +236,10 @@ impl CommandSpec {
         if !self.label.is_empty() {
             return self.label.clone();
         }
-        let raw = match (&self.shell, &self.argv) {
-            (Some(t), _) => t.joined(),
-            (None, Some(a)) => a.join(" "),
+        let raw = match (&self.shell, &self.argv, &self.script) {
+            (Some(t), _, _) => t.joined(),
+            (None, Some(a), _) => a.join(" "),
+            (None, None, Some(f)) => std::iter::once(f.as_str()).chain(self.args.iter().map(String::as_str)).collect::<Vec<_>>().join(" "),
             _ => String::new(),
         };
         let first = raw.lines().next().unwrap_or("").trim();
@@ -239,8 +276,19 @@ pub struct ChoiceStep {
     pub store_as: String,
     pub options: Vec<Choice>,
     /// Option value to preselect (interpolated, e.g. `"${gpu_branch}"`).
+    /// For a `multiple` choice: the values to tick, separated by spaces.
     #[serde(default)]
     pub default: Option<String>,
+    /// Show check boxes: the user may tick any number of options. `store_as`
+    /// then receives every ticked `value` joined with single spaces (in the
+    /// order of the options), so values must not contain white space.
+    /// Use it in shell as `for x in $TUX_VAR_NAME; do …; done`.
+    #[serde(default)]
+    pub multiple: bool,
+    /// For a `multiple` choice: how many options must be ticked before
+    /// "Continue" is enabled (default 0 = may continue with nothing ticked).
+    #[serde(default)]
+    pub min_select: u32,
     /// Step to go to after a choice (unless the option has its own `goto`).
     pub next: String,
     #[serde(default)]
@@ -581,6 +629,52 @@ pub struct LoadedScript {
 
 // ───────────────────────────── validation ─────────────────────────────
 
+/// Validate one icon declaration (the add-on's own, or an option's).
+fn check_icon(icon: &IconSpec) -> Result<(), String> {
+    let sources = icon.sources();
+    if sources.is_empty() || sources.len() > 8 {
+        return Err("icon needs 1..=8 sources".into());
+    }
+    for src in sources {
+        let set = [src.file.is_some(), src.theme.is_some(), src.url.is_some()].iter().filter(|b| **b).count();
+        if set != 1 {
+            return Err("each icon source needs exactly one of file / theme / url".into());
+        }
+        if src.file.as_deref().is_some_and(|f| !is_valid_icon_file_name(f)) {
+            return Err("icon file must be a bare .svg/.png/.ico file name in the JSON's folder".into());
+        }
+        if src.theme.as_deref().is_some_and(|t| !is_valid_theme_icon_name(t)) {
+            return Err("invalid icon theme name".into());
+        }
+        if src.url.as_deref().is_some_and(|u| !is_valid_icon_url(u)) {
+            return Err("icon url must be a plain https:// link".into());
+        }
+    }
+    Ok(())
+}
+
+/// Key under which the thumbnail module knows the picture of a choice option:
+/// `<script id>.opt-<16 hex digits>`. It is derived from the picture's
+/// *description* (FNV-1a of its JSON), so two options with the same picture
+/// share one cached file and editing the JSON never shows a stale picture.
+pub fn option_icon_key(script_id: &str, icon: &IconSpec) -> String {
+    let json = serde_json::to_string(icon).unwrap_or_default();
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for b in json.bytes() {
+        h ^= u64::from(b);
+        h = h.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    format!("{script_id}.opt-{h:016x}")
+}
+
+/// A bare file name for a script in the add-on's folder.
+pub fn is_valid_addon_script_name(f: &str) -> bool {
+    !f.is_empty()
+        && f.len() <= 128
+        && !f.starts_with('.')
+        && f.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'-' | b'+'))
+}
+
 pub fn is_valid_var_name(n: &str) -> bool {
     let mut c = n.chars();
     matches!(c.next(), Some('a'..='z'))
@@ -615,25 +709,7 @@ impl Script {
             }
         }
         if let Some(icon) = &self.icon {
-            let sources = icon.sources();
-            if sources.is_empty() || sources.len() > 8 {
-                return Err("icon needs 1..=8 sources".into());
-            }
-            for src in sources {
-                let set = [src.file.is_some(), src.theme.is_some(), src.url.is_some()].iter().filter(|b| **b).count();
-                if set != 1 {
-                    return Err("each icon source needs exactly one of file / theme / url".into());
-                }
-                if src.file.as_deref().is_some_and(|f| !is_valid_icon_file_name(f)) {
-                    return Err("icon file must be a bare .svg/.png/.ico file name in the JSON's folder".into());
-                }
-                if src.theme.as_deref().is_some_and(|t| !is_valid_theme_icon_name(t)) {
-                    return Err("invalid icon theme name".into());
-                }
-                if src.url.as_deref().is_some_and(|u| !is_valid_icon_url(u)) {
-                    return Err("icon url must be a plain https:// link".into());
-                }
-            }
+            check_icon(icon)?;
         }
         if self.screenshots.len() > MAX_SCREENSHOTS {
             return Err(format!("at most {MAX_SCREENSHOTS} screenshots"));
@@ -735,18 +811,29 @@ impl Script {
     }
 
     fn check_command(&self, c: &CommandSpec, allow_root: bool) -> Result<(), String> {
-        match (&c.shell, &c.argv) {
-            (Some(s), None) => {
+        match (&c.shell, &c.argv, &c.script) {
+            (Some(s), None, None) => {
                 if s.joined().trim().is_empty() || s.len() > MAX_TEXT {
                     return Err("empty or oversized shell text".into());
                 }
             }
-            (None, Some(a)) => {
+            (None, Some(a), None) => {
                 if a.is_empty() || a[0].trim().is_empty() {
                     return Err("argv is empty".into());
                 }
             }
-            _ => return Err("a command needs exactly one of shell / argv".into()),
+            (None, None, Some(f)) => {
+                if !is_valid_addon_script_name(f) {
+                    return Err(format!("script {f:?} must be a bare file name (no folders) of a file in the add-on's folder"));
+                }
+                if c.args.len() > 64 {
+                    return Err("a script takes at most 64 arguments".into());
+                }
+            }
+            _ => return Err("a command needs exactly one of shell / argv / script".into()),
+        }
+        if c.script.is_none() && !c.args.is_empty() {
+            return Err("args only go with script".into());
         }
         if c.root && !allow_root {
             return Err("silent checks cannot run as root".into());
@@ -783,14 +870,32 @@ impl Script {
                 if c.options.is_empty() || c.options.len() > MAX_OPTIONS {
                     return Err(format!("a choice needs 1..={MAX_OPTIONS} options"));
                 }
+                if !c.multiple && c.min_select > 0 {
+                    return Err("min_select only makes sense with \"multiple\": true".into());
+                }
+                if c.min_select as usize > c.options.len() {
+                    return Err(format!("min_select {} is more than the {} options", c.min_select, c.options.len()));
+                }
                 let mut seen = HashSet::new();
                 for o in &c.options {
                     if o.value.is_empty() || !seen.insert(o.value.as_str()) {
                         return Err(format!("empty or duplicate option value {:?}", o.value));
                     }
+                    if c.multiple && o.value.contains(char::is_whitespace) {
+                        return Err(format!(
+                            "option value {:?} contains white space: in a multiple choice the values are joined with spaces",
+                            o.value
+                        ));
+                    }
                     Self::check_vars(&o.set)?;
                     if let Some(g) = &o.goto {
+                        if c.multiple {
+                            return Err(format!("option {:?}: goto cannot be used in a multiple choice (use the step's next)", o.value));
+                        }
                         self.require_step(g, "option goto")?;
+                    }
+                    if let Some(icon) = &o.icon {
+                        check_icon(icon).map_err(|e| format!("option {:?}: {e}", o.value))?;
                     }
                     if let Some(v) = &o.visible_if {
                         Self::check_cond(v)?;
@@ -853,6 +958,24 @@ impl Script {
             }
             Step::Finish(_) => Ok(()),
         }
+    }
+
+    /// Every picture declared by a choice option: `(key, step, option index,
+    /// picture)`. Both the thumbnail module (to find the picture) and the
+    /// script engine (to tell the UI which key to ask for) use this list, so
+    /// they always agree on the keys.
+    pub fn option_icons(&self) -> Vec<(String, &str, usize, &IconSpec)> {
+        let mut out = Vec::new();
+        for (name, step) in &self.steps {
+            if let Step::Choice(c) = step {
+                for (i, o) in c.options.iter().enumerate() {
+                    if let Some(icon) = &o.icon {
+                        out.push((option_icon_key(&self.id, icon), name.as_str(), i, icon));
+                    }
+                }
+            }
+        }
+        out
     }
 
     /// Descriptions of every command that asks for administrator rights, in
@@ -1181,6 +1304,89 @@ mod tests {
         .unwrap();
         r.validate().unwrap();
         assert_eq!(r.root_command_summaries(), vec!["Install things".to_string()]);
+    }
+
+    fn choice_script(extra: &str, options: &str) -> Result<Script, String> {
+        let s: Script = serde_json::from_str(&format!(
+            r#"{{"schema":2,"id":"multi-1","title":"t","start":"pick","steps":{{
+              "pick":{{"type":"choice","title":"t","store_as":"chosen","next":"end"{extra},"options":[{options}]}},
+              "end":{{"type":"finish","title":"t"}}}}}}"#
+        ))
+        .map_err(|e| e.to_string())?;
+        s.validate().map(|_| s)
+    }
+
+    #[test]
+    fn multiple_choice_rules() {
+        let two = r#"{"value":"a","label":"A"},{"value":"b","label":"B"}"#;
+        assert!(choice_script(r#","multiple":true,"min_select":1"#, two).is_ok());
+        // min_select needs multiple, and cannot exceed the number of options
+        assert!(choice_script(r#","min_select":1"#, two).is_err());
+        assert!(choice_script(r#","multiple":true,"min_select":3"#, two).is_err());
+        // values are joined with spaces, so they cannot hold white space
+        assert!(choice_script(r#","multiple":true"#, r#"{"value":"a b","label":"A"}"#).is_err());
+        assert!(choice_script("", r#"{"value":"a b","label":"A"}"#).is_ok());
+        // an option cannot jump somewhere on its own when several are picked
+        let goto = r#"{"value":"a","label":"A","goto":"end"}"#;
+        assert!(choice_script(r#","multiple":true"#, goto).is_err());
+        assert!(choice_script("", goto).is_ok());
+    }
+
+    #[test]
+    fn option_icons_are_validated_and_keyed_by_content() {
+        let ok = r#"{"value":"a","label":"A","icon":{"theme":"firefox"}},
+                    {"value":"b","label":"B","icon":[{"file":"b.svg"},{"url":"https://example.org/b.png"}]},
+                    {"value":"c","label":"C","icon":{"theme":"firefox"}},
+                    {"value":"d","label":"D"}"#;
+        let s = choice_script("", ok).unwrap();
+        let icons = s.option_icons();
+        assert_eq!(icons.len(), 3, "only options that declare a picture");
+        assert_eq!((icons[0].1, icons[0].2), ("pick", 0));
+        assert_eq!(icons[0].0, icons[2].0, "same picture, same key");
+        assert_ne!(icons[0].0, icons[1].0);
+        assert!(icons[0].0.starts_with("multi-1.opt-"));
+        assert!(crate::text::is_valid_package_name(&icons[0].0), "the thumbnail module only answers valid names");
+        assert_eq!(icons[0].0, option_icon_key("multi-1", icons[0].3), "stable between runs");
+
+        assert!(choice_script("", r#"{"value":"a","label":"A","icon":{"file":"../x.svg"}}"#).is_err());
+        assert!(choice_script("", r#"{"value":"a","label":"A","icon":{"theme":"x","url":"https://example.org/x.png"}}"#).is_err());
+        assert!(choice_script("", r#"{"value":"a","label":"A","icon":{"url":"http://example.org/x.png"}}"#).is_err());
+    }
+
+    #[test]
+    fn script_commands_are_validated() {
+        let mk = |cmd: &str| -> Result<(), String> {
+            let s: Script = serde_json::from_str(&format!(
+                r#"{{"schema":2,"id":"x","title":"t","start":"a","steps":{{
+                  "a":{{"type":"run","title":"t","commands":[{cmd}],"on_success":"b"}},
+                  "b":{{"type":"finish","title":"t"}}}}}}"#
+            ))
+            .map_err(|e| e.to_string())?;
+            s.validate()
+        };
+        assert!(mk(r#"{"script":"install.sh","args":["--x","${a}","@{b}"]}"#).is_ok());
+        assert!(mk(r#"{"script":"../install.sh"}"#).is_err());
+        assert!(mk(r#"{"script":"sub/install.sh"}"#).is_err());
+        assert!(mk(r#"{"script":".hidden"}"#).is_err());
+        assert!(mk(r#"{"script":"a.sh","shell":"true"}"#).is_err());
+        assert!(mk(r#"{"shell":"true","args":["x"]}"#).is_err());
+    }
+
+    #[test]
+    fn progress_mode_parses() {
+        let mk = |p: &str| -> Result<Script, String> {
+            let s: Script = serde_json::from_str(&format!(
+                r#"{{"schema":2,"id":"x","title":"t","start":"a","steps":{{
+                  "a":{{"type":"run","title":"t","commands":[{{"argv":["true"]{p}}}],"on_success":"b"}},
+                  "b":{{"type":"finish","title":"t"}}}}}}"#
+            ))
+            .map_err(|e| e.to_string())?;
+            s.validate().map(|_| s)
+        };
+        assert!(mk("").is_ok());
+        assert!(mk(r#","progress":"percent""#).is_ok());
+        assert!(mk(r#","progress":"estimate""#).is_ok());
+        assert!(mk(r#","progress":"magic""#).is_err());
     }
 }
 
