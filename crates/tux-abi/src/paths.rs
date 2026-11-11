@@ -119,6 +119,13 @@ pub fn hidden_packages_files() -> Vec<PathBuf> {
     vec![data_dir().join("hidden_packages.json"), config_dir().join("hidden_packages.json")]
 }
 
+/// Where the log of every add-on install / uninstall is saved:
+/// `$XDG_STATE_HOME/tux-store/logs` (default `~/.local/state/tux-store/logs`).
+/// Files are named `tux-store-<HH-MM-SS>-<YYYY-MM-DD>-<add-on name>.log`.
+pub fn logs_dir() -> PathBuf {
+    xdg("XDG_STATE_HOME", ".local/state").join("logs")
+}
+
 /// Where install records ("receipts") of add-on packages are kept:
 /// `$XDG_DATA_HOME/tux-store/addons` (default `~/.local/share/tux-store/addons`).
 pub fn addons_state_dir() -> PathBuf {
