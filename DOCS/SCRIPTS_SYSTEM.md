@@ -269,7 +269,7 @@ Uses the store's own loader, so *valid* here means the store will load it. On a 
 4. Shell variables are used as `"$TUX_VAR_X"` (quoted), never pasted into the command.
 5. Every failure path ends in a `dialog` with `"tone": "error"` and a `Close` button.
 6. Run it: `TUX_LOG=debug ./target/debug/tux-store`, open the page, install, uninstall, check `~/.local/share/tux-store/addons/`.
-7. The shipped files are good templates: `multimedia-codecs-id-1.json` (a choice, "only what is missing" detection, record of just the new packages, safe per-package uninstall), `hello-test-id-2.json` (all step types), `gemini-code-1793716015029.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).
+7. The shipped files are good templates: `multimedia-codecs-id-1.json` (a choice, "only what is missing" detection, record of just the new packages, safe per-package uninstall), `hello-test-id-2.json` (all step types), `ventoy-installer-id-1.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).
 
 ## Screenshots (0.10.0)
 
@@ -280,3 +280,44 @@ Optional top-level key, shown as the Screenshots slider on the script's page:
 ```
 
 Each item has exactly one of `file` (bare `.png`/`.jpg`/`.jpeg` name next to the JSON) or `url` (`https://` on a trusted host). Max 12, order kept. Details: `SCREENSHOTS.md`. Stores older than 0.10.0 reject the key, as with every unknown key.
+
+## Check boxes, option pictures, real progress, logs (0.11)
+
+**Check boxes.** `choice` with `"multiple": true` shows check boxes. `store_as` receives every ticked `value` joined with spaces, in option order (`for x in $TUX_VAR_EXTRAS; do …; done`). `default` is a space-separated list of values ticked at the start; `min_select` (default 0) is how many must be ticked to continue. Values must not contain white space and options cannot have `goto` in a multiple choice. Each ticked option's `set` is applied. The radio-button choice is unchanged.
+
+**Option pictures.** Any option (radio or check box) may have `"icon"`, with the same sources as the add-on icon: `{"file": "x.svg"}` (next to the JSON), `{"theme": "firefox"}`, `{"url": "https://…png"}`, or a list tried in order.
+
+**Progress bar.** `percent` is cumulative over the whole add-on (e.g. 50, then 90, then 100); the label of the running command is shown beside the bar. Inside a command the bar can follow real progress instead of creeping:
+- `"progress": "percent"` reads the last `NN%` from the command's output (`curl -#`, `wget`, `rsync --info=progress2`);
+- any command can print `TUX_PROGRESS=NN` (0–100); that line is hidden.
+The bar then moves from the previous `percent` to this command's `percent` and ends exactly there.
+
+**Logs.** Every install/uninstall that runs a command or fails saves what the console showed (colours removed, progress meters collapsed) to `~/.local/state/tux-store/logs/tux-store-<HH-MM-SS>-<YYYY-MM-DD>-<add-on title>.log` (`$XDG_STATE_HOME` respected). The path is shown on the last screen and in the console.
+
+## Script files in a folder (instead of bash inside JSON)
+
+Put a folder named like the JSON **without `.json`** beside it:
+
+```
+data/scripts/nvidia-drivers-id-1.json
+data/scripts/nvidia-drivers-id-1/nvidia-install.sh
+data/scripts/nvidia-drivers-id-1/detect.py
+```
+
+A command then names only the file:
+
+```json
+{ "label": "Installing the driver", "script": "nvidia-install.sh", "root": true,
+  "args": ["--branch", "${driver}", "@{extras}"], "progress": "percent", "percent": 80 }
+```
+
+- The store finds the folder itself; `script` is a bare file name (no `/`). Works in `run` and `check` steps and in `version`/`info` commands.
+- The file must start with `#!` (`#!/bin/bash`, `#!/usr/bin/env python3`, …). It need not be executable.
+- `args`: `"${var}"` is one argument; an element that is exactly `"@{var}"` becomes one argument per space-separated word, which is what a `multiple` choice stores. Variables are also in the environment as `$TUX_VAR_<NAME>`, and `$TUX_ADDON_DIR` is the folder (to call sibling files).
+- `root`, `when`, `ignore_failure`, `timeout_secs`, `percent`, `progress`, `TUX_PROGRESS=NN` and the log all work exactly as for `shell`/`argv`. A symlink cannot lead outside the folder.
+- `tux-store --check-script` warns about a missing file or a missing `#!` line. User add-ons: put the folder in `~/.config/tux-store/scripts/` beside the JSON.
+
+> **All shipped add-ons use this layout.** Each `data/scripts/<name>.json` has a folder `data/scripts/<name>/` with its `.sh` files; the JSON only lists steps, choices and file names. The folder is named after the JSON file (not the `id`).
+>
+> **Asking a script for information.** A silent `check` step can call a script with parameters and show the result to the user before anything is installed:
+> `{"type":"check","command":{"script":"query.sh","args":["latest","${tool}"]},"capture":"latest","on_success":"confirm","on_failure":"error"}` — then use `${latest}` in the next dialog (`"Latest Laravel: ${latest}"`). Checks never run as root and are limited to 20 s by default (`timeout_secs`).
