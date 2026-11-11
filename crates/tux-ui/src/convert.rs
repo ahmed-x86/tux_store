@@ -5,6 +5,8 @@ use crate::{
     UiSpecialCase, UiUpdate,
 };
 use slint::{Image, ModelRc, VecModel};
+use std::collections::HashMap;
+use std::rc::Rc;
 use tux_abi::text::{format_size, prettify_name};
 use tux_abi::script::{ButtonStyle, Tone};
 use tux_abi::{Package, PackageDetails, ScriptViewData, SpecialCase, UpdateEntry};
@@ -99,12 +101,22 @@ pub fn update(u: &UpdateEntry) -> UiUpdate {
     }
 }
 
-pub fn script_view(v: &ScriptViewData) -> UiScriptView {
+/// The screen plus its options model, which the caller keeps to tick boxes and
+/// to fill in pictures as they arrive. `icons` holds the pictures loaded so far.
+pub fn script_view(v: &ScriptViewData, icons: &HashMap<String, Image>) -> (UiScriptView, Rc<VecModel<UiScriptOption>>) {
     let options: Vec<UiScriptOption> = v
         .options
         .iter()
-        .map(|o| UiScriptOption { label: o.label.as_str().into(), hint: o.hint.as_str().into() })
+        .map(|o| UiScriptOption {
+            label: o.label.as_str().into(),
+            hint: o.hint.as_str().into(),
+            icon: icons.get(&o.icon).cloned().unwrap_or_default(),
+            has_icon: !o.icon.is_empty(),
+            icon_key: o.icon.as_str().into(),
+            checked: o.checked,
+        })
         .collect();
+    let options = Rc::new(VecModel::from(options));
     let buttons: Vec<UiScriptButton> = v
         .buttons
         .iter()
@@ -118,7 +130,7 @@ pub fn script_view(v: &ScriptViewData) -> UiScriptView {
             needs_selection: b.needs_selection,
         })
         .collect();
-    UiScriptView {
+    let view = UiScriptView {
         script_title: v.script_title.as_str().into(),
         title: v.title.as_str().into(),
         message: v.message.as_str().into(),
@@ -128,8 +140,11 @@ pub fn script_view(v: &ScriptViewData) -> UiScriptView {
             Tone::Error => 2,
             Tone::Success => 3,
         },
-        options: ModelRc::new(VecModel::from(options)),
+        options: ModelRc::from(options.clone()),
         buttons: ModelRc::new(VecModel::from(buttons)),
         busy: v.busy,
-    }
+        multi: v.multi,
+        min_select: v.min_select as i32,
+    };
+    (view, options)
 }
