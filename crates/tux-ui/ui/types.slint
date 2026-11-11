@@ -75,6 +75,10 @@ export struct UiUpdate {
 export struct UiScriptOption {
     label: string,
     hint: string,
+    icon: image,
+    has-icon: bool,    // the option declares a picture (it may still be loading)
+    icon-key: string,  // what the thumbnail module knows the picture as
+    checked: bool,     // check-box lists only
 }
 
 export struct UiScriptButton {
@@ -91,6 +95,8 @@ export struct UiScriptView {
     options: [UiScriptOption],
     buttons: [UiScriptButton],
     busy: bool,
+    multi: bool,           // check boxes (any number) instead of radio buttons (one)
+    min-select: int,       // check boxes: how many must be ticked to continue
 }
 
 // Extra facts on an add-on package's own page.
