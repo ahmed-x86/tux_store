@@ -11,7 +11,6 @@
     "compose",
     "buildx",
     "devops",
-    "podman",
     "حاويات",
     "دوكر"
   ],
@@ -28,11 +27,11 @@
   "info": {
     "download_mb": {
       "label": "Download size",
-      "shell": "pacman -Si docker docker-compose docker-buildx 2>/dev/null | awk '/^Download Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      "script": "download-size.sh"
     },
     "installed_mb": {
       "label": "Installed size",
-      "shell": "pacman -Si docker docker-compose docker-buildx 2>/dev/null | awk '/^Installed Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      "script": "installed-size.sh"
     },
     "extracted_mb": 20,
     "note": "Images and containers you created stay in /var/lib/docker after removal."
@@ -71,14 +70,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
-          "for t in pkexec pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system.sh"
       },
       "capture": "preflight",
       "on_success": "preflight_gate",
@@ -114,14 +106,7 @@
       "command": {
         "label": "Looking at what is already installed…",
         "timeout_secs": 60,
-        "shell": [
-          "out=\"\"",
-          "for p in $TUX_VAR_PKGS; do",
-          "  pacman -Si \"$p\" >/dev/null 2>&1 || continue      # not in your repositories: handled below",
-          "  pacman -Qq \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
-          "done",
-          "printf '%s\\n' $out"
-        ]
+        "script": "looking-at-what-is-already-installed.sh"
       },
       "capture": "new_pkgs",
       "on_success": "find_skipped",
@@ -132,13 +117,7 @@
       "command": {
         "label": "Checking the repositories…",
         "timeout_secs": 60,
-        "shell": [
-          "out=\"\"",
-          "for p in $TUX_VAR_PKGS; do",
-          "  pacman -Si \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
-          "done",
-          "printf '%s\\n' $out"
-        ]
+        "script": "checking-the-repositories.sh"
       },
       "capture": "skipped_pkgs",
       "on_success": "missing_gate",
@@ -152,7 +131,7 @@
             "var": "new_pkgs",
             "eq": ""
           },
-          "goto": "already_done"
+          "goto": "confirm_config"
         },
         {
           "when": {
@@ -170,17 +149,6 @@
         "skipped_text": "Not in your repositories (skipped): ${skipped_pkgs}"
       },
       "next": "confirm"
-    },
-    "already_done": {
-      "type": "finish",
-      "title": "Already installed",
-      "success": true,
-      "mark": "installed",
-      "button": "Close",
-      "message": [
-        "Everything in this set is already on your system, so nothing was changed.",
-        "If a video still does not play, restart the application."
-      ]
     },
     "confirm": {
       "type": "dialog",
@@ -210,6 +178,33 @@
         }
       ]
     },
+    "confirm_config": {
+      "type": "dialog",
+      "title": "Ready to set up",
+      "tone": "info",
+      "message": [
+        "Docker is already installed, so no packages will be added.",
+        "This will only enable the docker service and add your user to the \"docker\" group.",
+        "Careful: members of the docker group can gain full root access on this computer.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "Back",
+          "goto": "welcome"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
     "install": {
       "type": "run",
       "title": "Setting up: Docker",
@@ -221,21 +216,14 @@
           "weight": 10,
           "expected_secs": 60,
           "percent": 70,
-          "shell": [
-            "set -e",
-            "[ -z \"$TUX_VAR_NEW_PKGS\" ] || pacman -S --needed --noconfirm $TUX_VAR_NEW_PKGS"
-          ]
+          "script": "installing-packages.sh"
         },
         {
           "label": "Starting Docker and adding your user",
           "root": true,
           "expected_secs": 10,
           "percent": 95,
-          "shell": [
-            "set -e",
-            "systemctl enable --now docker.service",
-            "if [ -n \"${PKEXEC_UID:-}\" ]; then u=$(id -nu \"$PKEXEC_UID\"); usermod -aG docker \"$u\"; echo \"added $u to the docker group\"; fi"
-          ]
+          "script": "starting-docker-and-adding-your-user.sh"
         }
       ],
       "on_success": "verify",
@@ -246,18 +234,24 @@
       "command": {
         "label": "Checking the result…",
         "timeout_secs": 60,
-        "shell": [
-          "bad=\"\"",
-          "for p in $TUX_VAR_NEW_PKGS; do",
-          "  pacman -Qq \"$p\" >/dev/null 2>&1 || bad=\"$bad $p\"",
-          "done",
-          "[ -z \"$bad\" ] || { echo \"Not installed:$bad\"; exit 1; }",
-          "echo ok"
-        ]
+        "script": "checking-the-result.sh"
       },
       "capture": "verify_msg",
-      "on_success": "record_install",
+      "on_success": "after_verify",
       "on_failure": "install_failed"
+    },
+    "after_verify": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "done"
+        }
+      ],
+      "default": "record_install"
     },
     "record_install": {
       "type": "record",
@@ -329,7 +323,7 @@
       "mark": "uninstalled",
       "button": "Close",
       "message": [
-        "These codecs were already on your system before, so Tux Store keeps them.",
+        "These packages were already on your system before this add-on, so Tux Store keeps them.",
         "This add-on is now marked as not installed."
       ]
     },
@@ -341,6 +335,8 @@
         "These packages were installed by this add-on and will be removed:",
         "${recorded_packages}",
         "",
+        "The docker service will be stopped and your user removed from the \"docker\" group.",
+        "Your images and containers in /var/lib/docker are not deleted.",
         "A package that other software still needs is kept.",
         "",
         "You will be asked for your password."
@@ -361,14 +357,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
-          "for t in pkexec pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system-2.sh"
       },
       "capture": "preflight",
       "on_success": "un_gate",
@@ -397,27 +386,14 @@
           "root": true,
           "expected_secs": 10,
           "percent": 40,
-          "shell": [
-            "systemctl disable --now docker.service docker.socket >/dev/null 2>&1 || true",
-            "if [ -n \"${PKEXEC_UID:-}\" ]; then u=$(id -nu \"$PKEXEC_UID\"); gpasswd -d \"$u\" docker >/dev/null 2>&1 || true; fi",
-            "exit 0"
-          ]
+          "script": "stopping-docker.sh"
         },
         {
-          "label": "Removing the codec packages",
+          "label": "Removing packages",
           "root": true,
           "expected_secs": 20,
           "percent": 95,
-          "shell": [
-            "# Two passes: a package may only become removable after another one is gone.",
-            "for pass in 1 2; do",
-            "  for p in $TUX_VAR_RECORDED_PACKAGES; do",
-            "    pacman -Qq \"$p\" >/dev/null 2>&1 || continue",
-            "    if pacman -Rns --noconfirm \"$p\" >/dev/null 2>&1; then echo \"removed $p\"; elif [ \"$pass\" = 2 ]; then echo \"kept $p (other software needs it)\"; fi",
-            "  done",
-            "done",
-            "exit 0"
-          ]
+          "script": "removing-packages.sh"
         }
       ],
       "on_success": "un_done",
@@ -425,11 +401,11 @@
     },
     "un_done": {
       "type": "finish",
-      "title": "Codecs removed",
+      "title": "Docker removed",
       "success": true,
       "mark": "uninstalled",
       "button": "Close",
-      "message": "The packages this add-on installed were removed. Packages that other software needs were kept."
+      "message": "Docker was stopped and the packages this add-on installed were removed. Your images and containers stay in /var/lib/docker."
     },
     "un_failed": {
       "type": "dialog",
