@@ -35,14 +35,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
-          "for t in pkexec pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system.sh"
       },
       "capture": "preflight",
       "on_success": "preflight_gate",
@@ -115,10 +108,7 @@
       "command": {
         "label": "Looking for orphans…",
         "timeout_secs": 60,
-        "shell": [
-          "pacman -Qdtq 2>/dev/null | tr \"\\n\" \" \" || true",
-          "echo \"\""
-        ]
+        "script": "looking-for-orphans.sh"
       },
       "capture": "orphans",
       "on_success": "confirm",
@@ -158,14 +148,7 @@
           "root": true,
           "expected_secs": 40,
           "percent": 95,
-          "shell": [
-            "command -v paccache >/dev/null 2>&1 || pacman -S --needed --noconfirm pacman-contrib",
-            "paccache -rk2 || true",
-            "o=$(pacman -Qdtq 2>/dev/null || true)",
-            "[ -z \"$o\" ] || pacman -Rns --noconfirm $o || true",
-            "journalctl --vacuum-time=2weeks >/dev/null 2>&1 || true",
-            "exit 0"
-          ]
+          "script": "cleaning-the-system.sh"
         }
       ],
       "on_success": "done",
