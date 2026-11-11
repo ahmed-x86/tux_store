@@ -5,10 +5,7 @@
   "description": "Guided, checked installation of the right NVIDIA driver for your graphics card.",
   "version": {
     "label": "Latest driver version",
-    "shell": [
-      "v=$(pacman -Si nvidia-utils 2>/dev/null | awk '/^Version/ {print $3; exit}')",
-      "printf '%s\\n' \"${v:-unknown}\""
-    ]
+    "script": "latest-driver-version.sh"
   },
   "author": "Tux Store",
   "keywords": [
@@ -56,7 +53,7 @@
       "type": "check",
       "command": {
         "label": "Looking for yay…",
-        "shell": "command -v yay >/dev/null 2>&1"
+        "script": "looking-for-yay.sh"
       },
       "on_success": "preflight",
       "on_failure": "no_yay"
@@ -82,20 +79,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. yay refuses to build packages as root, so start Tux Store as a normal user.\"; exit 0; }",
-          "for t in lspci pkexec script curl pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing (lspci comes from the 'pciutils' package).\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "[ -d \"/usr/lib/modules/$(uname -r)\" ] || { echo \"The kernel you are running ($(uname -r)) was replaced by an update and its modules are gone. Restart your computer first, then run this again.\"; exit 0; }",
-          "avail=$(df -Pk / | awk 'NR==2 {print $4}')",
-          "[ \"${avail:-0}\" -ge 4194304 ] || { echo \"Less than 4 GiB of free space on /. Free some space first: building a kernel module needs room.\"; exit 0; }",
-          "n=$(pacman -Qu 2>/dev/null | wc -l)",
-          "[ \"$n\" -eq 0 ] || { echo \"$n package update(s) are waiting. Update your system first (Updates tab), restart if the kernel was updated, then run this again. Installing drivers on a half-updated system can break the graphics stack.\"; exit 0; }",
-          "curl -fsI --max-time 10 https://archlinux.org >/dev/null 2>&1 || { echo \"No internet connection (archlinux.org is unreachable).\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system.sh"
       },
       "capture": "preflight",
       "on_success": "preflight_result",
@@ -131,13 +115,7 @@
       "type": "check",
       "command": {
         "label": "Looking for your graphics card…",
-        "shell": [
-          "l=$(lspci -nn -d 10de: 2>/dev/null | grep -Ei 'vga|3d controller|display controller' | head -n 1)",
-          "[ -n \"$l\" ] || { echo \"\"; exit 0; }",
-          "m=$(printf '%s\\n' \"$l\" | sed -n 's/.*NVIDIA Corporation [A-Za-z0-9]* \\[\\([^]]*\\)\\].*/\\1/p')",
-          "[ -n \"$m\" ] || m=$(printf '%s\\n' \"$l\" | sed 's/^[^:]*:[^:]*: //')",
-          "printf '%s\\n' \"$m\""
-        ]
+        "script": "looking-for-your-graphics-card.sh"
       },
       "capture": "gpu_model",
       "on_success": "detect_gpu_branch",
@@ -147,27 +125,7 @@
       "type": "check",
       "command": {
         "label": "Looking for your graphics card…",
-        "shell": [
-          "# Prints: none | open | 580xx | 470xx | 390xx | 340xx | unknown",
-          "l=$(lspci -nn -d 10de: 2>/dev/null | grep -Ei 'vga|3d controller|display controller' | head -n 1)",
-          "[ -n \"$l\" ] || { echo none; exit 0; }",
-          "code=$(printf '%s\\n' \"$l\" | sed -n 's/.*NVIDIA Corporation \\([A-Z][A-Z0-9]*\\) \\[.*/\\1/p')",
-          "case \"$code\" in",
-          "  GB[0-9]*|AD[0-9]*|GA[0-9]*|TU[0-9]*) echo open; exit 0 ;;",
-          "  GV[0-9]*|GP[0-9]*|GM[0-9]*)          echo 580xx; exit 0 ;;",
-          "  GK[0-9]*)                            echo 470xx; exit 0 ;;",
-          "  GF[0-9]*)                            echo 390xx; exit 0 ;;",
-          "  GT[0-9]*|G[0-9][0-9]*)               echo 340xx; exit 0 ;;",
-          "esac",
-          "# The PCI id database does not know this chip name: fall back to the marketing name.",
-          "case \"$l\" in",
-          "  *RTX\\ [2-9][0-9][0-9][0-9]*|*RTX\\ A[0-9]*|*GTX\\ 16[0-9][0-9]*|*TITAN\\ RTX*) echo open ;;",
-          "  *GTX\\ 10[0-9][0-9]*|*GTX\\ 9[0-9][0-9]*|*GTX\\ 750*|*TITAN\\ X*|*TITAN\\ V*|*Quadro\\ P*|*Quadro\\ M*) echo 580xx ;;",
-          "  *GTX\\ [67][0-9][0-9]*) echo 470xx ;;",
-          "  *GTX\\ [45][0-9][0-9]*) echo 390xx ;;",
-          "  *) echo unknown ;;",
-          "esac"
-        ]
+        "script": "looking-for-your-graphics-card-2.sh"
       },
       "capture": "gpu_branch",
       "on_success": "detect_kernels",
@@ -177,27 +135,7 @@
       "type": "check",
       "command": {
         "label": "Checking your kernels…",
-        "shell": [
-          "# One \"<pkgbase>-headers\" per installed kernel (pkgbase comes from the kernel package itself).",
-          "pk=\"\"",
-          "for f in /usr/lib/modules/*/pkgbase; do",
-          "  [ -r \"$f\" ] || continue",
-          "  pk=\"$pk $(cat \"$f\")\"",
-          "done",
-          "pk=$(printf '%s\\n' $pk | sort -u)",
-          "[ -n \"$pk\" ] || { echo \"No installed kernel package was found.\"; exit 2; }",
-          "out=\"\"; miss=\"\"",
-          "for b in $pk; do",
-          "  case \"$b\" in *[!a-z0-9@._+-]*) echo \"Unexpected kernel package name: $b\"; exit 4 ;; esac",
-          "  if pacman -Si \"$b-headers\" >/dev/null 2>&1 || pacman -Qq \"$b-headers\" >/dev/null 2>&1; then",
-          "    out=\"$out $b-headers\"",
-          "  else",
-          "    miss=\"$miss $b\"",
-          "  fi",
-          "done",
-          "[ -z \"$miss\" ] || { echo \"No headers package could be found for the kernel(s):$miss. The NVIDIA module cannot be built for them. Install their headers (or use the official linux / linux-lts kernels) and try again.\"; exit 3; }",
-          "echo $out"
-        ]
+        "script": "checking-your-kernels.sh"
       },
       "capture": "headers",
       "on_success": "gpu_gate",
@@ -564,9 +502,7 @@
       "commands": [
         {
           "label": "Installing build tools and kernel headers",
-          "shell": [
-            "pacman -S --needed --noconfirm base-devel $TUX_VAR_HEADERS"
-          ],
+          "script": "installing-build-tools-and-kernel-header.sh",
           "root": true,
           "weight": 2,
           "expected_secs": 40,
@@ -583,14 +519,7 @@
       "commands": [
         {
           "label": "Installing ${driver_label}",
-          "shell": [
-            "set -e",
-            "L32=\"\"",
-            "if pacman -Sl multilib >/dev/null 2>&1; then L32=\"lib32-nvidia-utils\"; fi",
-            "# --ask 4: let pacman replace conflicting NVIDIA packages inside ONE transaction,",
-            "# so the system is never left without a driver in between.",
-            "pacman -S --needed --noconfirm --ask 4 nvidia-open-dkms nvidia-utils nvidia-settings $L32"
-          ],
+          "script": "installing-driver-label.sh",
           "root": true,
           "when": {
             "var": "driver",
@@ -602,17 +531,7 @@
         },
         {
           "label": "Installing ${driver_label}",
-          "shell": [
-            "set -e",
-            "B=\"$TUX_VAR_DRIVER\"",
-            "case \"$B\" in 580xx|470xx|390xx|340xx) ;; *) echo \"Unexpected driver branch: $B\"; exit 2 ;; esac",
-            "L32=\"\"",
-            "if pacman -Sl multilib >/dev/null 2>&1; then L32=\"lib32-nvidia-$B-utils\"; fi",
-            "# yay must run as a normal user; --sudo pkexec makes it ask for the password in a graphical dialog.",
-            "yay -S --needed --noconfirm --ask 4 --sudo pkexec \\",
-            "  --answerclean None --answerdiff None --answeredit None --answerupgrade None \\",
-            "  \"nvidia-$B-dkms\" \"nvidia-$B-utils\" \"nvidia-$B-settings\" $L32"
-          ],
+          "script": "installing-driver-label-2.sh",
           "when": {
             "var": "driver",
             "ne": "open"
@@ -623,9 +542,7 @@
         },
         {
           "label": "Rebuilding the boot images",
-          "shell": [
-            "if command -v mkinitcpio >/dev/null 2>&1; then mkinitcpio -P; else echo \"mkinitcpio not found (dracut or another tool?): skipping.\"; fi"
-          ],
+          "script": "rebuilding-the-boot-images.sh",
           "root": true,
           "weight": 3,
           "expected_secs": 40,
@@ -639,17 +556,7 @@
       "type": "check",
       "command": {
         "label": "Verifying the driver was built…",
-        "shell": [
-          "# Every installed kernel must now have an NVIDIA module (DKMS can fail without failing pacman).",
-          "bad=\"\"",
-          "for f in /usr/lib/modules/*/pkgbase; do",
-          "  [ -r \"$f\" ] || continue",
-          "  v=${f%/pkgbase}; v=${v##*/}",
-          "  modinfo -k \"$v\" nvidia >/dev/null 2>&1 || bad=\"$bad $v\"",
-          "done",
-          "[ -z \"$bad\" ] || { echo \"The NVIDIA kernel module was NOT built for:$bad\"; exit 1; }",
-          "echo ok"
-        ],
+        "script": "verifying-the-driver-was-built.sh",
         "timeout_secs": 60
       },
       "capture": "verify_msg",
@@ -676,13 +583,7 @@
     "kms_note": {
       "type": "check",
       "command": {
-        "shell": [
-          "if grep -Eq '^[[:space:]]*HOOKS=.*[( ]kms[) ]' /etc/mkinitcpio.conf 2>/dev/null; then",
-          "  echo \"Optional: your /etc/mkinitcpio.conf HOOKS contains 'kms'. Removing it keeps nouveau out of the initramfs (then run: sudo mkinitcpio -P).\"",
-          "else",
-          "  echo \"\"",
-          "fi"
-        ]
+        "script": "kms-note.sh"
       },
       "capture": "kms_text",
       "on_success": "read_version",
@@ -781,13 +682,7 @@
       "commands": [
         {
           "label": "Removing old NVIDIA packages",
-          "shell": [
-            "pk=$(pacman -Qq | grep -E '^(lib32-)?(nvidia|nvidia-lts|nvidia-dkms|nvidia-open|nvidia-open-lts|nvidia-open-dkms|nvidia-utils|nvidia-settings|nvidia-[0-9]+xx-(dkms|utils|settings)|opencl-nvidia(-[0-9]+xx)?)$' || true)",
-            "if [ -z \"$pk\" ]; then echo \"No NVIDIA driver packages are installed.\"; exit 0; fi",
-            "echo \"Removing: $pk\"",
-            "# -Rdd: other packages depend on these (steam, egl-wayland…); the replacement is installed right after.",
-            "pacman -Rdd --noconfirm $pk"
-          ],
+          "script": "removing-old-nvidia-packages.sh",
           "root": true,
           "expected_secs": 20,
           "percent": 5
@@ -817,10 +712,7 @@
       "type": "check",
       "command": {
         "label": "Reading the installed version…",
-        "shell": [
-          "case \"$TUX_VAR_DRIVER\" in open) p=nvidia-utils ;; *) p=\"nvidia-$TUX_VAR_DRIVER-utils\" ;; esac",
-          "pacman -Q \"$p\" 2>/dev/null | awk '{print $2}'"
-        ]
+        "script": "reading-the-installed-version.sh"
       },
       "capture": "installed_version",
       "on_success": "record_install",
@@ -863,11 +755,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "command -v pkexec >/dev/null 2>&1 || { echo \"The required tool 'pkexec' is missing.\"; exit 0; }",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system-2.sh"
       },
       "capture": "preflight",
       "on_success": "un_preflight_result",
@@ -896,24 +784,14 @@
           "root": true,
           "percent": 70,
           "expected_secs": 30,
-          "shell": [
-            "inst=\"\"",
-            "for p in $TUX_VAR_RECORDED_PACKAGES; do",
-            "  pacman -Qq \"$p\" >/dev/null 2>&1 && inst=\"$inst $p\"",
-            "done",
-            "if [ -z \"$inst\" ]; then echo \"None of the recorded packages are installed any more.\"; exit 0; fi",
-            "echo \"Removing:$inst\"",
-            "pacman -Rns --noconfirm $inst"
-          ]
+          "script": "removing-the-nvidia-packages.sh"
         },
         {
           "label": "Rebuilding the boot images",
           "root": true,
           "percent": 95,
           "expected_secs": 40,
-          "shell": [
-            "if command -v mkinitcpio >/dev/null 2>&1; then mkinitcpio -P; else echo \"mkinitcpio not found: skipping.\"; fi"
-          ]
+          "script": "rebuilding-the-boot-images-2.sh"
         }
       ],
       "on_success": "un_done",
@@ -947,16 +825,12 @@
   "info": {
     "download_mb": {
       "label": "Download size",
-      "shell": [
-        "pacman -Si nvidia-open-dkms nvidia-utils nvidia-settings 2>/dev/null | awk '/^Download Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
-      ]
+      "script": "download-size.sh"
     },
     "extracted_mb": 1500,
     "installed_mb": {
       "label": "Installed size",
-      "shell": [
-        "pacman -Si nvidia-open-dkms nvidia-utils nvidia-settings 2>/dev/null | awk '/^Installed Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
-      ]
+      "script": "installed-size.sh"
     },
     "note": "Download and installed sizes are read from your package database for the latest driver. Older drivers from the AUR are built on your computer (about 350 MB download); the space needed while installing is an estimate."
   },
