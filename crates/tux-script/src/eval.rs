@@ -21,8 +21,9 @@ pub fn parse_text(out: &str) -> Option<String> {
     Some(line.chars().take(80).collect())
 }
 
-fn output_of(spec: &CommandSpec, vars: &Vars) -> Option<String> {
-    let o = run_check(spec, vars);
+fn output_of(spec: &CommandSpec, vars: &Vars, path: &std::path::Path) -> Option<String> {
+    let spec = crate::addonscript::resolve(spec, path, vars).ok()?;
+    let o = run_check(&spec, vars);
     (o.code == 0 && !o.timed_out).then_some(o.stdout)
 }
 
@@ -36,10 +37,10 @@ pub fn run(bus: Bus, id: &str, confirmed: bool) {
     let vars = s.vars.clone();
     let mut values = ScriptValues::default();
     if let Some(c) = s.version.command() {
-        values.version = output_of(c, &vars).and_then(|o| parse_text(&o));
+        values.version = output_of(c, &vars, &loaded.path).and_then(|o| parse_text(&o));
     }
     if let Some(i) = &s.info {
-        let num = |d: &Option<tux_abi::script::DynNum>| d.as_ref().and_then(|d| d.command()).and_then(|c| output_of(c, &vars)).and_then(|o| parse_mb(&o));
+        let num = |d: &Option<tux_abi::script::DynNum>| d.as_ref().and_then(|d| d.command()).and_then(|c| output_of(c, &vars, &loaded.path)).and_then(|o| parse_mb(&o));
         values.download_mb = num(&i.download_mb);
         values.extracted_mb = num(&i.extracted_mb);
         values.installed_mb = num(&i.installed_mb);
