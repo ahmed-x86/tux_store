@@ -8,7 +8,10 @@
 
 use crate::console::ConsoleBuffer;
 use crate::convert;
-use crate::{AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails, UiScriptInfo, UiSection};
+use crate::{
+    AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails, UiScriptInfo, UiScriptOption,
+    UiSection,
+};
 use slint::{Image, Model, ModelRc, VecModel, Weak};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -171,6 +174,8 @@ pub struct State {
     script_running: bool,
     /// The add-on package page on display: facts, computed values, status.
     script_page: Option<ScriptPage>,
+    /// Options of the script screen on display (to tick boxes / add pictures).
+    script_options: Option<Rc<VecModel<UiScriptOption>>>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -220,6 +225,7 @@ impl State {
             script_seq: 0,
             script_running: false,
             script_page: None,
+            script_options: None,
         }
     }
 
@@ -412,6 +418,14 @@ impl State {
             return;
         };
         self.each_model(|m| patch_rows(m, &name, |r| r.icon = img.clone()));
+        if let Some(m) = self.script_options.as_ref() {
+            for i in 0..m.row_count() {
+                if let Some(mut row) = m.row_data(i).filter(|r| r.icon_key.as_str() == name) {
+                    row.icon = img.clone();
+                    m.set_row_data(i, row);
+                }
+            }
+        }
         if let Some(ui) = self.ui.upgrade() {
             let mut cur = ui.get_current_package();
             if cur.name.as_str() == name {
@@ -450,12 +464,30 @@ impl State {
         self.script_seq = view.seq;
         let Some(ui) = self.ui.upgrade() else { return };
         ui.set_script_selected(view.preselected.map_or(-1, |i| i as i32));
-        ui.set_script_view(convert::script_view(&view));
+        ui.set_script_checked_count(view.options.iter().filter(|o| o.checked).count() as i32);
+        let (ui_view, options) = convert::script_view(&view, &self.icons);
+        self.script_options = Some(options);
+        ui.set_script_view(ui_view);
+        let missing: Vec<String> = view.options.iter().filter(|o| !o.icon.is_empty()).map(|o| o.icon.clone()).collect();
         if !view.busy {
             // a screen that needs the user always comes back to the front
             ui.set_script_minimized(false);
         }
         ui.set_script_active(true);
+        self.request_icons(missing);
+    }
+
+    /// A check box was clicked.
+    pub fn script_option_toggled(&mut self, i: usize) {
+        let Some(m) = self.script_options.as_ref() else { return };
+        if let Some(mut row) = m.row_data(i) {
+            row.checked = !row.checked;
+            m.set_row_data(i, row);
+        }
+        let n = (0..m.row_count()).filter(|&j| m.row_data(j).is_some_and(|r| r.checked)).count();
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_script_checked_count(n as i32);
+        }
     }
 
     fn on_script_ended(&mut self, success: bool) {
@@ -645,7 +677,12 @@ impl State {
         let Some(ui) = self.ui.upgrade() else { return };
         let sel = ui.get_script_selected();
         let selected = usize::try_from(sel).ok();
-        self.bus.publish(&Message::ScriptAction { seq: self.script_seq, button, selected });
+        let checked: Vec<usize> = self
+            .script_options
+            .as_ref()
+            .map(|m| (0..m.row_count()).filter(|&j| m.row_data(j).is_some_and(|r| r.checked)).collect())
+            .unwrap_or_default();
+        self.bus.publish(&Message::ScriptAction { seq: self.script_seq, button, selected, checked });
     }
 
     // ───────────────────────── helpers ─────────────────────────
