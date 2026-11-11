@@ -5,7 +5,7 @@
   "description": "A tiny harmless script to try the script system. It only prints a few lines.",
   "version": {
     "label": "Today's version",
-    "shell": "date +%Y.%m.%d"
+    "script": "today-s-version.sh"
   },
   "author": "You",
   "keywords": [
@@ -36,17 +36,23 @@
       "type": "choice",
       "title": "Pick a greeting",
       "store_as": "greeting",
-      "next": "say_in_terminal",
+      "next": "pick_extras",
       "options": [
         {
           "value": "Hello",
           "label": "Hello",
-          "hint": "A friendly greeting."
+          "hint": "A friendly greeting.",
+          "icon": {
+            "theme": "face-smile"
+          }
         },
         {
           "value": "Marhaba",
           "label": "Marhaba",
-          "hint": "The Arabic one."
+          "hint": "The Arabic one.",
+          "icon": {
+            "theme": "preferences-desktop-locale"
+          }
         }
       ],
       "buttons": [
@@ -70,16 +76,22 @@
           "percent": 40
         },
         {
-          "label": "Creating a small file",
-          "shell": [
-            "mkdir -p \"$HOME/.local/share/tux-hello\"",
-            "echo \"$TUX_VAR_GREETING from Tux Store\" > \"$HOME/.local/share/tux-hello/hello.txt\""
+          "label": "Running greet.sh from the add-on's folder",
+          "script": "greet.sh",
+          "args": [
+            "${greeting}",
+            "@{extras}"
           ],
+          "percent": 55
+        },
+        {
+          "label": "Creating a small file",
+          "script": "creating-a-small-file.sh",
           "percent": 65
         },
         {
           "label": "Waiting a moment",
-          "shell": "sleep 2; echo done",
+          "script": "waiting-a-moment.sh",
           "expected_secs": 2,
           "percent": 90
         }
@@ -97,15 +109,7 @@
       "type": "check",
       "command": {
         "label": "Looking for yay and paru…",
-        "shell": [
-          "y=0; p=0",
-          "command -v yay >/dev/null 2>&1 && y=1",
-          "command -v paru >/dev/null 2>&1 && p=1",
-          "if [ $y = 1 ] && [ $p = 1 ]; then echo both",
-          "elif [ $y = 1 ]; then echo yay",
-          "elif [ $p = 1 ]; then echo paru",
-          "else echo none; fi"
-        ]
+        "script": "looking-for-yay-and-paru.sh"
       },
       "capture": "helpers",
       "on_success": "helper_branch",
@@ -218,11 +222,7 @@
         {
           "label": "Deleting the recorded files",
           "percent": 100,
-          "shell": [
-            "printf '%s\\n' \"$TUX_VAR_RECORDED_FILES\" | while IFS= read -r f; do",
-            "  case \"$f\" in \"$HOME\"/*) rm -rf -- \"$f\"; echo \"removed $f\" ;; *) echo \"skipped $f\" ;; esac",
-            "done"
-          ]
+          "script": "deleting-the-recorded-files.sh"
         }
       ],
       "on_success": "un_done"
@@ -232,11 +232,41 @@
       "title": "Removed",
       "message": "The hello files were deleted.",
       "mark": "uninstalled"
+    },
+    "pick_extras": {
+      "type": "choice",
+      "title": "Pick some extras",
+      "message": "Check boxes: tick any number.",
+      "multiple": true,
+      "store_as": "extras",
+      "default": "waves",
+      "next": "say_in_terminal",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "waves",
+          "label": "Wave",
+          "hint": "A friendly wave.",
+          "icon": {
+            "theme": "face-smile"
+          }
+        },
+        {
+          "value": "cheers",
+          "label": "Cheers",
+          "hint": "Another one."
+        },
+        {
+          "value": "bye",
+          "label": "Goodbye",
+          "hint": "For the end."
+        }
+      ]
     }
   },
   "info": {
     "download_mb": {
-      "shell": "echo 2"
+      "script": "info.sh"
     },
     "extracted_mb": 3,
     "installed_mb": 1,
