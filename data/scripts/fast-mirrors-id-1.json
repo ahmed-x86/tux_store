@@ -30,11 +30,11 @@
   "info": {
     "download_mb": {
       "label": "Download size",
-      "shell": "pacman -Si reflector 2>/dev/null | awk '/^Download Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      "script": "download-size.sh"
     },
     "installed_mb": {
       "label": "Installed size",
-      "shell": "pacman -Si reflector 2>/dev/null | awk '/^Installed Size/ {v=$4; u=$5; if (u==\"KiB\") v/=1024; else if (u==\"GiB\") v*=1024; else if (u==\"B\") v/=1048576; t+=v} END {printf \"%d\\n\", t+0.5}'"
+      "script": "installed-size.sh"
     },
     "extracted_mb": 20,
     "note": "Sizes are read from your package database. Packages you already have are skipped."
@@ -73,14 +73,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
-          "for t in pkexec pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system.sh"
       },
       "capture": "preflight",
       "on_success": "preflight_gate",
@@ -116,14 +109,7 @@
       "command": {
         "label": "Looking at what is already installed…",
         "timeout_secs": 60,
-        "shell": [
-          "out=\"\"",
-          "for p in $TUX_VAR_PKGS; do",
-          "  pacman -Si \"$p\" >/dev/null 2>&1 || continue      # not in your repositories: handled below",
-          "  pacman -Qq \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
-          "done",
-          "printf '%s\\n' $out"
-        ]
+        "script": "looking-at-what-is-already-installed.sh"
       },
       "capture": "new_pkgs",
       "on_success": "find_skipped",
@@ -134,13 +120,7 @@
       "command": {
         "label": "Checking the repositories…",
         "timeout_secs": 60,
-        "shell": [
-          "out=\"\"",
-          "for p in $TUX_VAR_PKGS; do",
-          "  pacman -Si \"$p\" >/dev/null 2>&1 || out=\"$out $p\"",
-          "done",
-          "printf '%s\\n' $out"
-        ]
+        "script": "checking-the-repositories.sh"
       },
       "capture": "skipped_pkgs",
       "on_success": "missing_gate",
@@ -205,21 +185,14 @@
           "weight": 10,
           "expected_secs": 60,
           "percent": 70,
-          "shell": [
-            "set -e",
-            "[ -z \"$TUX_VAR_NEW_PKGS\" ] || pacman -S --needed --noconfirm $TUX_VAR_NEW_PKGS"
-          ]
+          "script": "installing-packages.sh"
         },
         {
           "label": "Ranking mirrors (this takes a while)",
           "root": true,
           "expected_secs": 60,
           "percent": 95,
-          "shell": [
-            "set -e",
-            "[ -e /etc/pacman.d/mirrorlist.tux-backup ] || cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.tux-backup",
-            "reflector --latest 20 --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
-          ]
+          "script": "ranking-mirrors-this-takes-a-while.sh"
         }
       ],
       "on_success": "verify",
@@ -230,14 +203,7 @@
       "command": {
         "label": "Checking the result…",
         "timeout_secs": 60,
-        "shell": [
-          "bad=\"\"",
-          "for p in $TUX_VAR_NEW_PKGS; do",
-          "  pacman -Qq \"$p\" >/dev/null 2>&1 || bad=\"$bad $p\"",
-          "done",
-          "[ -z \"$bad\" ] || { echo \"Not installed:$bad\"; exit 1; }",
-          "echo ok"
-        ]
+        "script": "checking-the-result.sh"
       },
       "capture": "verify_msg",
       "on_success": "record_install",
@@ -323,14 +289,7 @@
       "type": "check",
       "command": {
         "label": "Checking your system…",
-        "shell": [
-          "[ \"$(id -u)\" -ne 0 ] || { echo \"Tux Store is running as root. Start it as a normal user; it asks for the password only when needed.\"; exit 0; }",
-          "for t in pkexec pacman; do",
-          "  command -v \"$t\" >/dev/null 2>&1 || { echo \"The required tool '$t' is missing.\"; exit 0; }",
-          "done",
-          "[ ! -e /var/lib/pacman/db.lck ] || { echo \"pacman is locked (/var/lib/pacman/db.lck exists). Another package manager may be running. Wait for it to finish, then try again.\"; exit 0; }",
-          "echo \"\""
-        ]
+        "script": "checking-your-system-2.sh"
       },
       "capture": "preflight",
       "on_success": "un_gate",
@@ -359,26 +318,14 @@
           "root": true,
           "expected_secs": 5,
           "percent": 30,
-          "shell": [
-            "if [ -e /etc/pacman.d/mirrorlist.tux-backup ]; then mv -f /etc/pacman.d/mirrorlist.tux-backup /etc/pacman.d/mirrorlist && echo \"restored\"; fi",
-            "exit 0"
-          ]
+          "script": "restoring-your-old-mirror-list.sh"
         },
         {
           "label": "Removing the codec packages",
           "root": true,
           "expected_secs": 20,
           "percent": 95,
-          "shell": [
-            "# Two passes: a package may only become removable after another one is gone.",
-            "for pass in 1 2; do",
-            "  for p in $TUX_VAR_RECORDED_PACKAGES; do",
-            "    pacman -Qq \"$p\" >/dev/null 2>&1 || continue",
-            "    pacman -Rns --noconfirm \"$p\" >/dev/null 2>&1 && echo \"removed $p\"",
-            "  done",
-            "done",
-            "exit 0"
-          ]
+          "script": "removing-the-codec-packages.sh"
         }
       ],
       "on_success": "un_done",
