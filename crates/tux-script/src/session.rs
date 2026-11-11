@@ -4,16 +4,19 @@
 //! for the UI's [`Message::ScriptAction`] (matched by `seq`, so a stale click
 //! on an old screen is ignored).
 
+use crate::clock;
+use crate::logfile::{self, LogFile};
+use crate::output::Output;
 use crate::runner::{run_check, run_visible};
 use crossbeam_channel::Receiver;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use tux_abi::receipt::{self, Receipt};
 use tux_abi::script::{
-    eval, interpolate, Button, ButtonStyle, CheckStep, ChoiceStep, CommandSpec, DialogStep, FinishStep, LoadedScript,
-    Mark, Origin, RecordStep, RunStep, Step, Tone, Vars,
+    eval, interpolate, option_icon_key, Button, ButtonStyle, CheckStep, ChoiceStep, CommandSpec, DialogStep, FinishStep,
+    LoadedScript, Mark, Origin, ProgressMode, RecordStep, RunStep, Step, Tone, Vars,
 };
 use tux_abi::text::is_valid_package_name;
 use tux_abi::{Bus, Message, ScriptButtonView, ScriptOptionView, ScriptViewData};
@@ -25,7 +28,10 @@ const MAX_VAR_LEN: usize = 4_096;
 pub struct Input {
     pub seq: u64,
     pub button: usize,
+    /// The chosen option of a radio list.
     pub selected: Option<usize>,
+    /// The ticked options of a check-box list.
+    pub checked: Vec<usize>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -36,6 +42,8 @@ pub enum Mode {
 
 pub struct Session {
     bus: Bus,
+    /// Console + log file: everything the commands print goes through here.
+    out: Arc<Output>,
     mode: Mode,
     loaded: LoadedScript,
     vars: Vars,
@@ -70,11 +78,46 @@ impl Session {
             }
         }
         vars.insert("script_id".into(), loaded.script.id.clone());
-        Session { bus, mode, loaded, vars, rx, seq: 0, progress: 0.0 }
+
+        // The log of this run: `tux-store-<time>-<date>-<add-on name>.log`.
+        let stamp = clock::now();
+        let s = &loaded.script;
+        let header = format!(
+            "Tux Store {} — add-on log\nAdd-on  : {} ({})\nAction  : {}\nOrigin  : {}\nStarted : {}\n{}\n",
+            env!("CARGO_PKG_VERSION"),
+            s.title,
+            s.id,
+            if mode == Mode::Install { "install" } else { "uninstall" },
+            if loaded.origin == Origin::User { "user script" } else { "shipped with the store" },
+            stamp.pretty(),
+            "-".repeat(60),
+        );
+        let log = LogFile::new(tux_abi::paths::logs_dir(), &stamp, &logfile::safe_name(&s.title, &s.id), header);
+        let out = Arc::new(Output::new(bus, log));
+        Session { bus, out, mode, loaded, vars, rx, seq: 0, progress: 0.0 }
     }
 
     /// Runs to completion. `Some(success)`, or `None` when the host shut down.
+    /// Whatever happens, a log file is left behind if anything was run or failed.
     pub fn run(mut self) -> Option<bool> {
+        let result = self.run_flow();
+        let footer = format!(
+            "{}\nFinished: {}",
+            match result {
+                Some(true) => "Result  : success",
+                Some(false) => "Result  : not completed (failed or cancelled)",
+                None => "Result  : interrupted (Tux Store was closed)",
+            },
+            clock::now().pretty()
+        );
+        if let Some(path) = self.out.finish(&footer) {
+            log::info!("add-on log saved: {}", path.display());
+            self.out.console(&format!("\n[log saved: {}]\n", path.display()));
+        }
+        result
+    }
+
+    fn run_flow(&mut self) -> Option<bool> {
         if self.loaded.origin == Origin::User && !self.trust_gate()? {
             return Some(false);
         }
@@ -151,8 +194,21 @@ impl Session {
             tone,
             options: Vec::new(),
             preselected: None,
+            multi: false,
+            min_select: 0,
             buttons: Vec::new(),
             busy: false,
+        }
+    }
+
+    /// `message` plus, when a log file exists, where it is.
+    fn with_log_note(&self, message: &str) -> String {
+        match self.out.log_path() {
+            Some(p) => {
+                let sep = if message.is_empty() { "" } else { "\n\n" };
+                format!("{message}{sep}Log: {}", p.display())
+            }
+            None => message.to_string(),
         }
     }
 
@@ -170,7 +226,7 @@ impl Session {
         let mut v = self.base_view(title, message, Tone::Info);
         v.busy = true;
         self.publish(v);
-        self.bus.publish(&Message::ScriptProgress { fraction: self.progress, label: String::new() });
+        self.bus.publish(&Message::ScriptProgress { fraction: self.progress, label: self.txt(title) });
     }
 
     fn button_views(&self, buttons: &[Button]) -> Vec<ScriptButtonView> {
@@ -193,12 +249,21 @@ impl Session {
 
     fn dialog(&mut self, d: &DialogStep) -> Option<Next> {
         let mut v = self.base_view(&d.title, &d.message.joined(), d.tone);
+        if d.tone == Tone::Error {
+            // A failure screen: keep a log of it and say where it is.
+            self.out.note(&format!("[error] {}: {}", v.title, v.message));
+            self.out.ensure_log();
+            v.message = self.with_log_note(&v.message);
+        }
         v.buttons = self.button_views(&d.buttons);
+        let title = v.title.clone();
         let seq = self.publish(v);
         loop {
             let input = self.wait(seq)?;
             if let Some(b) = d.buttons.get(input.button) {
-                return Some(self.press(&b.clone()));
+                let b = b.clone();
+                self.out.note(&format!("[button] {title} → {}", self.txt(&b.label)));
+                return Some(self.press(&b));
             }
         }
     }
@@ -212,6 +277,12 @@ impl Session {
             .filter(|(_, o)| o.visible_if.as_ref().map_or(true, |w| eval(w, &self.vars)))
             .map(|(i, _)| i)
             .collect();
+        // a `multiple` choice may start with some boxes ticked: `default` lists their values
+        let ticked: Vec<String> = match (&c.default, c.multiple) {
+            (Some(d), true) => self.txt(d).split_whitespace().map(str::to_string).collect(),
+            _ => Vec::new(),
+        };
+        let script_id = self.loaded.script.id.clone();
         let options: Vec<ScriptOptionView> = visible
             .iter()
             .map(|&i| {
@@ -223,26 +294,58 @@ impl Session {
                     }
                     hint.push_str(&self.txt(&n.text));
                 }
-                ScriptOptionView { label: self.txt(&o.label), hint }
+                ScriptOptionView {
+                    label: self.txt(&o.label),
+                    hint,
+                    icon: o.icon.as_ref().map(|ic| option_icon_key(&script_id, ic)).unwrap_or_default(),
+                    checked: ticked.iter().any(|t| *t == o.value),
+                }
             })
             .collect();
-        let preselected = c.default.as_ref().map(|d| self.txt(d)).and_then(|d| {
-            visible.iter().position(|&i| c.options[i].value == d)
-        });
+        let preselected = match (&c.default, c.multiple) {
+            (Some(d), false) => {
+                let d = self.txt(d);
+                visible.iter().position(|&i| c.options[i].value == d)
+            }
+            _ => None,
+        };
 
         let mut v = self.base_view(&c.title, &c.message.joined(), c.tone);
         v.options = options;
         v.preselected = preselected;
+        v.multi = c.multiple;
+        v.min_select = c.min_select;
         v.buttons.push(ScriptButtonView {
             label: self.txt(c.continue_label.as_deref().unwrap_or("Continue")),
             style: ButtonStyle::Primary,
             needs_selection: true,
         });
         v.buttons.extend(self.button_views(&c.buttons));
+        let title = v.title.clone();
         let seq = self.publish(v);
         loop {
             let input = self.wait(seq)?;
             if input.button == 0 {
+                if c.multiple {
+                    // the ticked boxes, in the order of the options, each once
+                    let mut picked: Vec<usize> = input.checked.iter().copied().filter(|&n| n < visible.len()).collect();
+                    picked.sort_unstable();
+                    picked.dedup();
+                    if (picked.len() as u32) < c.min_select {
+                        continue; // not enough ticked: ignore
+                    }
+                    let opts: Vec<_> = picked.iter().map(|&n| c.options[visible[n]].clone()).collect();
+                    let joined = opts.iter().map(|o| o.value.as_str()).collect::<Vec<_>>().join(" ");
+                    self.vars.insert(c.store_as.clone(), clip(&joined, MAX_VAR_LEN));
+                    for o in &opts {
+                        for (k, val) in &o.set {
+                            let val = interpolate(val, &self.vars);
+                            self.vars.insert(k.clone(), clip(&val, MAX_VAR_LEN));
+                        }
+                    }
+                    self.out.note(&format!("[choice] {title}: {} = {joined:?}", c.store_as));
+                    return Some(Next::Goto(c.next.clone()));
+                }
                 let Some(opt) = input.selected.and_then(|s| visible.get(s)).map(|&i| c.options[i].clone()) else {
                     continue; // nothing selected: ignore
                 };
@@ -251,10 +354,13 @@ impl Session {
                     let val = interpolate(val, &self.vars);
                     self.vars.insert(k.clone(), clip(&val, MAX_VAR_LEN));
                 }
+                self.out.note(&format!("[choice] {title}: {} = {:?}", c.store_as, opt.value));
                 return Some(Next::Goto(opt.goto.clone().unwrap_or_else(|| c.next.clone())));
             }
             if let Some(b) = c.buttons.get(input.button - 1) {
-                return Some(self.press(&b.clone()));
+                let b = b.clone();
+                self.out.note(&format!("[button] {title} → {}", self.txt(&b.label)));
+                return Some(self.press(&b));
             }
         }
     }
@@ -273,6 +379,11 @@ impl Session {
             self.bus.publish(&Message::ScriptProgress { fraction: 1.0, label: String::new() });
         }
         let mut v = self.base_view(&f.title, &f.message.joined(), tone);
+        self.out.note(&format!("[finish] {} ({})", v.title, if f.success { "success" } else { "failure" }));
+        if !f.success {
+            self.out.ensure_log();
+        }
+        v.message = self.with_log_note(&v.message);
         v.buttons = vec![ScriptButtonView {
             label: self.txt(f.button.as_deref().unwrap_or("Close")),
             style: ButtonStyle::Primary,
@@ -357,6 +468,9 @@ impl Session {
     /// A one-button error screen that ends the script.
     fn fail_screen(&mut self, title: &str, message: &str) -> Option<bool> {
         let mut v = self.base_view(title, message, Tone::Error);
+        self.out.note(&format!("[error] {}: {}", v.title, v.message));
+        self.out.ensure_log();
+        v.message = self.with_log_note(&v.message);
         v.buttons = vec![ScriptButtonView { label: "Close".into(), style: ButtonStyle::Primary, needs_selection: false }];
         let seq = self.publish(v);
         self.wait(seq)?;
@@ -409,6 +523,11 @@ impl Session {
         self.vars.insert("last_failed".into(), failed.to_string());
     }
 
+    /// A `script` command becomes a plain `argv` command (see `addonscript`).
+    fn resolve(&self, c: &CommandSpec) -> Result<CommandSpec, String> {
+        crate::addonscript::resolve(c, &self.loaded.path, &self.vars)
+    }
+
     fn command_runs(&self, c: &CommandSpec) -> bool {
         c.when.as_ref().map_or(true, |w| eval(w, &self.vars))
     }
@@ -419,7 +538,10 @@ impl Session {
         }
         let title = if c.command.label.is_empty() { "Checking…".to_string() } else { c.command.label.clone() };
         self.busy_screen(&title, "");
-        let out = run_check(&c.command, &self.vars);
+        let out = match self.resolve(&c.command) {
+            Ok(spec) => run_check(&spec, &self.vars),
+            Err(e) => crate::runner::Outcome { code: -1, stdout: e, timed_out: false },
+        };
         let ok = out.code == 0 && !out.timed_out;
         if let Some(name) = &c.capture {
             self.vars.insert(name.clone(), clip(&out.stdout, MAX_VAR_LEN));
@@ -430,6 +552,9 @@ impl Session {
             Next::Goto(c.on_success.clone())
         } else {
             log::info!("script check failed ({}): code {}", label, out.code);
+            let why = if out.timed_out { "timed out".to_string() } else { format!("exit code {}", out.code) };
+            let first = out.stdout.lines().next().unwrap_or("");
+            self.out.note(&format!("[check failed] {label} ({why}) {first}"));
             Next::Goto(c.on_failure.clone())
         }
     }
@@ -437,6 +562,8 @@ impl Session {
     fn run_step(&mut self, r: &RunStep) -> Next {
         let todo: Vec<&CommandSpec> = r.commands.iter().filter(|c| self.command_runs(c)).collect();
         self.busy_screen(&r.title, &r.message.joined());
+        // Something is about to run: from here on there is a log to keep.
+        self.out.ensure_log();
 
         // Where each command ends on the overall bar (absolute 0.0–1.0).
         // Commands with `percent` say it themselves; the others share the
@@ -462,18 +589,39 @@ impl Session {
             })
             .collect();
 
-        // The bar creeps toward the end of the running command.
-        let state = Arc::new(Mutex::new(Tick { from: start0, to: start0, started: Instant::now(), expected: 30.0, label: String::new() }));
+        // The command's own progress (tenths of a percent + 1, 0 = none yet),
+        // filled in by the threads that read its output.
+        let real = Arc::new(AtomicU32::new(0));
+        // While a command runs the bar moves between `from` and `to`:
+        // with the command's real progress when it reports one, otherwise it
+        // creeps toward `to` (and, for `"progress": "percent"` commands, waits
+        // for the real numbers instead of pretending).
+        let state = Arc::new(Mutex::new(Tick {
+            from: start0,
+            to: start0,
+            started: Instant::now(),
+            expected: 30.0,
+            label: String::new(),
+            waits_for_real: false,
+        }));
         let stop = Arc::new(AtomicBool::new(false));
         let ticker = {
-            let (state, stop, bus) = (state.clone(), stop.clone(), self.bus);
+            let (state, stop, real, bus) = (state.clone(), stop.clone(), real.clone(), self.bus);
             thread::spawn(move || {
+                let mut shown = start0; // the bar never goes backwards
                 while !stop.load(Ordering::Relaxed) {
                     thread::sleep(Duration::from_millis(400));
                     let t = tux_abi::sync::lock(&state);
-                    let creep = (t.to - t.from) * 0.95 * (1.0 - (-t.started.elapsed().as_secs_f64() / t.expected).exp());
-                    let fraction = (t.from + creep).clamp(0.0, 0.99);
-                    bus.publish(&Message::ScriptProgress { fraction, label: t.label.clone() });
+                    let reported = real.load(Ordering::Relaxed);
+                    let fraction = if reported > 0 {
+                        t.from + (t.to - t.from) * (f64::from(reported - 1) / 1000.0)
+                    } else if t.waits_for_real {
+                        t.from
+                    } else {
+                        t.from + (t.to - t.from) * 0.95 * (1.0 - (-t.started.elapsed().as_secs_f64() / t.expected).exp())
+                    };
+                    shown = fraction.clamp(0.0, 0.99).max(shown);
+                    bus.publish(&Message::ScriptProgress { fraction: shown, label: t.label.clone() });
                 }
             })
         };
@@ -488,24 +636,36 @@ impl Session {
                 t.started = Instant::now();
                 t.expected = c.expected_secs.unwrap_or(30).max(1) as f64;
                 t.label = label.clone();
+                t.waits_for_real = c.progress == ProgressMode::Percent;
+                real.store(0, Ordering::Relaxed); // under the lock: the ticker never mixes two commands
             }
-            self.bus.publish(&Message::ScriptOutput { text: format!("\n==> {label}\n") });
+            // the name of the operation is on screen at once, not at the next tick
+            self.bus.publish(&Message::ScriptProgress { fraction: self.progress.min(0.99), label: label.clone() });
+            self.out.text(&format!("\n==> {label}\n"));
             if r.echo {
                 eprintln!("[add-on {}] ==> {label}", self.loaded.script.id);
             }
-            let code = run_visible(c, &self.vars, &self.bus, r.echo);
+            let code = match self.resolve(c) {
+                Ok(spec) => run_visible(&spec, &self.vars, &self.out, r.echo, &real),
+                Err(e) => {
+                    self.out.text(&format!("{e}\n"));
+                    -1
+                }
+            };
             if code == 0 || c.ignore_failure {
                 self.progress = self.progress.max(end);
                 {
                     let mut t = tux_abi::sync::lock(&state);
                     t.from = self.progress;
                     t.to = self.progress;
+                    t.waits_for_real = false;
+                    real.store(0, Ordering::Relaxed);
                 }
                 // a finished command is reported at once, not at the next tick
                 self.bus.publish(&Message::ScriptProgress { fraction: self.progress.min(0.99), label: label.clone() });
             }
             if code != 0 && !c.ignore_failure {
-                self.bus.publish(&Message::ScriptOutput { text: format!("\n[{label}: exit code {code}]\n") });
+                self.out.text(&format!("\n[{label}: exit code {code}]\n"));
                 failure = Some((code, label));
                 break;
             }
@@ -542,6 +702,8 @@ struct Tick {
     started: Instant,
     expected: f64,
     label: String,
+    /// The running command reports its own percentage: do not creep ahead of it.
+    waits_for_real: bool,
 }
 
 enum Next {
@@ -576,6 +738,32 @@ mod tests {
     }
 
     fn play_mode(json: &str, origin: Origin, mode: Mode, answer: impl Fn(&ScriptViewData) -> (usize, Option<usize>) + Send + 'static) -> (Option<bool>, Vec<Message>) {
+        play_full(json, origin, mode, move |v| {
+            let (button, selected) = answer(v);
+            (button, selected, Vec::new())
+        })
+    }
+
+    /// Where the logs of the tests go (never the real `~/.local/state`).
+    fn isolate_logs() -> PathBuf {
+        static DIR: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+        DIR.get_or_init(|| {
+            let d = std::env::temp_dir().join(format!("tux-engine-state-{}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&d);
+            std::env::set_var("XDG_STATE_HOME", &d);
+            d.join("tux-store").join("logs")
+        })
+        .clone()
+    }
+
+    /// Like `play_mode`, and the answer may also tick check boxes.
+    fn play_full(
+        json: &str,
+        origin: Origin,
+        mode: Mode,
+        answer: impl Fn(&ScriptViewData) -> (usize, Option<usize>, Vec<usize>) + Send + 'static,
+    ) -> (Option<bool>, Vec<Message>) {
+        isolate_logs();
         let log: &'static Log = Box::leak(Box::new(Mutex::new(Vec::new())));
         let api = HostApi { abi_version: 1, log_level: 0, ctx: log as *const Log as *mut c_void, publish, log: nolog };
         let script: Script = serde_json::from_str(json).unwrap();
@@ -594,8 +782,8 @@ mod tests {
                     });
                     if let Some(v) = next {
                         answered = v.seq;
-                        let (button, selected) = answer(&v);
-                        let _ = tx.send(Input { seq: v.seq, button, selected });
+                        let (button, selected, checked) = answer(&v);
+                        let _ = tx.send(Input { seq: v.seq, button, selected, checked });
                     }
                     thread::sleep(Duration::from_millis(10));
                 }
@@ -742,5 +930,136 @@ mod tests {
         let (res, msgs) = play(json, Origin::System, |_| (0, None));
         assert_eq!(res, Some(false));
         assert_eq!(titles(&msgs), ["Script error"]);
+    }
+
+    // ───────────────────────── check boxes, real progress, logs ─────────────────────────
+
+    const MULTI: &str = r#"{"schema":2,"id":"multi-test-1","title":"Multi","start":"pick","steps":{
+      "pick":{"type":"choice","title":"Pick some","multiple":true,"min_select":1,"store_as":"chosen","default":"b c","next":"show",
+        "options":[
+          {"value":"a","label":"A","set":{"pa":"yes"}},
+          {"value":"b","label":"B","icon":{"theme":"firefox"}},
+          {"value":"c","label":"C"}]},
+      "show":{"type":"check","command":{"shell":"printf '%s|%s' \"$TUX_VAR_CHOSEN\" \"$TUX_VAR_PA\""},"capture":"seen","on_success":"end","on_failure":"end"},
+      "end":{"type":"finish","title":"Got ${seen}"}}}"#;
+
+    #[test]
+    fn multiple_choice_collects_every_ticked_option_in_order() {
+        let (res, msgs) = play_full(MULTI, Origin::System, Mode::Install, |v| match v.title.as_str() {
+            "Pick some" => {
+                assert!(v.multi);
+                assert_eq!(v.min_select, 1);
+                assert_eq!(v.preselected, None, "check boxes use `checked`, not `preselected`");
+                let checked: Vec<bool> = v.options.iter().map(|o| o.checked).collect();
+                assert_eq!(checked, [false, true, true], "`default` lists the values ticked at the start");
+                assert!(v.options[1].icon.starts_with("multi-test-1.opt-"), "{:?}", v.options[1].icon);
+                assert!(v.options[0].icon.is_empty() && v.options[2].icon.is_empty());
+                // ticked out of order, one twice, one that does not exist
+                (0, None, vec![2, 0, 0, 9])
+            }
+            _ => (0, None, Vec::new()),
+        });
+        assert_eq!(res, Some(true));
+        // option order, each once, and the `set` of every ticked option applied
+        assert_eq!(titles(&msgs), ["Pick some", "Got a c|yes"]);
+    }
+
+    #[test]
+    fn multiple_choice_may_end_empty_when_min_select_is_zero() {
+        let json = MULTI.replace(r#""min_select":1,"#, "").replace(r#""default":"b c","#, "");
+        let (res, msgs) = play_full(&json, Origin::System, Mode::Install, |_| (0, None, Vec::new()));
+        assert_eq!(res, Some(true));
+        assert_eq!(titles(&msgs), ["Pick some", "Got |"]);
+    }
+
+    const REAL: &str = r#"{"schema":2,"id":"real-test-1","title":"Real","start":"go","steps":{
+      "go":{"type":"run","title":"Working","commands":[
+         {"label":"download","shell":"echo TUX_PROGRESS=50; sleep 1","percent":80},
+         {"label":"meter","shell":"printf '30%%\\n'; sleep 1","percent":100,"progress":"percent"}],
+       "on_success":"end"},
+      "end":{"type":"finish","title":"ok"}}}"#;
+
+    #[test]
+    fn the_bar_follows_the_commands_own_progress() {
+        let (res, msgs) = play(REAL, Origin::System, |_| (0, None));
+        assert_eq!(res, Some(true));
+        let fr: Vec<(f64, String)> = msgs
+            .iter()
+            .filter_map(|m| match m {
+                Message::ScriptProgress { fraction, label } => Some((*fraction, label.clone())),
+                _ => None,
+            })
+            .collect();
+        let near = |want: f64| fr.iter().any(|(f, _)| (f - want).abs() < 1e-9);
+        // 50 % of the first command's 0 → 80 % share, then 30 % of the 80 → 100 % share
+        assert!(near(0.4), "{fr:?}");
+        assert!(near(0.8 + 0.2 * 0.3), "{fr:?}");
+        assert!(fr.windows(2).all(|w| w[1].0 + 1e-9 >= w[0].0), "progress went backwards: {fr:?}");
+        assert!(fr.iter().any(|(_, l)| l == "download") && fr.iter().any(|(_, l)| l == "meter"), "operation names are published");
+        // the marker line is not shown (nor logged), the percentage line is
+        let out: String = msgs.iter().filter_map(|m| match m { Message::ScriptOutput { text } => Some(text.as_str()), _ => None }).collect();
+        assert!(!out.contains("TUX_PROGRESS"), "{out:?}");
+        assert!(out.contains("30%"), "{out:?}");
+    }
+
+    fn find_log(dir: &std::path::Path, name: &str) -> Option<PathBuf> {
+        let suffix = format!("-{name}.log");
+        std::fs::read_dir(dir).ok()?.flatten().map(|e| e.path()).find(|p| p.file_name().is_some_and(|n| n.to_string_lossy().ends_with(&suffix)))
+    }
+
+    #[test]
+    fn a_successful_install_leaves_a_clean_log() {
+        let dir = isolate_logs();
+        let json = r#"{"schema":2,"id":"log-ok-1","title":"Log OK Demo","start":"go","steps":{
+          "go":{"type":"run","title":"R","commands":[{"label":"say","shell":"echo hello-from-the-command; printf 'p 10%%\\rp 100%%\\n'"}],"on_success":"end"},
+          "end":{"type":"finish","title":"Done"}}}"#;
+        let (res, msgs) = play(json, Origin::System, |_| (0, None));
+        assert_eq!(res, Some(true));
+        let path = find_log(&dir, "Log-OK-Demo").expect("a log file was written");
+        // tux-store-<HH-MM-SS>-<YYYY-MM-DD>-<name>.log
+        let name = path.file_name().unwrap().to_string_lossy().into_owned();
+        let stamp = name.strip_prefix("tux-store-").unwrap().strip_suffix("-Log-OK-Demo.log").unwrap();
+        let digits: Vec<bool> = stamp.chars().map(|c| c.is_ascii_digit()).collect();
+        assert_eq!(stamp.len(), "09-05-07-2026-11-11".len(), "{name}");
+        assert!(digits[0] && digits[1] && stamp.as_bytes()[2] == b'-' && stamp.as_bytes()[8] == b'-', "{name}");
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains("Add-on  : Log OK Demo (log-ok-1)"), "{text}");
+        assert!(text.contains("==> say"), "{text}");
+        assert!(text.contains("hello-from-the-command"), "{text}");
+        assert!(text.contains("p 100%") && !text.contains("p 10%"), "progress redraws collapse: {text}");
+        assert!(text.contains("Result  : success"), "{text}");
+        let out: String = msgs.iter().filter_map(|m| match m { Message::ScriptOutput { text } => Some(text.as_str()), _ => None }).collect();
+        assert!(out.contains("[log saved:") && out.contains(&name), "the console says where the log is: {out:?}");
+        let done = msgs.iter().rev().find_map(|m| match m { Message::ScriptView { view } if view.title == "Done" => Some(view.clone()), _ => None }).unwrap();
+        assert!(done.message.contains(&name), "the last screen says where the log is: {:?}", done.message);
+    }
+
+    #[test]
+    fn a_failed_install_leaves_a_log_too() {
+        let dir = isolate_logs();
+        let json = r#"{"schema":2,"id":"log-bad-1","title":"Log Bad Demo","start":"go","steps":{
+          "go":{"type":"run","title":"R","commands":[{"label":"boom","shell":"echo about-to-fail; exit 3"}],"on_success":"end","on_failure":"bad"},
+          "end":{"type":"finish","title":"Done"},
+          "bad":{"type":"dialog","title":"It failed","tone":"error","message":"exit ${last_exit_code}","buttons":[{"label":"Close","exit":true}]}}}"#;
+        let (res, msgs) = play(json, Origin::System, |_| (0, None));
+        assert_eq!(res, Some(false));
+        let path = find_log(&dir, "Log-Bad-Demo").expect("a log file was written");
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains("about-to-fail"), "{text}");
+        assert!(text.contains("[boom: exit code 3]"), "{text}");
+        assert!(text.contains("[error] It failed: exit 3"), "{text}");
+        assert!(text.contains("Result  : not completed"), "{text}");
+        let shown = msgs.iter().find_map(|m| match m { Message::ScriptView { view } if view.title == "It failed" => Some(view.clone()), _ => None }).unwrap();
+        assert!(shown.message.starts_with("exit 3") && shown.message.contains("Log: "), "{:?}", shown.message);
+    }
+
+    #[test]
+    fn cancelling_before_anything_ran_leaves_no_log() {
+        let dir = isolate_logs();
+        let json = r#"{"schema":2,"id":"log-none-1","title":"Log None Demo","start":"hi","steps":{
+          "hi":{"type":"dialog","title":"Hi","buttons":[{"label":"Cancel","exit":true}]}}}"#;
+        let (res, _) = play(json, Origin::System, |_| (0, None));
+        assert_eq!(res, Some(false));
+        assert!(find_log(&dir, "Log-None-Demo").is_none());
     }
 }
