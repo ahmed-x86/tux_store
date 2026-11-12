@@ -10,6 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 tux-abi.workspace = true
-tux-pacman.workspace = true
-log.workspace = true
-libc.workspace = true
+tux-libalpm.workspace = true
