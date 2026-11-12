@@ -3,11 +3,14 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use tux_abi::paths;
+use tux_abi::Engine;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default = "default_dark")]
     pub dark: bool,
+    #[serde(default)]
+    pub engine: Engine,
 }
 
 fn default_dark() -> bool {
@@ -16,7 +19,7 @@ fn default_dark() -> bool {
 
 impl Default for Config {
     fn default() -> Self {
-        Config { dark: true }
+        Config { dark: true, engine: Engine::Direct }
     }
 }
 
