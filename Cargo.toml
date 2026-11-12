@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/tux-abi",
     "crates/tux-pacman",
+    "crates/tux-libalpm",
     "crates/tux-search",
     "crates/tux-thumbnail",
     "crates/tux-install",
@@ -28,6 +29,8 @@ slint = "1"
 slint-build = "1"
 tux-abi = { path = "crates/tux-abi" }
 tux-pacman = { path = "crates/tux-pacman" }
+tux-libalpm = { path = "crates/tux-libalpm" }
+alpm = { version = "5", default-features = false, features = ["pkg-config"] }
 
 [profile.release]
 lto = "thin"
