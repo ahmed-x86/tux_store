@@ -52,6 +52,18 @@ fn main() -> ExitCode {
         );
         return ExitCode::SUCCESS;
     }
+    if arg == tux_libalpm::HELPER_FLAG {
+        let json = std::env::args().nth(2).unwrap_or_default();
+        if json.is_empty() {
+            eprintln!("usage: tux-store {} JSON", tux_libalpm::HELPER_FLAG);
+            return ExitCode::FAILURE;
+        }
+        return if tux_libalpm::run_helper(&json) == 0 {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
 
     let hub = Hub::leak(log_level_from_env());
     let api = hub.api();
