@@ -11,4 +11,5 @@ path = "src/main.rs"
 
 [dependencies]
 tux-abi.workspace = true
+tux-libalpm.workspace = true
 libloading.workspace = true
