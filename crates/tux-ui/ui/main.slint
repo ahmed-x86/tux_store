@@ -76,12 +76,14 @@ export component MainWindow inherits Window {
     // ── settings ──
     in property <string> app-version;
     in property <string> cache-status;
+    in-out property <string> engine;
 
     // ── Slint → Rust ──
     callback search-edited(string);
     callback search-submitted(string);
     callback home-clicked();
     callback tab-changed(int);
+    callback engine-selected(string);
     callback app-clicked(UiPackage);
     callback back-clicked();
     callback forward-clicked();
@@ -345,8 +347,10 @@ export component MainWindow inherits Window {
     if root.view == AppView.settings : SettingsView {
         app-version: root.app-version;
         cache-status: root.cache-status;
+        engine: root.engine;
         back-clicked => { root.view = AppView.main; }
         theme-selected(dark) => { root.theme-changed(dark); }
+        engine-selected(engine) => { root.engine = engine; root.engine-selected(engine); }
         clear-cache-clicked => { root.clear-icon-cache(); }
     }
 
