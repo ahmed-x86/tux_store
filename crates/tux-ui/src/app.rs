@@ -1,6 +1,6 @@
 //! Window creation and wiring of every Slint callback to [`State`].
 
-use crate::config::{self, Config};
+use crate::config;
 use crate::state::{self, with_state, State};
 use crate::{convert, links, MainWindow, Theme};
 use slint::{ComponentHandle, PlatformError, Timer, TimerMode};
@@ -16,6 +16,7 @@ pub fn run(bus: Bus) -> Result<(), PlatformError> {
 
     let cfg = config::load();
     ui.global::<Theme>().set_is_dark(cfg.dark);
+    ui.set_engine(cfg.engine.key().into());
     ui.set_app_version(env!("CARGO_PKG_VERSION").into());
 
     let st = State::new(ui.as_weak(), bus);
@@ -164,7 +165,12 @@ fn wire(ui: &MainWindow) {
 
     // ── settings ──
     ui.on_theme_changed(|dark| {
-        config::save(&Config { dark });
+        let mut cfg = config::load();
+        cfg.dark = dark;
+        config::save(&cfg);
+    });
+    ui.on_engine_selected(|key| {
+        with_state(|st| st.set_engine(&key));
     });
     ui.on_clear_icon_cache(|| {
         with_state(|st| st.clear_icon_cache());
