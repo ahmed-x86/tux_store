@@ -19,7 +19,7 @@ use std::path::Path;
 use std::rc::Rc;
 use tux_abi::text::prettify_name;
 use tux_abi::{
-    Bus, Cover, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo, ScriptValues, ScriptViewData,
+    Bus, Cover, Engine, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo, ScriptValues, ScriptViewData,
     Section, SpecialCase,
     UpdateEntry,
 };
@@ -134,6 +134,8 @@ fn accent_for(name: &str) -> i32 {
 pub struct State {
     ui: Weak<MainWindow>,
     bus: Bus,
+    /// Package-manager backend selected in Settings.
+    engine: Engine,
 
     icons: HashMap<String, Image>,
     icon_requested: HashSet<String>,
@@ -199,6 +201,7 @@ impl State {
         State {
             ui,
             bus,
+            engine: crate::config::load().engine,
             icons: HashMap::new(),
             icon_requested: HashSet::new(),
             sections: Rc::new(VecModel::default()),
@@ -770,9 +773,32 @@ impl State {
     // ───────────────────────── UI → bus ─────────────────────────
 
     pub fn startup(&mut self) {
+        // Before anything asks a question, tell every module which backend to use.
+        self.bus.publish(&Message::EngineChanged { engine: self.engine });
         self.bus.publish(&Message::UiReady);
         self.bus.publish(&Message::HomeRequested);
         self.bus.publish(&Message::CoversRequested);
+    }
+
+    /// The Engine setting changed: persist it, tell the backends, and refresh
+    /// everything that was answered by the old engine.
+    pub fn set_engine(&mut self, key: &str) {
+        let Some(engine) = Engine::from_key(key) else { return };
+        if engine == self.engine {
+            return;
+        }
+        self.engine = engine;
+        let mut cfg = crate::config::load();
+        cfg.engine = engine;
+        crate::config::save(&cfg);
+
+        self.bus.publish(&Message::EngineChanged { engine });
+        self.request_home();
+        self.refresh_installed();
+        self.request_updates();
+        if let Some(current) = self.current.clone() {
+            self.bus.publish(&Message::DetailsRequested { name: current.name });
+        }
     }
 
     pub fn request_home(&mut self) {
