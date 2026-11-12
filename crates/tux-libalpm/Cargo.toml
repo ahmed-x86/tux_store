@@ -1,0 +1,19 @@
+[package]
+name = "tux-libalpm"
+description = "libtux_libalpm.so — the pluggable package engine: direct pacman commands or libalpm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "tux_libalpm"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+tux-abi.workspace = true
+tux-pacman.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+libc.workspace = true
+alpm.workspace = true
