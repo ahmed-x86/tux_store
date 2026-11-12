@@ -5,6 +5,7 @@
 //! UI, but any module may listen — e.g. the installer overhears
 //! [`Message::DetailsReady`] to learn package sizes for its progress bar).
 
+use crate::engine::Engine;
 use crate::script::{ButtonStyle, Tone};
 use serde::{Deserialize, Serialize};
 
@@ -228,6 +229,9 @@ pub enum Message {
     // ── lifecycle ──
     /// UI window exists; backends may warm up.
     UiReady,
+    /// The user picked another package-manager engine. Everything that talks
+    /// to pacman must switch to it and drop its caches.
+    EngineChanged { engine: Engine },
 
     // ── requests (UI → backends) ──
     HomeRequested,
