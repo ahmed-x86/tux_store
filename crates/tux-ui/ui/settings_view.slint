@@ -71,8 +71,10 @@ component SettingRow inherits Rectangle {
 export component SettingsView inherits Rectangle {
     in property <string> app-version;
     in property <string> cache-status;
+    in property <string> engine;
     callback back-clicked();
     callback theme-selected(bool);
+    callback engine-selected(string);
     callback clear-cache-clicked();
 
     background: Theme.base;
@@ -117,6 +119,29 @@ export component SettingsView inherits Rectangle {
                                     label: "Dark";
                                     selected: Theme.is-dark;
                                     clicked => { Theme.is-dark = true; root.theme-selected(true); }
+                                }
+                            }
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: 12px;
+                        SectionLabel { text: "PACKAGE ENGINE"; }
+                        SettingCard {
+                            SettingRow {
+                                title: "Engine";
+                                subtitle: "How Tux Store asks pacman questions and runs transactions. Direct commands start a pacman process for every operation; libalpm talks to the library directly.";
+                                ChoiceButton {
+                                    label: "Direct pacman";
+                                    width: 150px;
+                                    selected: root.engine == "direct";
+                                    clicked => { root.engine-selected("direct"); }
+                                }
+                                ChoiceButton {
+                                    label: "libalpm";
+                                    width: 110px;
+                                    selected: root.engine == "libalpm";
+                                    clicked => { root.engine-selected("libalpm"); }
                                 }
                             }
                         }
