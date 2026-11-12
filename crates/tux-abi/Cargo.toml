@@ -1,0 +1,12 @@
+[package]
+name = "tux-abi"
+description = "Shared kernel of Tux Store: message bus types, module ABI, paths, text helpers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+libc.workspace = true

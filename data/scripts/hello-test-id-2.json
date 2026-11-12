@@ -1,0 +1,284 @@
+{
+  "schema": 2,
+  "id": "hello-test-id-2",
+  "title": "Hello test script",
+  "description": "A tiny harmless script to try the script system. It only prints a few lines.",
+  "version": {
+    "label": "Today's version",
+    "script": "today-s-version.sh"
+  },
+  "author": "You",
+  "keywords": [
+    "hello",
+    "test",
+    "demo"
+  ],
+  "show_on_home": true,
+  "start": "welcome",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Hello!",
+      "message": "This is a test script. It does not change anything on your system.",
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "detect_helpers"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "pick": {
+      "type": "choice",
+      "title": "Pick a greeting",
+      "store_as": "greeting",
+      "next": "pick_extras",
+      "options": [
+        {
+          "value": "Hello",
+          "label": "Hello",
+          "hint": "A friendly greeting.",
+          "icon": {
+            "theme": "face-smile"
+          }
+        },
+        {
+          "value": "Marhaba",
+          "label": "Marhaba",
+          "hint": "The Arabic one.",
+          "icon": {
+            "theme": "preferences-desktop-locale"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "helper_result"
+        }
+      ]
+    },
+    "run": {
+      "type": "run",
+      "title": "Working…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Saying hello",
+          "argv": [
+            "echo",
+            "${greeting} from Tux Store!"
+          ],
+          "percent": 40
+        },
+        {
+          "label": "Running greet.sh from the add-on's folder",
+          "script": "greet.sh",
+          "args": [
+            "${greeting}",
+            "@{extras}"
+          ],
+          "percent": 55
+        },
+        {
+          "label": "Creating a small file",
+          "script": "creating-a-small-file.sh",
+          "percent": 65
+        },
+        {
+          "label": "Waiting a moment",
+          "script": "waiting-a-moment.sh",
+          "expected_secs": 2,
+          "percent": 90
+        }
+      ],
+      "on_success": "remember",
+      "echo": true
+    },
+    "done": {
+      "type": "finish",
+      "title": "All done",
+      "message": "${helper_msg}\n\nYou picked “${greeting}”. A small file was created in ~/.local/share/tux-hello (you can remove it with Uninstall).",
+      "mark": "installed"
+    },
+    "detect_helpers": {
+      "type": "check",
+      "command": {
+        "label": "Looking for yay and paru…",
+        "script": "looking-for-yay-and-paru.sh"
+      },
+      "capture": "helpers",
+      "on_success": "helper_branch",
+      "on_failure": "helper_branch"
+    },
+    "helper_branch": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "helpers",
+            "eq": "both"
+          },
+          "goto": "set_both"
+        },
+        {
+          "when": {
+            "var": "helpers",
+            "eq": "yay"
+          },
+          "goto": "set_yay"
+        },
+        {
+          "when": {
+            "var": "helpers",
+            "eq": "paru"
+          },
+          "goto": "set_paru"
+        }
+      ],
+      "default": "set_none"
+    },
+    "set_both": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "Both yay and paru are installed."
+      },
+      "next": "helper_result"
+    },
+    "set_yay": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "yay is installed (paru is not)."
+      },
+      "next": "helper_result"
+    },
+    "set_paru": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "paru is installed (yay is not)."
+      },
+      "next": "helper_result"
+    },
+    "set_none": {
+      "type": "set",
+      "vars": {
+        "helper_msg": "Neither yay nor paru is installed."
+      },
+      "next": "helper_result"
+    },
+    "helper_result": {
+      "type": "dialog",
+      "title": "AUR helpers",
+      "message": "${helper_msg}",
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "pick"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "say_in_terminal": {
+      "type": "print",
+      "text": "hello add-on: the user picked ${greeting}",
+      "next": "run"
+    },
+    "remember": {
+      "type": "record",
+      "files": [
+        "~/.local/share/tux-hello"
+      ],
+      "next": "done"
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove the hello files?",
+      "message": "This deletes: ${recorded_files}",
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_run"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing…",
+      "message": "Please wait.",
+      "commands": [
+        {
+          "label": "Deleting the recorded files",
+          "percent": 100,
+          "script": "deleting-the-recorded-files.sh"
+        }
+      ],
+      "on_success": "un_done"
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Removed",
+      "message": "The hello files were deleted.",
+      "mark": "uninstalled"
+    },
+    "pick_extras": {
+      "type": "choice",
+      "title": "Pick some extras",
+      "message": "Check boxes: tick any number.",
+      "multiple": true,
+      "store_as": "extras",
+      "default": "waves",
+      "next": "say_in_terminal",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "waves",
+          "label": "Wave",
+          "hint": "A friendly wave.",
+          "icon": {
+            "theme": "face-smile"
+          }
+        },
+        {
+          "value": "cheers",
+          "label": "Cheers",
+          "hint": "Another one."
+        },
+        {
+          "value": "bye",
+          "label": "Goodbye",
+          "hint": "For the end."
+        }
+      ]
+    }
+  },
+  "info": {
+    "download_mb": {
+      "script": "info.sh"
+    },
+    "extracted_mb": 3,
+    "installed_mb": 1,
+    "note": "The version and the download size of this test are computed by commands."
+  },
+  "icon": [
+    {
+      "file": "hello-test-id-2.svg"
+    },
+    {
+      "theme": "face-smile"
+    }
+  ],
+  "uninstall": "un_confirm"
+}

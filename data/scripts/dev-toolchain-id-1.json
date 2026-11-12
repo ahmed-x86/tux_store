@@ -1,0 +1,429 @@
+{
+  "schema": 2,
+  "id": "dev-toolchain-id-1",
+  "title": "Developer toolchain",
+  "description": "Compilers and build tools: base-devel (gcc, make, binutils…) and git, optionally with CMake, Ninja, GDB and Clang. Needed to build AUR packages.",
+  "author": "Tux Store",
+  "keywords": [
+    "developer",
+    "toolchain",
+    "compiler",
+    "gcc",
+    "clang",
+    "make",
+    "cmake",
+    "ninja",
+    "gdb",
+    "git",
+    "base-devel",
+    "build",
+    "aur",
+    "makepkg",
+    "مبرمج",
+    "مترجم",
+    "أدوات التطوير",
+    "بناء",
+    "برمجة",
+    "c++",
+    "pkgconf"
+  ],
+  "show_on_home": true,
+  "vars": {
+    "new_pkgs": "",
+    "skipped_pkgs": "",
+    "skipped_text": "",
+    "preflight": "",
+    "verify_msg": "",
+    "profile": "basic",
+    "pkgs": "base-devel git"
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "script": "download-size.sh"
+    },
+    "installed_mb": {
+      "label": "Installed size",
+      "script": "installed-size.sh"
+    },
+    "extracted_mb": 20,
+    "note": "Sizes are read from your package database. Packages you already have are skipped."
+  },
+  "icon": [
+    {
+      "file": "dev-toolchain-id-1.svg"
+    }
+  ],
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Developer toolchain",
+      "tone": "info",
+      "message": [
+        "Install what you need to compile software on Arch Linux.",
+        "",
+        "The basic set is base-devel (gcc, make, binutils…) and git — the minimum for building AUR packages with makepkg.",
+        "The full set adds CMake, Ninja, GDB and Clang."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "choose"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "choose": {
+      "type": "choice",
+      "title": "What do you want to install?",
+      "message": "You can run this again later to add more.",
+      "store_as": "profile",
+      "default": "basic",
+      "next": "preflight",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "basic",
+          "label": "Basic (base-devel + git)",
+          "hint": [
+            "Enough for makepkg and most AUR packages."
+          ],
+          "set": {
+            "pkgs": "base-devel git"
+          }
+        },
+        {
+          "value": "full",
+          "label": "Full (basic + CMake, Ninja, GDB, Clang)",
+          "hint": [
+            "A complete C/C++ development setup."
+          ],
+          "set": {
+            "pkgs": "base-devel git cmake ninja gdb clang"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "welcome"
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_gate",
+      "on_failure": "error_generic"
+    },
+    "preflight_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "find_missing"
+    },
+    "problem": {
+      "type": "dialog",
+      "title": "Cannot continue",
+      "tone": "error",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "find_missing": {
+      "type": "check",
+      "command": {
+        "label": "Looking at what is already installed…",
+        "timeout_secs": 60,
+        "script": "looking-at-what-is-already-installed.sh"
+      },
+      "capture": "new_pkgs",
+      "on_success": "find_skipped",
+      "on_failure": "error_generic"
+    },
+    "find_skipped": {
+      "type": "check",
+      "command": {
+        "label": "Checking the repositories…",
+        "timeout_secs": 60,
+        "script": "checking-the-repositories.sh"
+      },
+      "capture": "skipped_pkgs",
+      "on_success": "missing_gate",
+      "on_failure": "error_generic"
+    },
+    "missing_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "already_done"
+        },
+        {
+          "when": {
+            "var": "skipped_pkgs",
+            "ne": ""
+          },
+          "goto": "skipped_line"
+        }
+      ],
+      "default": "confirm"
+    },
+    "skipped_line": {
+      "type": "set",
+      "vars": {
+        "skipped_text": "Not in your repositories (skipped): ${skipped_pkgs}"
+      },
+      "next": "confirm"
+    },
+    "already_done": {
+      "type": "finish",
+      "title": "Already installed",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": "Everything in this set is already on your system, so nothing was changed."
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to install",
+      "tone": "info",
+      "message": [
+        "This will be installed:",
+        "${new_pkgs}",
+        "",
+        "${skipped_text}",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "Back",
+          "goto": "choose"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "install": {
+      "type": "run",
+      "title": "Setting up: Developer toolchain",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing packages",
+          "root": true,
+          "weight": 10,
+          "expected_secs": 60,
+          "percent": 90,
+          "script": "installing-packages.sh"
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Checking the result…",
+        "timeout_secs": 60,
+        "script": "checking-the-result.sh"
+      },
+      "capture": "verify_msg",
+      "on_success": "record_install",
+      "on_failure": "install_failed"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_profile": "${profile}"
+      },
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "title": "Toolchain ready",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": [
+        "The developer tools are installed.",
+        "You can now build AUR packages with makepkg and compile C/C++ projects."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "Installation failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "${verify_msg}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "Something went wrong",
+      "tone": "error",
+      "message": "The system check could not run. Please try again.",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "recorded_packages",
+            "eq": ""
+          },
+          "goto": "un_nothing"
+        }
+      ],
+      "default": "un_confirm"
+    },
+    "un_nothing": {
+      "type": "finish",
+      "title": "Nothing to remove",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": [
+        "These packages were already on your system before this add-on, so Tux Store keeps them.",
+        "This add-on is now marked as not installed."
+      ]
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove Developer toolchain?",
+      "tone": "warning",
+      "message": [
+        "These packages were installed by this add-on and will be removed:",
+        "${recorded_packages}",
+        "",
+        "A package that other software still needs is kept.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system-2.sh"
+      },
+      "capture": "preflight",
+      "on_success": "un_gate",
+      "on_failure": "error_generic"
+    },
+    "un_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Developer toolchain…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing packages",
+          "root": true,
+          "expected_secs": 20,
+          "percent": 95,
+          "script": "removing-packages.sh"
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Toolchain removed",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": "The packages this add-on installed were removed. Packages that other software needs were kept."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Removal failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    }
+  }
+}

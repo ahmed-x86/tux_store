@@ -1,0 +1,24 @@
+{
+  "sections": [
+    { "id": "for-you", "title": "For You",
+      "packages": ["steam", "qbittorrent", "mpv", "thunar", "fastfetch"] },
+    { "id": "browsers", "title": "Browsers",
+      "packages": ["firefox", "chromium", "epiphany", "falkon", "qutebrowser", "midori",
+                   "brave-browser", "torbrowser-launcher", "vivaldi", "opera"] },
+    { "id": "communication", "title": "Communication",
+      "packages": ["telegram-desktop", "discord", "session-desktop", "session-desktop-bin",
+                   "signal-desktop", "element-desktop", "skypeforlinux", "slack-desktop"] },
+    { "id": "design", "title": "Design & Multimedia",
+      "packages": ["blender", "gimp", "kdenlive", "audacity", "inkscape", "krita", "obs-studio",
+                   "vlc", "shotcut", "pitivi", "flowblade", "openshot"] },
+    { "id": "office", "title": "Office & Productivity",
+      "packages": ["libreoffice-fresh", "libreoffice-still", "onlyoffice-bin", "abiword",
+                   "gnumeric", "calligra", "wps-office"] },
+    { "id": "development", "title": "Development",
+      "packages": ["python", "gcc", "base-devel", "rust", "code", "vscodium", "nodejs", "go",
+                   "docker", "git"] },
+    { "id": "utilities", "title": "Utilities",
+      "packages": ["htop", "neovim", "kitty", "timeshift", "alacritty", "bleachbit", "gparted",
+                   "flameshot"] }
+  ]
+}

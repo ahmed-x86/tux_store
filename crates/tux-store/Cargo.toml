@@ -1,0 +1,14 @@
+[package]
+name = "tux-store"
+description = "Tux Store host: a tiny executable that loads libtux_*.so modules and routes messages"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "tux-store"
+path = "src/main.rs"
+
+[dependencies]
+tux-abi.workspace = true
+libloading.workspace = true

@@ -1,0 +1,833 @@
+import { Theme } from "theme.slint";
+import { UiPackage, UiPackageDetails, UiInstallState, UiSpecialCase, UiScriptInfo, OpPhase } from "types.slint";
+import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar, ScreenshotGallery, ScreenshotViewer, VScrollBar, ToTopButton } from "components.slint";
+
+// One choice in the "how do you want to uninstall?" dialog.
+component RemoveOption inherits Rectangle {
+    in property <string> title;
+    in property <string> description;
+    in property <color> accent: Theme.text;
+    in property <bool> outlined: false;
+    in property <bool> emphasized: false;
+    callback clicked();
+
+    background: ta.has-hover ? (root.emphasized ? Theme.surface2 : Theme.surface1)
+        : (root.emphasized ? Theme.surface1 : Theme.surface0);
+    border-radius: 10px;
+    border-color: root.accent;
+    border-width: root.outlined ? 1px : 0px;
+
+    ta := TouchArea { mouse-cursor: pointer; clicked => { root.clicked(); } }
+    VerticalLayout {
+        padding: 16px;
+        alignment: center;
+        spacing: 4px;
+        Text { text: root.title; color: root.accent; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+        Text { text: root.description; color: Theme.overlay1; font-size: 12px; wrap: word-wrap; }
+    }
+}
+
+component Card inherits Rectangle {
+    in property <length> inset: 26px;
+    background: Theme.mantle;
+    border-color: Theme.surface0;
+    border-width: 1px;
+    border-radius: 16px;
+    VerticalLayout {
+        padding: root.inset;
+        spacing: 14px;
+        @children
+    }
+}
+
+component Legend inherits Rectangle {
+    in property <color> dot;
+    in property <string> text;
+    HorizontalLayout {
+        spacing: 6px;
+        alignment: start;
+        Rectangle { width: 9px; height: 9px; border-radius: 4.5px; background: root.dot; y: 2px; }
+        Text { text: root.text; color: Theme.subtext0; font-size: 12px; }
+    }
+}
+
+component Stat inherits Rectangle {
+    in property <string> label;
+    in property <string> value;
+    in property <color> value-color: Theme.text;
+    in property <TextHorizontalAlignment> align: TextHorizontalAlignment.left;
+    VerticalLayout {
+        spacing: 4px;
+        alignment: start;
+        Text { text: root.label; color: Theme.overlay1; font-size: 11px; horizontal-alignment: root.align; }
+        Text { text: root.value; color: root.value-color; font-size: 17px; font-weight: 700; horizontal-alignment: root.align; }
+    }
+}
+
+export component DetailsView inherits Rectangle {
+    in property <UiPackage> pkg;
+    in property <UiPackageDetails> details;
+    in property <UiInstallState> install-state;
+    in property <[UiPackage]> suggestions;
+    in property <[image]> screenshots;
+    in property <bool> can-forward: false;
+    // True while an overlay (console, script dialog) owns the keyboard.
+    in property <bool> keys-blocked: false;
+    callback forward-clicked();
+    in property <UiSpecialCase> special-case;
+    in property <int> accent-idx;
+    in property <UiScriptInfo> script-info;
+    in property <bool> script-running;
+    in property <float> script-progress;
+    in property <string> script-progress-label;
+    in property <bool> script-minimized;
+    callback run-script-clicked();
+    callback uninstall-script-clicked();
+    callback eval-script-clicked();
+    callback show-script-clicked();
+    callback back-clicked();
+    callback install-clicked();
+    callback remove-clicked(string);
+    callback suggestion-clicked(UiPackage);
+    callback open-url(string, string);
+    callback addon-clicked(string);
+    callback view-all-addons-clicked();
+    callback copy-to-clipboard(string);
+    callback show-console();
+
+    // A script is shown on the same page as a package, with a few differences.
+    property <bool> is-script: root.pkg.repo == "script";
+    property <bool> show-uninstall-modal: false;
+    // A new page opens at its top, not where the previous page was scrolled to.
+    property <string> shown-name: root.pkg.name;
+    changed shown-name => { scroll.content-y = 0px; }
+
+    function scroll-to(y: length) {
+        scroll.content-y = min(0px, max(scroll.height - scroll.content-height, y));
+    }
+    init => { details-keys.focus(); }
+    // Index of the screenshot shown big, -1 = viewer closed.
+    property <int> viewer-index: -1;
+    property <color> accent: Theme.accents[mod(root.accent-idx, Theme.accents.length)];
+    property <bool> busy: root.install-state.phase == OpPhase.running;
+    // Is the running / finished transaction about *this* package?
+    property <bool> mine: root.install-state.target == root.pkg.name && root.install-state.phase != OpPhase.idle;
+
+    background: Theme.base;
+
+    // Keyboard: Esc / Backspace / Alt+← = back, Alt+→ = forward, PageUp/PageDown/
+    // Space/Home/End/↑/↓ scroll the page.
+    details-keys := FocusScope {
+        key-pressed(e) => {
+            if root.keys-blocked || root.viewer-index >= 0 {
+                return EventResult.reject;
+            }
+            if e.text == Key.Escape && root.show-uninstall-modal {
+                root.show-uninstall-modal = false;
+                return EventResult.accept;
+            }
+            if root.show-uninstall-modal {
+                return EventResult.reject;
+            }
+            if e.text == Key.Escape || e.text == Key.Backspace || (e.modifiers.alt && e.text == Key.LeftArrow) {
+                root.back-clicked();
+                return EventResult.accept;
+            }
+            if e.modifiers.alt && e.text == Key.RightArrow {
+                if root.can-forward { root.forward-clicked(); }
+                return EventResult.accept;
+            }
+            if e.text == Key.PageDown || e.text == " " {
+                root.scroll-to(scroll.content-y - scroll.height * 0.9);
+                return EventResult.accept;
+            }
+            if e.text == Key.PageUp {
+                root.scroll-to(scroll.content-y + scroll.height * 0.9);
+                return EventResult.accept;
+            }
+            if e.text == Key.Home {
+                root.scroll-to(0px);
+                return EventResult.accept;
+            }
+            if e.text == Key.End {
+                root.scroll-to(scroll.height - scroll.content-height);
+                return EventResult.accept;
+            }
+            if e.text == Key.DownArrow {
+                root.scroll-to(scroll.content-y - 90px);
+                return EventResult.accept;
+            }
+            if e.text == Key.UpArrow {
+                root.scroll-to(scroll.content-y + 90px);
+                return EventResult.accept;
+            }
+            return EventResult.reject;
+        }
+    }
+
+    VerticalLayout {
+        TopBar {
+            PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
+            PillButton { text: "Forward ⟩"; enabled: root.can-forward; clicked => { root.forward-clicked(); } }
+        }
+
+        // A Flickable's own layout info is "as big as my content", so inside a
+        // layout it never grows past it. Wrap it and give it the wrapper's
+        // exact size instead.
+        Rectangle {
+          vertical-stretch: 1;
+          scroll := Flickable {
+            width: parent.width;
+            height: parent.height;
+            // Content fills the width, and is at least as tall as the window
+            // so the spacer below can push "You might also like" to the bottom.
+            content-width: self.width;
+            content-height: max(content.preferred-height, self.height);
+            content := VerticalLayout {
+                width: scroll.width;
+                height: max(self.preferred-height, scroll.height);
+                padding-left: 64px;
+                padding-right: 64px;
+                padding-top: 40px;
+                padding-bottom: 64px;
+                spacing: 32px;
+
+                // ---- Header ------------------------------------------------
+                HorizontalLayout {
+                    spacing: 26px;
+
+                    if root.pkg.icon.width > 0 : Image {
+                        source: root.pkg.icon;
+                        width: 96px;
+                        height: 96px;
+                    }
+                    if root.pkg.icon.width == 0 : Rectangle {
+                        width: 96px;
+                        height: 96px;
+                        background: root.accent;
+                        border-radius: 22px;
+                    }
+
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 8px;
+
+                        HorizontalLayout {
+                            spacing: 14px;
+                            alignment: start;
+
+                            HorizontalLayout {
+                                spacing: 8px;
+                                TouchArea {
+                                    width: pretty-name-txt.width;
+                                    height: pretty-name-txt.height;
+                                    mouse-cursor: pointer;
+                                    clicked => { root.copy-to-clipboard(root.pkg.pretty-name); }
+                                    pretty-name-txt := Text {
+                                        text: root.pkg.pretty-name;
+                                        color: Theme.text;
+                                        font-size: 30px;
+                                        font-weight: 700;
+                                        letter-spacing: -0.5px;
+                                        vertical-alignment: bottom;
+                                    }
+                                }
+                                if !root.pkg.is-same-name : Rectangle {
+                                    width: 16px;
+                                    height: 16px;
+                                    y: 14px;
+                                    info-ta := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => { root.copy-to-clipboard(root.pkg.name); }
+                                    }
+                                    Image {
+                                        source: @image-url("info.svg");
+                                        width: 16px;
+                                        height: 16px;
+                                        colorize: info-ta.has-hover ? Theme.text : Theme.overlay0;
+                                        animate colorize { duration: 150ms; }
+                                    }
+                                    // Tooltip with the real package name.
+                                    Rectangle {
+                                        x: (16px - (tooltip-txt.width + 16px)) / 2;
+                                        y: -30px;
+                                        z: 100;
+                                        background: Theme.crust;
+                                        border-color: Theme.surface2;
+                                        border-width: 1px;
+                                        border-radius: 6px;
+                                        width: tooltip-txt.width + 16px;
+                                        height: 26px;
+                                        opacity: info-ta.has-hover ? 1.0 : 0.0;
+                                        visible: self.opacity > 0.01;
+                                        animate opacity { duration: 150ms; delay: info-ta.has-hover ? 2000ms : 0ms; }
+                                        tooltip-txt := Text {
+                                            x: 8px;
+                                            y: 5px;
+                                            text: root.pkg.name;
+                                            color: Theme.text;
+                                            font-size: 13px;
+                                            font-weight: 700;
+                                        }
+                                    }
+                                }
+                            }
+
+                            HorizontalLayout {
+                                spacing: 8px;
+                                y: 8px;
+                                if root.pkg.installed : Rectangle {
+                                    width: installed-txt.width + 20px;
+                                    height: 24px;
+                                    border-radius: 12px;
+                                    background: Theme.green.transparentize(0.85);
+                                    installed-txt := Text {
+                                        text: "Installed";
+                                        color: Theme.green;
+                                        font-size: 11px;
+                                        font-weight: 700;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                                Rectangle {
+                                    width: repo-txt.width + 20px;
+                                    height: 24px;
+                                    border-radius: 12px;
+                                    background: root.is-script ? Theme.mauve.transparentize(0.82)
+                                        : (repo-ta.has-hover ? Theme.surface2 : Theme.surface1);
+                                    animate background { duration: 150ms; }
+                                    repo-ta := TouchArea {
+                                        enabled: !root.is-script;
+                                        mouse-cursor: root.is-script ? MouseCursor.default : MouseCursor.pointer;
+                                        clicked => { root.open-url(root.pkg.repo, root.pkg.name); }
+                                    }
+                                    repo-txt := Text {
+                                        text: root.is-script ? "Add-on package" : root.pkg.repo;
+                                        color: root.is-script ? Theme.mauve : Theme.subtext0;
+                                        font-size: 11px;
+                                        font-weight: 700;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: root.pkg.description;
+                            color: Theme.subtext0;
+                            font-size: 14px;
+                            wrap: word-wrap;
+                            max-width: 560px;
+                        }
+
+                        Text {
+                            text: "Version " + root.pkg.version;
+                            color: Theme.overlay1;
+                            font-size: 12px;
+                        }
+
+                        if root.special-case.is-addon-for != "" : Rectangle {
+                            background: Theme.surface0;
+                            border-radius: 8px;
+                            height: 32px;
+                            HorizontalLayout {
+                                padding-left: 12px;
+                                padding-right: 12px;
+                                spacing: 12px;
+                                alignment: start;
+                                Text { text: "This package is an addon for"; color: Theme.subtext0; font-size: 13px; vertical-alignment: center; }
+                                TouchArea {
+                                    mouse-cursor: pointer;
+                                    clicked => { root.addon-clicked(root.special-case.is-addon-for); }
+                                    Text {
+                                        text: root.special-case.is-addon-for;
+                                        color: root.accent;
+                                        font-size: 13px;
+                                        font-weight: 700;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle { horizontal-stretch: 1; }
+
+                    if root.is-script : VerticalLayout {
+                        alignment: center;
+                        spacing: 8px;
+                        Rectangle {
+                            width: 152px;
+                            height: 44px;
+                            background: root.script-info.installed ? Theme.surface0 : root.accent;
+                            border-color: root.accent;
+                            border-width: root.script-info.installed ? 1px : 0px;
+                            border-radius: 10px;
+                            opacity: root.busy ? 0.5 : 1.0;
+                            TouchArea {
+                                enabled: !root.busy;
+                                mouse-cursor: pointer;
+                                clicked => { root.run-script-clicked(); }
+                            }
+                            Text {
+                                text: root.script-info.installed ? "Run again" : "Run add-on";
+                                color: root.script-info.installed ? root.accent : Theme.crust;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                        if root.script-info.can-uninstall : Rectangle {
+                            width: 152px;
+                            height: 44px;
+                            background: Theme.surface0;
+                            border-color: Theme.red;
+                            border-width: 1px;
+                            border-radius: 10px;
+                            opacity: root.busy ? 0.5 : 1.0;
+                            TouchArea {
+                                enabled: !root.busy;
+                                mouse-cursor: pointer;
+                                clicked => { root.uninstall-script-clicked(); }
+                            }
+                            Text {
+                                text: "Uninstall";
+                                color: Theme.red;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                    if !root.is-script : VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 152px;
+                            height: 44px;
+                            background: root.pkg.installed ? Theme.surface0 : root.accent;
+                            border-color: root.pkg.installed ? Theme.red : root.accent;
+                            border-width: root.pkg.installed ? 1px : 0px;
+                            border-radius: 10px;
+                            opacity: root.busy && !root.mine ? 0.5 : 1.0;
+                            TouchArea {
+                                enabled: !root.busy;
+                                clicked => {
+                                    if root.pkg.installed { root.show-uninstall-modal = true; }
+                                    else { root.install-clicked(); }
+                                }
+                            }
+                            Text {
+                                text: root.pkg.installed
+                                    ? (root.busy && root.mine ? "Uninstalling…" : "Remove")
+                                    : (root.busy && root.mine ? "Installing…" : "Install");
+                                color: root.pkg.installed ? Theme.red : Theme.crust;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+
+                // ---- Transaction progress ---------------------------------
+                if root.mine : ProgressCard {
+                    state: root.install-state;
+                    console-clicked => { root.show-console(); }
+                }
+
+                // ---- What you'll download (add-on packages) -----------------
+                if root.is-script : Card {
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text {
+                            text: root.script-running
+                                ? (root.script-progress >= 0.98 ? "Finishing up…" : "Working…")
+                                : "What you'll download";
+                            color: Theme.text;
+                            font-size: 16px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                        Text {
+                            text: root.script-running ? round(root.script-progress * 100) + "%" : root.script-info.download;
+                            color: root.accent;
+                            font-size: 26px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: 14px;
+
+                        // Running: how far the add-on package got. Idle: how much of the free space it needs.
+                        Rectangle {
+                            height: 8px;
+                            border-radius: 4px;
+                            background: Theme.surface1;
+                            clip: true;
+                            Rectangle {
+                                x: 0px;
+                                width: parent.width * (root.script-running
+                                    ? max(0.01, min(1.0, root.script-progress))
+                                    : max(0.0, min(1.0, root.script-info.space-ratio)));
+                                background: root.script-info.low-space && !root.script-running ? Theme.red : Theme.mauve;
+                                animate width { duration: 350ms; easing: ease-out; }
+                            }
+                        }
+
+                        if root.script-info.needs-confirm : HorizontalLayout {
+                            spacing: 12px;
+                            Text {
+                                horizontal-stretch: 1;
+                                text: "These values come from commands in a script that is not part of Tux Store.";
+                                color: Theme.subtext0;
+                                font-size: 12px;
+                                wrap: word-wrap;
+                                vertical-alignment: center;
+                            }
+                            PillButton {
+                                text: "Calculate size and version";
+                                clicked => { root.eval-script-clicked(); }
+                            }
+                        }
+
+                        if root.script-running : HorizontalLayout {
+                            spacing: 12px;
+                            Text {
+                                horizontal-stretch: 1;
+                                text: root.script-progress-label;
+                                color: Theme.subtext0;
+                                font-size: 12px;
+                                overflow: elide;
+                                vertical-alignment: center;
+                            }
+                            if root.script-minimized : PillButton {
+                                text: "Show window";
+                                clicked => { root.show-script-clicked(); }
+                            }
+                        }
+                        if !root.script-running : HorizontalLayout {
+                            spacing: 24px;
+                            Legend { dot: Theme.mauve; text: "Needed while installing: " + root.script-info.extracted; }
+                            Legend { dot: #6c7086; text: "Free space on /: " + root.script-info.free; }
+                        }
+
+                        Rectangle { height: 1px; background: Theme.surface0; }
+
+                        HorizontalLayout {
+                            Stat { label: "Total Download"; value: root.script-info.download; }
+                            Rectangle { horizontal-stretch: 1; }
+                            Stat { label: "Needed while installing"; value: root.script-info.extracted; align: TextHorizontalAlignment.center; }
+                            Rectangle { horizontal-stretch: 1; }
+                            Stat { label: "Total Installed"; value: root.script-info.installed-size; value-color: root.accent; align: TextHorizontalAlignment.right; }
+                        }
+
+                        if root.script-info.low-space : Text {
+                            text: "⚠ There may not be enough free space for this add-on package.";
+                            color: Theme.red;
+                            font-size: 13px;
+                            font-weight: 700;
+                            wrap: word-wrap;
+                        }
+                        if root.script-info.note != "" : Text {
+                            text: root.script-info.note;
+                            color: Theme.subtext0;
+                            font-size: 12px;
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+
+                // ---- Download summary -------------------------------------
+                if !root.is-script : Card {
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text { text: "What you'll download"; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
+                        if !root.details.is-loading : Text {
+                            text: root.details.download-size-str;
+                            color: root.accent;
+                            font-size: 26px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    if root.details.is-loading : Text {
+                        text: "Calculating download size…";
+                        color: Theme.overlay1;
+                        font-size: 13px;
+                    }
+
+                    if !root.details.is-loading && !root.details.plan-ok : Text {
+                        text: "pacman could not build an install plan for this package (it is probably not in the official repositories).";
+                        color: Theme.overlay1;
+                        font-size: 13px;
+                        wrap: word-wrap;
+                    }
+
+                    if !root.details.is-loading && root.details.plan-ok : VerticalLayout {
+                        spacing: 14px;
+
+                        // Segment widths are the real proportions of the footprint.
+                        Rectangle {
+                            height: 8px;
+                            border-radius: 4px;
+                            background: Theme.surface1;
+                            clip: true;
+                            HorizontalLayout {
+                                Rectangle { background: #6c7086; horizontal-stretch: max(0.0001, root.details.installed-ratio); }
+                                Rectangle { background: #89b4fa; horizontal-stretch: max(0.0001, root.details.new-ratio); }
+                                Rectangle { background: Theme.mauve; horizontal-stretch: max(0.0001, root.details.app-ratio); }
+                            }
+                        }
+
+                        HorizontalLayout {
+                            spacing: 24px;
+                            Legend { dot: #6c7086; text: "Already on disk: " + root.details.installed-deps-size-str; }
+                            Legend { dot: #89b4fa; text: "New dependencies: " + root.details.new-deps-size-str; }
+                            Legend { dot: Theme.mauve; text: "App itself: " + root.details.app-size-str; }
+                        }
+
+                        Rectangle { height: 1px; background: Theme.surface0; }
+
+                        // pacman-style transaction summary
+                        HorizontalLayout {
+                            Stat { label: "Total Download"; value: root.details.total-download-str; }
+                            Rectangle { horizontal-stretch: 1; }
+                            Stat { label: "Total Installed"; value: root.details.total-installed-str; align: TextHorizontalAlignment.center; }
+                            Rectangle { horizontal-stretch: 1; }
+                            Stat { label: "Net Upgrade"; value: root.details.net-upgrade-str; value-color: root.accent; align: TextHorizontalAlignment.right; }
+                        }
+                    }
+                }
+
+                // ---- Addons / language packs -------------------------------
+                if root.special-case.is-special : Card {
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text { text: root.special-case.type-name; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
+                        if root.special-case.items.length > 6 : PillButton {
+                            text: "View more";
+                            clicked => { root.view-all-addons-clicked(); }
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: 0px;
+                        for item[idx] in root.special-case.items : Rectangle {
+                            visible: idx < 6;
+                            height: self.visible ? 50px : 0px;
+                            VerticalLayout {
+                                alignment: start;
+                                Rectangle {
+                                    height: 38px;
+                                    background: addon-ta.has-hover ? Theme.surface0 : transparent;
+                                    border-radius: 8px;
+                                    addon-ta := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => { root.addon-clicked(item.pkg-name); }
+                                    }
+                                    HorizontalLayout {
+                                        padding-left: 12px;
+                                        padding-right: 12px;
+                                        alignment: space-between;
+                                        Text { text: item.name; color: Theme.text; font-size: 14px; vertical-alignment: center; }
+                                        Text { text: item.pkg-name; color: Theme.subtext0; font-size: 12px; vertical-alignment: center; }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ---- Screenshots (slider with arrows, like Google Play) ----
+                if root.screenshots.length > 0 : VerticalLayout {
+                    spacing: 14px;
+                    Text { text: "Screenshots"; color: Theme.text; font-size: 18px; font-weight: 700; }
+                    ScreenshotGallery {
+                        images: root.screenshots;
+                        accent: root.accent;
+                        shot-clicked(i) => { root.viewer-index = i; }
+                    }
+                }
+
+                // ---- Dependencies ------------------------------------------
+                if !root.is-script && !root.details.is-loading && root.details.dependencies.length > 0 : Card {
+                    Text {
+                        text: "Dependencies (" + root.details.dependencies.length + ")";
+                        color: Theme.text;
+                        font-size: 16px;
+                        font-weight: 700;
+                    }
+                    for dep in root.details.dependencies : DepRow {
+                        dep: dep;
+                        accent: root.accent;
+                    }
+                }
+                if !root.is-script && !root.details.is-loading && root.details.plan-ok && root.details.dependencies.length == 0 : Card {
+                    Text { text: "No additional dependencies required."; color: Theme.subtext1; font-size: 13px; }
+                }
+
+                // Soaks up free space: with a short page the suggestions sit at
+                // the bottom of the window; with a long one they follow the
+                // content and the page scrolls.
+                Rectangle { vertical-stretch: 1; }
+
+                // ---- Suggestions -------------------------------------------
+                if root.suggestions.length > 0 : VerticalLayout {
+                    spacing: 14px;
+                    Text { text: "You might also like"; color: Theme.text; font-size: 18px; font-weight: 700; }
+                    sug-flick := Flickable {
+                        height: 190px;
+                        content-width: root.suggestions.length * 184px;
+                        interactive: true;
+                        HorizontalLayout {
+                            spacing: 16px;
+                            for sug[sidx] in root.suggestions : SuggestionCard {
+                                pkg: sug;
+                                accent-idx: sidx + 1;
+                                clicked => { root.suggestion-clicked(sug); }
+                            }
+                        }
+                    }
+                    HScrollBar {
+                        content-width: sug-flick.content-width;
+                        visible-width: sug-flick.width;
+                        offset <=> sug-flick.content-x;
+                        accent: root.accent;
+                    }
+                }
+
+                // ---- About this add-on package (last, like "You might also like") ----
+                if root.is-script : Card {
+                    Text { text: "About this add-on package"; color: Theme.text; font-size: 16px; font-weight: 700; }
+                    HorizontalLayout {
+                        spacing: 40px;
+                        alignment: start;
+                        Stat { label: "Source"; value: root.script-info.source; }
+                        Stat { label: "Author"; value: root.script-info.author; }
+                        Stat { label: "Administrator rights"; value: root.script-info.admin; }
+                        if root.script-info.installed : Stat { label: "Installed"; value: root.script-info.installed-text; value-color: Theme.green; }
+                    }
+                    Text {
+                        text: "Running it opens a guided window. Nothing on your system changes until you confirm the steps shown there.";
+                        color: Theme.subtext0;
+                        font-size: 13px;
+                        wrap: word-wrap;
+                    }
+                    if root.script-info.path != "" : Text {
+                        text: root.script-info.path;
+                        color: Theme.overlay1;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+                }
+
+            }
+          }
+
+          // Drag the bar to cross a long page quickly.
+          VScrollBar {
+              x: parent.width - self.width - 3px;
+              y: 4px;
+              height: parent.height - 8px;
+              content-height: scroll.content-height;
+              visible-height: scroll.height;
+              offset <=> scroll.content-y;
+              accent: root.accent;
+          }
+          if scroll.content-y < -500px : ToTopButton {
+              x: parent.width - self.width - 28px;
+              y: parent.height - self.height - 24px;
+              accent: root.accent;
+              clicked => { scroll.content-y = 0px; }
+          }
+        }
+    }
+
+    // ---- Screenshot viewer ---------------------------------------------------
+    // Click outside the picture, or press Back, to close it.
+    if root.viewer-index >= 0 && root.viewer-index < root.screenshots.length : ScreenshotViewer {
+        shot: root.screenshots[root.viewer-index];
+        has-prev: root.viewer-index > 0;
+        has-next: root.viewer-index < root.screenshots.length - 1;
+        counter: "" + (root.viewer-index + 1) + " / " + root.screenshots.length;
+        prev => { root.viewer-index = root.viewer-index - 1; }
+        next => { root.viewer-index = root.viewer-index + 1; }
+        close => { root.viewer-index = -1; details-keys.focus(); }
+    }
+
+    // ---- Uninstall dialog ----------------------------------------------------
+    if root.show-uninstall-modal : Rectangle {
+        background: Theme.crust.transparentize(0.15);
+        TouchArea {} // swallows clicks behind the dialog
+
+        VerticalLayout {
+            alignment: center;
+            HorizontalLayout {
+                alignment: center;
+                Rectangle {
+                    width: min(700px, root.width - 40px);
+                    background: Theme.mantle;
+                    border-color: Theme.surface1;
+                    border-width: 1px;
+                    border-radius: 14px;
+
+                    VerticalLayout {
+                        padding: 30px;
+                        spacing: 20px;
+
+                        HorizontalLayout {
+                            alignment: space-between;
+                            Text { text: "Uninstall " + root.pkg.pretty-name; color: Theme.text; font-size: 20px; font-weight: 700; vertical-alignment: center; }
+                            PillButton { text: "Cancel"; clicked => { root.show-uninstall-modal = false; } }
+                        }
+
+                        Text { text: "Please select how you want to uninstall this package:"; color: Theme.subtext0; font-size: 14px; }
+
+                        VerticalLayout {
+                            spacing: 12px;
+                            alignment: start;
+                            RemoveOption {
+                                title: "Basic Uninstall";
+                                description: "Removes the app but keeps its settings and shared files.";
+                                clicked => { root.show-uninstall-modal = false; root.remove-clicked("-R"); }
+                            }
+                            RemoveOption {
+                                title: "Uninstall and Reset";
+                                description: "Removes the app and deletes all its settings.";
+                                clicked => { root.show-uninstall-modal = false; root.remove-clicked("-Rn"); }
+                            }
+                            RemoveOption {
+                                title: "Uninstall and Clean Shared Files";
+                                description: "Removes the app and shared files that are no longer needed. Keeps your settings.";
+                                clicked => { root.show-uninstall-modal = false; root.remove-clicked("-Rs"); }
+                            }
+                            RemoveOption {
+                                title: "Force Uninstall (Advanced)";
+                                description: "Removes the app even if other apps rely on it. May break things!";
+                                accent: Theme.red;
+                                outlined: true;
+                                clicked => { root.show-uninstall-modal = false; root.remove-clicked("-Rdd"); }
+                            }
+                            RemoveOption {
+                                title: "Complete Uninstall (Recommended)";
+                                description: "Safely removes the app, deletes its settings, and cleans up all unneeded files.";
+                                accent: Theme.green;
+                                outlined: true;
+                                emphasized: true;
+                                clicked => { root.show-uninstall-modal = false; root.remove-clicked("-Rns"); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

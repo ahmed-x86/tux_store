@@ -1,0 +1,849 @@
+{
+  "schema": 2,
+  "id": "nvidia-drivers-id-1",
+  "title": "Install NVIDIA drivers",
+  "description": "Guided, checked installation of the right NVIDIA driver for your graphics card.",
+  "version": {
+    "label": "Latest driver version",
+    "script": "latest-driver-version.sh"
+  },
+  "author": "Tux Store",
+  "keywords": [
+    "nvidia",
+    "geforce",
+    "gpu",
+    "graphics",
+    "driver",
+    "drivers",
+    "cuda",
+    "rtx",
+    "gtx",
+    "تعريف",
+    "كرت الشاشة"
+  ],
+  "show_on_home": true,
+  "vars": {
+    "gpu_model": "unknown",
+    "gpu_branch": "unknown"
+  },
+  "start": "welcome",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Before you install",
+      "tone": "info",
+      "message": [
+        "Before installing, make sure your system is fully updated.",
+        "",
+        "This guide will check your computer, help you pick the right NVIDIA driver and install it. A restart is needed at the end."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "check_yay"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "check_yay": {
+      "type": "check",
+      "command": {
+        "label": "Looking for yay…",
+        "script": "looking-for-yay.sh"
+      },
+      "on_success": "preflight",
+      "on_failure": "no_yay"
+    },
+    "no_yay": {
+      "type": "dialog",
+      "title": "yay is missing",
+      "tone": "error",
+      "message": [
+        "Install yay first.",
+        "",
+        "yay is needed to install the older driver versions from the AUR. Once it is installed, open this guide again."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_result",
+      "on_failure": "error_generic"
+    },
+    "preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "detect_gpu_name"
+    },
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "detect_gpu_name": {
+      "type": "check",
+      "command": {
+        "label": "Looking for your graphics card…",
+        "script": "looking-for-your-graphics-card.sh"
+      },
+      "capture": "gpu_model",
+      "on_success": "detect_gpu_branch",
+      "on_failure": "error_generic"
+    },
+    "detect_gpu_branch": {
+      "type": "check",
+      "command": {
+        "label": "Looking for your graphics card…",
+        "script": "looking-for-your-graphics-card-2.sh"
+      },
+      "capture": "gpu_branch",
+      "on_success": "detect_kernels",
+      "on_failure": "error_generic"
+    },
+    "detect_kernels": {
+      "type": "check",
+      "command": {
+        "label": "Checking your kernels…",
+        "script": "checking-your-kernels.sh"
+      },
+      "capture": "headers",
+      "on_success": "gpu_gate",
+      "on_failure": "no_headers"
+    },
+    "no_headers": {
+      "type": "dialog",
+      "title": "Kernel headers not found",
+      "tone": "error",
+      "message": "${headers}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "gpu_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "gpu_branch",
+            "eq": "none"
+          },
+          "goto": "no_gpu"
+        }
+      ],
+      "default": "choose_driver"
+    },
+    "no_gpu": {
+      "type": "dialog",
+      "title": "No NVIDIA graphics card found",
+      "tone": "warning",
+      "message": [
+        "I could not find an NVIDIA graphics card on this computer.",
+        "",
+        "On a laptop with hybrid graphics that is dual-booted with Windows, power-saving modes (for example ASUS “Eco Mode”) can switch the NVIDIA GPU off at firmware level so Linux cannot see it. Switch Windows or the BIOS to Standard / Optimized mode, shut down completely, and boot Arch again.",
+        "",
+        "If you are sure a card is installed (for example you are preparing a disk for another PC), you can continue anyway."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        },
+        {
+          "label": "Continue anyway",
+          "style": "danger",
+          "goto": "choose_driver"
+        }
+      ]
+    },
+    "choose_driver": {
+      "type": "choice",
+      "title": "Choose the driver",
+      "tone": "info",
+      "message": "Detected graphics card: ${gpu_model}\n\nPick the driver branch. The one marked “Recommended” matches your card.",
+      "store_as": "driver",
+      "default": "${gpu_branch}",
+      "next": "mismatch_gate",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "open",
+          "label": "NVIDIA drivers — latest",
+          "hint": "The newest official NVIDIA driver (open kernel modules). This is the latest version of the NVIDIA drivers. For GeForce RTX 20/30/40/50 and GTX 16 series (Turing and newer). From the official Arch repositories.\nNote: a few RTX 30 laptops freeze with this driver; if that happens, use 580.xx instead.",
+          "notes": [
+            {
+              "when": {
+                "var": "gpu_branch",
+                "eq": "open"
+              },
+              "text": "✔ Recommended for your GPU: ${gpu_model}"
+            },
+            {
+              "when": {
+                "all": [
+                  {
+                    "var": "gpu_branch",
+                    "one_of": [
+                      "open",
+                      "580xx",
+                      "470xx",
+                      "390xx",
+                      "340xx"
+                    ]
+                  },
+                  {
+                    "var": "gpu_branch",
+                    "ne": "open"
+                  }
+                ]
+              },
+              "text": "⚠ Your GPU (${gpu_model}) looks like it needs a different driver."
+            }
+          ],
+          "set": {
+            "driver_label": "NVIDIA drivers — latest (nvidia-open-dkms)",
+            "driver_source": "the official Arch repositories",
+            "driver_warning": "",
+            "driver_packages": "nvidia-open-dkms nvidia-utils nvidia-settings lib32-nvidia-utils"
+          }
+        },
+        {
+          "value": "580xx",
+          "label": "NVIDIA drivers 580.xx",
+          "hint": "For GeForce GTX 10 (Pascal), GTX 9 / GTX 750 (Maxwell) and Volta. These cards are no longer supported by the latest driver. Installed from the AUR.",
+          "notes": [
+            {
+              "when": {
+                "var": "gpu_branch",
+                "eq": "580xx"
+              },
+              "text": "✔ Recommended for your GPU: ${gpu_model}"
+            },
+            {
+              "when": {
+                "all": [
+                  {
+                    "var": "gpu_branch",
+                    "one_of": [
+                      "open",
+                      "580xx",
+                      "470xx",
+                      "390xx",
+                      "340xx"
+                    ]
+                  },
+                  {
+                    "var": "gpu_branch",
+                    "ne": "580xx"
+                  }
+                ]
+              },
+              "text": "⚠ Your GPU (${gpu_model}) looks like it needs a different driver."
+            }
+          ],
+          "set": {
+            "driver_label": "NVIDIA drivers 580.xx (nvidia-580xx-dkms)",
+            "driver_source": "the AUR (community packages, built on your computer)",
+            "driver_warning": "",
+            "driver_packages": "nvidia-580xx-dkms nvidia-580xx-utils nvidia-580xx-settings lib32-nvidia-580xx-utils"
+          }
+        },
+        {
+          "value": "470xx",
+          "label": "NVIDIA drivers 470.xx",
+          "hint": "For GeForce 600 / 700 series (Kepler). Legacy: NVIDIA no longer updates it. Installed from the AUR.",
+          "notes": [
+            {
+              "when": {
+                "var": "gpu_branch",
+                "eq": "470xx"
+              },
+              "text": "✔ Recommended for your GPU: ${gpu_model}"
+            },
+            {
+              "when": {
+                "all": [
+                  {
+                    "var": "gpu_branch",
+                    "one_of": [
+                      "open",
+                      "580xx",
+                      "470xx",
+                      "390xx",
+                      "340xx"
+                    ]
+                  },
+                  {
+                    "var": "gpu_branch",
+                    "ne": "470xx"
+                  }
+                ]
+              },
+              "text": "⚠ Your GPU (${gpu_model}) looks like it needs a different driver."
+            }
+          ],
+          "set": {
+            "driver_label": "NVIDIA drivers 470.xx (nvidia-470xx-dkms)",
+            "driver_source": "the AUR (community packages, built on your computer)",
+            "driver_warning": "This driver is no longer maintained by NVIDIA. It may fail to build against the newest kernel (the linux-lts kernel is the safer choice), and on Intel 11th gen or newer CPUs it may need the kernel parameter ibt=off to boot.",
+            "driver_packages": "nvidia-470xx-dkms nvidia-470xx-utils nvidia-470xx-settings lib32-nvidia-470xx-utils"
+          }
+        },
+        {
+          "value": "390xx",
+          "label": "NVIDIA drivers 390.xx",
+          "hint": "For GeForce 400 / 500 series (Fermi). Legacy and unsupported. Installed from the AUR.",
+          "notes": [
+            {
+              "when": {
+                "var": "gpu_branch",
+                "eq": "390xx"
+              },
+              "text": "✔ Recommended for your GPU: ${gpu_model}"
+            },
+            {
+              "when": {
+                "all": [
+                  {
+                    "var": "gpu_branch",
+                    "one_of": [
+                      "open",
+                      "580xx",
+                      "470xx",
+                      "390xx",
+                      "340xx"
+                    ]
+                  },
+                  {
+                    "var": "gpu_branch",
+                    "ne": "390xx"
+                  }
+                ]
+              },
+              "text": "⚠ Your GPU (${gpu_model}) looks like it needs a different driver."
+            }
+          ],
+          "set": {
+            "driver_label": "NVIDIA drivers 390.xx (nvidia-390xx-dkms)",
+            "driver_source": "the AUR (community packages, built on your computer)",
+            "driver_warning": "This driver is no longer maintained by NVIDIA and may fail to build against new kernels or Xorg versions. If it does, the open-source nouveau driver is the fallback.",
+            "driver_packages": "nvidia-390xx-dkms nvidia-390xx-utils nvidia-390xx-settings lib32-nvidia-390xx-utils"
+          }
+        },
+        {
+          "value": "340xx",
+          "label": "NVIDIA drivers 340.xx",
+          "hint": "For GeForce 8 / 9 / 200 / 300 series (Tesla). Very old, legacy and unsupported. Installed from the AUR.",
+          "notes": [
+            {
+              "when": {
+                "var": "gpu_branch",
+                "eq": "340xx"
+              },
+              "text": "✔ Recommended for your GPU: ${gpu_model}"
+            },
+            {
+              "when": {
+                "all": [
+                  {
+                    "var": "gpu_branch",
+                    "one_of": [
+                      "open",
+                      "580xx",
+                      "470xx",
+                      "390xx",
+                      "340xx"
+                    ]
+                  },
+                  {
+                    "var": "gpu_branch",
+                    "ne": "340xx"
+                  }
+                ]
+              },
+              "text": "⚠ Your GPU (${gpu_model}) looks like it needs a different driver."
+            }
+          ],
+          "set": {
+            "driver_label": "NVIDIA drivers 340.xx (nvidia-340xx-dkms)",
+            "driver_source": "the AUR (community packages, built on your computer)",
+            "driver_warning": "This driver is very old and unsupported. It will most likely fail on recent kernels and Xorg versions. Consider the open-source nouveau driver instead.",
+            "driver_packages": "nvidia-340xx-dkms nvidia-340xx-utils nvidia-340xx-settings lib32-nvidia-340xx-utils"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "mismatch_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "var": "gpu_branch",
+                "one_of": [
+                  "open",
+                  "580xx",
+                  "470xx",
+                  "390xx",
+                  "340xx"
+                ]
+              },
+              {
+                "var": "driver",
+                "ne": "${gpu_branch}"
+              }
+            ]
+          },
+          "goto": "mismatch"
+        }
+      ],
+      "default": "confirm"
+    },
+    "mismatch": {
+      "type": "dialog",
+      "title": "This driver may not fit your card",
+      "tone": "warning",
+      "message": [
+        "Your graphics card (${gpu_model}) belongs to the “${gpu_branch}” driver family, but you chose “${driver}”.",
+        "",
+        "A driver that does not support your card can leave you with a black screen after the restart."
+      ],
+      "buttons": [
+        {
+          "label": "Choose again",
+          "style": "primary",
+          "goto": "choose_driver"
+        },
+        {
+          "label": "Install it anyway",
+          "style": "danger",
+          "goto": "confirm"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Are you sure?",
+      "tone": "warning",
+      "message": [
+        "You are about to install:",
+        "${driver_label}",
+        "",
+        "Source: ${driver_source}",
+        "Kernel headers for: ${headers}",
+        "",
+        "Existing NVIDIA driver packages that conflict will be replaced. You will need to restart the computer afterwards.",
+        "${driver_warning}",
+        "",
+        "Do you want to continue?"
+      ],
+      "buttons": [
+        {
+          "label": "Yes",
+          "style": "primary",
+          "goto": "install_headers"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "install_headers": {
+      "type": "run",
+      "title": "Preparing…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing build tools and kernel headers",
+          "script": "installing-build-tools-and-kernel-header.sh",
+          "root": true,
+          "weight": 2,
+          "expected_secs": 40,
+          "percent": 15
+        }
+      ],
+      "on_success": "install_driver",
+      "on_failure": "install_failed"
+    },
+    "install_driver": {
+      "type": "run",
+      "title": "Installing the driver…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing ${driver_label}",
+          "script": "installing-driver-label.sh",
+          "root": true,
+          "when": {
+            "var": "driver",
+            "eq": "open"
+          },
+          "weight": 10,
+          "expected_secs": 150,
+          "percent": 85
+        },
+        {
+          "label": "Installing ${driver_label}",
+          "script": "installing-driver-label-2.sh",
+          "when": {
+            "var": "driver",
+            "ne": "open"
+          },
+          "weight": 10,
+          "expected_secs": 300,
+          "percent": 85
+        },
+        {
+          "label": "Rebuilding the boot images",
+          "script": "rebuilding-the-boot-images.sh",
+          "root": true,
+          "weight": 3,
+          "expected_secs": 40,
+          "percent": 95
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Verifying the driver was built…",
+        "script": "verifying-the-driver-was-built.sh",
+        "timeout_secs": 60
+      },
+      "capture": "verify_msg",
+      "on_success": "kms_note",
+      "on_failure": "verify_failed"
+    },
+    "verify_failed": {
+      "type": "dialog",
+      "title": "The driver was not built correctly",
+      "tone": "error",
+      "message": [
+        "${verify_msg}",
+        "",
+        "Do NOT restart yet. Use “Show details” to read what went wrong. The kernel headers may not match the kernel, or the build failed."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "kms_note": {
+      "type": "check",
+      "command": {
+        "script": "kms-note.sh"
+      },
+      "capture": "kms_text",
+      "on_success": "read_version",
+      "on_failure": "read_version"
+    },
+    "family_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "driver",
+            "one_of": [
+              "470xx",
+              "390xx",
+              "340xx"
+            ]
+          },
+          "goto": "done_legacy"
+        }
+      ],
+      "default": "done_modern"
+    },
+    "done_modern": {
+      "type": "finish",
+      "success": true,
+      "title": "Driver installed",
+      "button": "Close",
+      "message": [
+        "The driver was installed successfully. Please restart the computer.",
+        "",
+        "${kms_text}"
+      ],
+      "mark": "installed"
+    },
+    "done_legacy": {
+      "type": "finish",
+      "success": true,
+      "title": "Driver installed",
+      "button": "Close",
+      "message": [
+        "The driver was installed successfully. Please restart the computer.",
+        "",
+        "If you use Wayland: this older driver needs the kernel parameter nvidia_drm.modeset=1 nvidia_drm.fbdev=1 in your bootloader (for GRUB: GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub, then regenerate the config). Add it BEFORE you restart, otherwise Wayland may show a black screen.",
+        "",
+        "${kms_text}"
+      ],
+      "mark": "installed"
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong while installing (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "pacman works in all-or-nothing transactions, so your old driver is normally still in place. If the cause is a conflict with an older NVIDIA package, I can remove the NVIDIA driver packages and try again — but you would have no NVIDIA driver until the new one is installed."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        },
+        {
+          "label": "Remove old NVIDIA packages and retry",
+          "style": "danger",
+          "goto": "confirm_cleanup"
+        }
+      ]
+    },
+    "confirm_cleanup": {
+      "type": "dialog",
+      "title": "Remove the NVIDIA driver packages?",
+      "tone": "warning",
+      "message": [
+        "All installed NVIDIA driver packages will be removed, then ${driver_label} will be installed again.",
+        "",
+        "Do not turn off or restart the computer until it is finished."
+      ],
+      "buttons": [
+        {
+          "label": "Yes, remove and retry",
+          "style": "danger",
+          "goto": "cleanup"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "cleanup": {
+      "type": "run",
+      "title": "Removing old packages…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing old NVIDIA packages",
+          "script": "removing-old-nvidia-packages.sh",
+          "root": true,
+          "expected_secs": 20,
+          "percent": 5
+        }
+      ],
+      "on_success": "install_headers",
+      "on_failure": "install_failed"
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "“${last_failed}” did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "read_version": {
+      "type": "check",
+      "command": {
+        "label": "Reading the installed version…",
+        "script": "reading-the-installed-version.sh"
+      },
+      "capture": "installed_version",
+      "on_success": "record_install",
+      "on_failure": "record_install"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_driver": "${driver}"
+      },
+      "packages": [
+        "${driver_packages}"
+      ],
+      "next": "family_gate"
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove the NVIDIA driver?",
+      "tone": "warning",
+      "message": [
+        "This removes: ${recorded_packages}",
+        "",
+        "Afterwards the computer uses the open-source nouveau driver. If the screen stays black after the restart, switch to a text console (Ctrl+Alt+F3) and reinstall from there.",
+        "",
+        "Do not turn off the computer while it is working."
+      ],
+      "buttons": [
+        {
+          "label": "Remove the driver",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system-2.sh"
+      },
+      "capture": "preflight",
+      "on_success": "un_preflight_result",
+      "on_failure": "error_generic"
+    },
+    "un_preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing the driver…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing the NVIDIA packages",
+          "root": true,
+          "percent": 70,
+          "expected_secs": 30,
+          "script": "removing-the-nvidia-packages.sh"
+        },
+        {
+          "label": "Rebuilding the boot images",
+          "root": true,
+          "percent": 95,
+          "expected_secs": 40,
+          "script": "rebuilding-the-boot-images-2.sh"
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "Driver removed",
+      "message": "The NVIDIA driver was removed. Please restart the computer."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "The driver could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "Other programs may depend on one of these packages (for example Steam needs the 32-bit libraries). The driver is still installed, and so is its record, so you can try again later."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    }
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "script": "download-size.sh"
+    },
+    "extracted_mb": 1500,
+    "installed_mb": {
+      "label": "Installed size",
+      "script": "installed-size.sh"
+    },
+    "note": "Download and installed sizes are read from your package database for the latest driver. Older drivers from the AUR are built on your computer (about 350 MB download); the space needed while installing is an estimate."
+  },
+  "icon": [
+    {
+      "theme": "nvidia"
+    },
+    {
+      "file": "nvidia-drivers-id-1.svg"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/nvidia.svg"
+    }
+  ],
+  "uninstall": "un_confirm"
+}

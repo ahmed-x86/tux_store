@@ -1,0 +1,433 @@
+{
+  "schema": 2,
+  "id": "fonts-pack-id-1",
+  "title": "Fonts pack",
+  "description": "Install a good set of fonts: system fonts with emoji and Arabic/Latin coverage, and popular programming fonts.",
+  "author": "Tux Store",
+  "keywords": [
+    "font",
+    "fonts",
+    "ttf",
+    "emoji",
+    "noto",
+    "dejavu",
+    "liberation",
+    "jetbrains",
+    "fira",
+    "hack",
+    "monospace",
+    "arabic font",
+    "خط",
+    "خطوط",
+    "الخطوط",
+    "خط عربي"
+  ],
+  "show_on_home": false,
+  "vars": {
+    "new_pkgs": "",
+    "skipped_pkgs": "",
+    "skipped_text": "",
+    "preflight": "",
+    "verify_msg": "",
+    "profile": "basic",
+    "pkgs": "ttf-dejavu ttf-liberation noto-fonts noto-fonts-emoji"
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "script": "download-size.sh"
+    },
+    "installed_mb": {
+      "label": "Installed size",
+      "script": "installed-size.sh"
+    },
+    "extracted_mb": 20,
+    "note": "Sizes are read from your package database. Packages you already have are skipped."
+  },
+  "icon": [
+    {
+      "file": "fonts-pack-id-1.svg"
+    }
+  ],
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Fonts pack",
+      "tone": "info",
+      "message": [
+        "Missing letters, boxes instead of emoji, or an ugly terminal font?",
+        "",
+        "The basic set gives you DejaVu, Liberation, Noto (wide language coverage, including Arabic) and Noto Emoji. The coding set adds JetBrains Mono, Fira Code, Hack and Cascadia Code."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "choose"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "choose": {
+      "type": "choice",
+      "title": "What do you want to install?",
+      "message": "You can run this again later to add more.",
+      "store_as": "profile",
+      "default": "basic",
+      "next": "preflight",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "basic",
+          "label": "System fonts + emoji",
+          "hint": [
+            "DejaVu, Liberation, Noto and Noto Emoji."
+          ],
+          "set": {
+            "pkgs": "ttf-dejavu ttf-liberation noto-fonts noto-fonts-emoji"
+          }
+        },
+        {
+          "value": "coding",
+          "label": "Programming fonts",
+          "hint": [
+            "JetBrains Mono, Fira Code, Hack and Cascadia Code."
+          ],
+          "set": {
+            "pkgs": "ttf-jetbrains-mono ttf-fira-code ttf-hack ttf-cascadia-code"
+          }
+        },
+        {
+          "value": "all",
+          "label": "Everything",
+          "hint": [
+            "System fonts plus the programming fonts."
+          ],
+          "set": {
+            "pkgs": "ttf-dejavu ttf-liberation noto-fonts noto-fonts-emoji ttf-jetbrains-mono ttf-fira-code ttf-hack ttf-cascadia-code"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "welcome"
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_gate",
+      "on_failure": "error_generic"
+    },
+    "preflight_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "find_missing"
+    },
+    "problem": {
+      "type": "dialog",
+      "title": "Cannot continue",
+      "tone": "error",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "find_missing": {
+      "type": "check",
+      "command": {
+        "label": "Looking at what is already installed…",
+        "timeout_secs": 60,
+        "script": "looking-at-what-is-already-installed.sh"
+      },
+      "capture": "new_pkgs",
+      "on_success": "find_skipped",
+      "on_failure": "error_generic"
+    },
+    "find_skipped": {
+      "type": "check",
+      "command": {
+        "label": "Checking the repositories…",
+        "timeout_secs": 60,
+        "script": "checking-the-repositories.sh"
+      },
+      "capture": "skipped_pkgs",
+      "on_success": "missing_gate",
+      "on_failure": "error_generic"
+    },
+    "missing_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "already_done"
+        },
+        {
+          "when": {
+            "var": "skipped_pkgs",
+            "ne": ""
+          },
+          "goto": "skipped_line"
+        }
+      ],
+      "default": "confirm"
+    },
+    "skipped_line": {
+      "type": "set",
+      "vars": {
+        "skipped_text": "Not in your repositories (skipped): ${skipped_pkgs}"
+      },
+      "next": "confirm"
+    },
+    "already_done": {
+      "type": "finish",
+      "title": "Already installed",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": "Everything in this set is already installed, so nothing was changed."
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to install",
+      "tone": "info",
+      "message": [
+        "This will be installed:",
+        "${new_pkgs}",
+        "",
+        "${skipped_text}",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "Back",
+          "goto": "choose"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "install": {
+      "type": "run",
+      "title": "Setting up: Fonts pack",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing packages",
+          "root": true,
+          "weight": 10,
+          "expected_secs": 60,
+          "percent": 90,
+          "script": "installing-packages.sh"
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Checking the result…",
+        "timeout_secs": 60,
+        "script": "checking-the-result.sh"
+      },
+      "capture": "verify_msg",
+      "on_success": "record_install",
+      "on_failure": "install_failed"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_profile": "${profile}"
+      },
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "title": "Fonts installed",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": [
+        "The fonts are installed.",
+        "Restart open applications so they notice the new fonts."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "Installation failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "${verify_msg}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "Something went wrong",
+      "tone": "error",
+      "message": "The system check could not run. Please try again.",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "recorded_packages",
+            "eq": ""
+          },
+          "goto": "un_nothing"
+        }
+      ],
+      "default": "un_confirm"
+    },
+    "un_nothing": {
+      "type": "finish",
+      "title": "Nothing to remove",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": [
+        "These fonts were already on your system before this add-on, so Tux Store keeps them.",
+        "This add-on is now marked as not installed."
+      ]
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove Fonts pack?",
+      "tone": "warning",
+      "message": [
+        "These packages were installed by this add-on and will be removed:",
+        "${recorded_packages}",
+        "",
+        "A package that other software still needs is kept.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system-2.sh"
+      },
+      "capture": "preflight",
+      "on_success": "un_gate",
+      "on_failure": "error_generic"
+    },
+    "un_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Fonts pack…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing the fonts",
+          "root": true,
+          "expected_secs": 20,
+          "percent": 95,
+          "script": "removing-the-fonts.sh"
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Fonts removed",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": "The fonts this add-on installed were removed. Fonts that other software needs were kept."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Removal failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "schema": 2,
+  "id": "system-cleanup-id-1",
+  "title": "System cleanup",
+  "description": "Free disk space: trim the pacman cache, remove orphaned packages and old system logs. Shows what will be removed first.",
+  "author": "Tux Store",
+  "keywords": [
+    "cleanup",
+    "clean",
+    "disk space",
+    "free space",
+    "orphans",
+    "cache",
+    "paccache",
+    "journal",
+    "logs",
+    "storage",
+    "تنظيف",
+    "مساحة",
+    "تفريغ"
+  ],
+  "show_on_home": false,
+  "vars": {
+    "orphans": "",
+    "preflight": ""
+  },
+  "icon": [
+    {
+      "file": "system-cleanup-id-1.svg"
+    }
+  ],
+  "start": "welcome",
+  "steps": {
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_gate",
+      "on_failure": "error_generic"
+    },
+    "preflight_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "scan"
+    },
+    "problem": {
+      "type": "dialog",
+      "title": "Cannot continue",
+      "tone": "error",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "Something went wrong",
+      "tone": "error",
+      "message": "The system check could not run. Please try again.",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "welcome": {
+      "type": "dialog",
+      "title": "System cleanup",
+      "tone": "info",
+      "message": [
+        "Free disk space safely:",
+        "",
+        "• old package versions in the pacman cache (the last 2 versions of each are kept),",
+        "• orphaned packages nobody needs any more,",
+        "• system logs older than 2 weeks.",
+        "",
+        "You will see what is going to be removed before anything happens."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "scan": {
+      "type": "check",
+      "command": {
+        "label": "Looking for orphans…",
+        "timeout_secs": 60,
+        "script": "looking-for-orphans.sh"
+      },
+      "capture": "orphans",
+      "on_success": "confirm",
+      "on_failure": "error_generic"
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to clean",
+      "tone": "warning",
+      "message": [
+        "Orphaned packages that will be removed (blank = none):",
+        "${orphans}",
+        "",
+        "Also: old cached package versions and logs older than 2 weeks.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Clean",
+          "style": "primary",
+          "goto": "run"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "run": {
+      "type": "run",
+      "title": "Cleaning…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Cleaning the system",
+          "root": true,
+          "expected_secs": 40,
+          "percent": 95,
+          "script": "cleaning-the-system.sh"
+        }
+      ],
+      "on_success": "done",
+      "on_failure": "failed"
+    },
+    "done": {
+      "type": "finish",
+      "title": "Cleaned up",
+      "success": true,
+      "button": "Close",
+      "message": [
+        "Old cache, orphaned packages and old logs were removed."
+      ]
+    },
+    "failed": {
+      "type": "dialog",
+      "title": "Cleanup failed",
+      "tone": "error",
+      "message": [
+        "Something went wrong while cleaning. Nothing is left half-done: you can safely try again."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    }
+  }
+}

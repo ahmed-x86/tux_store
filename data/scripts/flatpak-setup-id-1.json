@@ -1,0 +1,414 @@
+{
+  "schema": 2,
+  "id": "flatpak-setup-id-1",
+  "title": "Flatpak and Flathub",
+  "description": "Install Flatpak and add the Flathub store, so Flatpak apps can be installed. Can remove Flatpak again.",
+  "author": "Tux Store",
+  "keywords": [
+    "flatpak",
+    "flathub",
+    "sandbox",
+    "apps",
+    "فلات باك",
+    "فلاتباك"
+  ],
+  "show_on_home": false,
+  "vars": {
+    "new_pkgs": "",
+    "skipped_pkgs": "",
+    "skipped_text": "",
+    "preflight": "",
+    "verify_msg": "",
+    "profile": "basic",
+    "pkgs": "flatpak"
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "script": "download-size.sh"
+    },
+    "installed_mb": {
+      "label": "Installed size",
+      "script": "installed-size.sh"
+    },
+    "extracted_mb": 20,
+    "note": "Sizes are read from your package database. Packages you already have are skipped."
+  },
+  "icon": [
+    {
+      "file": "flatpak-setup-id-1.svg"
+    }
+  ],
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Flatpak and Flathub",
+      "tone": "info",
+      "message": [
+        "Flatpak runs apps in a sandbox. Flathub is the main place to get them.",
+        "",
+        "This installs the flatpak package and adds the Flathub remote (system-wide). Log out and in again afterwards so Flatpak apps appear in your menu."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_gate",
+      "on_failure": "error_generic"
+    },
+    "preflight_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "find_missing"
+    },
+    "problem": {
+      "type": "dialog",
+      "title": "Cannot continue",
+      "tone": "error",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "find_missing": {
+      "type": "check",
+      "command": {
+        "label": "Looking at what is already installed…",
+        "timeout_secs": 60,
+        "script": "looking-at-what-is-already-installed.sh"
+      },
+      "capture": "new_pkgs",
+      "on_success": "find_skipped",
+      "on_failure": "error_generic"
+    },
+    "find_skipped": {
+      "type": "check",
+      "command": {
+        "label": "Checking the repositories…",
+        "timeout_secs": 60,
+        "script": "checking-the-repositories.sh"
+      },
+      "capture": "skipped_pkgs",
+      "on_success": "missing_gate",
+      "on_failure": "error_generic"
+    },
+    "missing_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "confirm_config"
+        },
+        {
+          "when": {
+            "var": "skipped_pkgs",
+            "ne": ""
+          },
+          "goto": "skipped_line"
+        }
+      ],
+      "default": "confirm"
+    },
+    "skipped_line": {
+      "type": "set",
+      "vars": {
+        "skipped_text": "Not in your repositories (skipped): ${skipped_pkgs}"
+      },
+      "next": "confirm"
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to install",
+      "tone": "info",
+      "message": [
+        "This will be installed:",
+        "${new_pkgs}",
+        "",
+        "${skipped_text}",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "Back",
+          "goto": "welcome"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "confirm_config": {
+      "type": "dialog",
+      "title": "Ready to set up",
+      "tone": "info",
+      "message": [
+        "Flatpak is already installed, so no packages will be added.",
+        "This will only add the Flathub remote (system-wide) if it is missing.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "Back",
+          "goto": "welcome"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "install": {
+      "type": "run",
+      "title": "Setting up: Flatpak and Flathub",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing packages",
+          "root": true,
+          "weight": 10,
+          "expected_secs": 60,
+          "percent": 70,
+          "script": "installing-packages.sh"
+        },
+        {
+          "label": "Adding the Flathub remote",
+          "root": true,
+          "expected_secs": 15,
+          "percent": 95,
+          "script": "adding-the-flathub-remote.sh"
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Checking the result…",
+        "timeout_secs": 60,
+        "script": "checking-the-result.sh"
+      },
+      "capture": "verify_msg",
+      "on_success": "after_verify",
+      "on_failure": "install_failed"
+    },
+    "after_verify": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "done"
+        }
+      ],
+      "default": "record_install"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_profile": "${profile}"
+      },
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "title": "Flatpak is ready",
+      "success": true,
+      "mark": "installed",
+      "button": "Close",
+      "message": [
+        "Flatpak is installed and Flathub is added.",
+        "Log out and back in once so applications show up in your menu."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "Installation failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "${verify_msg}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "Something went wrong",
+      "tone": "error",
+      "message": "The system check could not run. Please try again.",
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "recorded_packages",
+            "eq": ""
+          },
+          "goto": "un_nothing"
+        }
+      ],
+      "default": "un_confirm"
+    },
+    "un_nothing": {
+      "type": "finish",
+      "title": "Nothing to remove",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": [
+        "These packages were already on your system before this add-on, so Tux Store keeps them.",
+        "This add-on is now marked as not installed."
+      ]
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove Flatpak and Flathub?",
+      "tone": "warning",
+      "message": [
+        "These packages were installed by this add-on and will be removed:",
+        "${recorded_packages}",
+        "",
+        "Apps you installed through Flatpak, and the Flathub remote, stay in /var/lib/flatpak but will not start until Flatpak is installed again.",
+        "",
+        "You will be asked for your password."
+      ],
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system-2.sh"
+      },
+      "capture": "preflight",
+      "on_success": "un_gate",
+      "on_failure": "error_generic"
+    },
+    "un_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "problem"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Flatpak and Flathub…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing packages",
+          "root": true,
+          "expected_secs": 20,
+          "percent": 95,
+          "script": "removing-packages.sh"
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Flatpak removed",
+      "success": true,
+      "mark": "uninstalled",
+      "button": "Close",
+      "message": "Flatpak was removed. Your Flatpak apps and the Flathub remote stay in /var/lib/flatpak."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Removal failed",
+      "tone": "error",
+      "message": [
+        "${last_failed}",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    }
+  }
+}

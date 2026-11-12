@@ -1,0 +1,8 @@
+{
+  "package": "noto-fonts",
+  "addons": {
+    "CJK (Chinese, Japanese, Korean)": "noto-fonts-cjk",
+    "Emoji": "noto-fonts-emoji",
+    "Extra weights and scripts": "noto-fonts-extra"
+  }
+}

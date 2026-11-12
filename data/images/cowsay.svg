@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="#2b2f3a"/>
+  <path d="M10 14 H54 V38 H34 L26 47 V38 H10 Z" fill="#f9e2af"/>
+  <circle cx="24" cy="26" r="3" fill="#2b2f3a"/><circle cx="40" cy="26" r="3" fill="#2b2f3a"/>
+  <path d="M26 32 Q32 36 38 32" fill="none" stroke="#2b2f3a" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="32" y="58" text-anchor="middle" font-family="monospace" font-size="8" fill="#f9e2af">moo</text>
+</svg>

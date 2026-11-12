@@ -1,0 +1,99 @@
+import { Theme } from "theme.slint";
+import { UiUpdate, UiInstallState, OpPhase } from "types.slint";
+import { PillButton, ProgressCard } from "components.slint";
+
+component UpdateRow inherits Rectangle {
+    in property <UiUpdate> u;
+    height: 44px;
+    background: Theme.surface0;
+    border-radius: 10px;
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        spacing: 12px;
+        Text { text: root.u.name; color: Theme.text; font-weight: 700; font-size: 14px; vertical-alignment: center; horizontal-stretch: 1; }
+        Text { text: root.u.old-version; color: Theme.overlay1; font-size: 12px; vertical-alignment: center; }
+        Text { text: "→"; color: Theme.overlay0; font-size: 12px; vertical-alignment: center; }
+        Text { text: root.u.new-version; color: Theme.green; font-size: 12px; font-weight: 700; vertical-alignment: center; }
+    }
+}
+
+export component UpdateTab inherits Rectangle {
+    in property <[UiUpdate]> updates;
+    in property <bool> loading;
+    in property <string> status;
+    in property <UiInstallState> install-state;
+    callback refresh();
+    callback upgrade-all();
+    callback show-console();
+
+    property <bool> busy: root.install-state.phase == OpPhase.running;
+    property <bool> mine: root.install-state.target == "@upgrade" && root.install-state.phase != OpPhase.idle;
+
+    vertical-stretch: 1;
+
+    VerticalLayout {
+        padding: 24px;
+        spacing: 16px;
+
+        HorizontalLayout {
+            spacing: 12px;
+            VerticalLayout {
+                alignment: center;
+                Text {
+                    text: root.loading ? "Checking for updates…"
+                        : (root.updates.length == 0 ? "Your system is up to date" : ("" + root.updates.length + " updates available"));
+                    color: Theme.text;
+                    font-size: 20px;
+                    font-weight: 800;
+                }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            VerticalLayout {
+                alignment: center;
+                PillButton {
+                    text: "Check again";
+                    enabled: !root.loading && !root.busy;
+                    clicked => { root.refresh(); }
+                }
+            }
+            VerticalLayout {
+                alignment: center;
+                PillButton {
+                    text: "Update all";
+                    primary: true;
+                    enabled: root.updates.length > 0 && !root.busy && !root.loading;
+                    clicked => { root.upgrade-all(); }
+                }
+            }
+        }
+
+        if root.status != "" : Text {
+            text: root.status;
+            color: Theme.overlay1;
+            font-size: 13px;
+            wrap: word-wrap;
+        }
+
+        if root.mine : ProgressCard {
+            state: root.install-state;
+            console-clicked => { root.show-console(); }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            upd-scroll := Flickable {
+                width: parent.width;
+                height: parent.height;
+                content-width: self.width;
+                VerticalLayout {
+                    width: upd-scroll.width;
+                    spacing: 8px;
+                    alignment: start;
+                    for u in root.updates : UpdateRow { u: u; }
+                }
+            }
+        }
+    }
+}

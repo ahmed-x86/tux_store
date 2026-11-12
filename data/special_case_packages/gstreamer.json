@@ -1,0 +1,11 @@
+{
+  "package": "gstreamer",
+  "addons": {
+    "Base plugins": "gst-plugins-base",
+    "Good plugins": "gst-plugins-good",
+    "Bad plugins": "gst-plugins-bad",
+    "Ugly plugins": "gst-plugins-ugly",
+    "FFmpeg (libav) plugin": "gst-libav",
+    "PipeWire plugin": "gst-plugin-pipewire"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "note": "Packages listed here are hidden from search, Home and add-on lists. They are installed through the 'Install NVIDIA drivers' script instead, because choosing the wrong NVIDIA package can leave the system without a working display. Installed packages still appear in the Installed tab unless hide_in_installed is true.",
+  "hide_in_installed": false,
+  "hidden_packages": [
+    "nvidia",
+    "nvidia-lts",
+    "nvidia-dkms",
+    "nvidia-open",
+    "nvidia-open-lts",
+    "nvidia-open-dkms",
+    "nvidia-utils",
+    "lib32-nvidia-utils",
+    "nvidia-settings",
+    "opencl-nvidia",
+    "lib32-opencl-nvidia"
+  ]
+}

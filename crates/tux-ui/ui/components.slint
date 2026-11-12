@@ -1,0 +1,1294 @@
+import { Theme } from "theme.slint";
+import { UiPackage, UiPackageDependency, UiInstallState, OpPhase, OpKind, UiScriptView } from "types.slint";
+
+// ── Buttons ────────────────────────────────────────────────────────────────
+
+export component PillButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> primary: false;
+    in property <bool> enabled: true;
+    in property <color> accent: Theme.blue;
+    callback clicked();
+
+    preferred-width: label.preferred-width + 32px;
+    min-width: label.preferred-width + 32px;
+    height: 36px;
+    border-radius: 10px;
+    border-width: root.primary ? 0px : 1px;
+    border-color: Theme.surface1;
+    background: !root.enabled ? Theme.surface0.transparentize(0.5)
+        : (root.primary ? (ta.has-hover ? root.accent.brighter(0.15) : root.accent)
+        : (ta.has-hover ? Theme.surface1 : Theme.surface0));
+    animate background { duration: 150ms; }
+
+    ta := TouchArea {
+        enabled: root.enabled;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    label := Text {
+        text: root.text;
+        color: !root.enabled ? Theme.overlay0 : (root.primary ? Theme.crust : Theme.text);
+        font-size: 13px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+// ── Chrome ─────────────────────────────────────────────────────────────────
+
+// The header bar used by every screen. Whatever is placed inside a TopBar
+// ends up on its right-hand side.
+export component TopBar inherits Rectangle {
+    in property <bool> settings-clickable: false;
+    callback settings-clicked();
+
+    height: 64px;
+    background: Theme.mantle;
+    border-color: Theme.surface0;
+    border-width: 1px;
+
+    HorizontalLayout {
+        padding-left: 24px;
+        padding-right: 24px;
+        spacing: 12px;
+
+        HorizontalLayout {
+            alignment: start;
+            spacing: 10px;
+            VerticalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 32px;
+                    height: 32px;
+                    gear-ta := TouchArea {
+                        enabled: root.settings-clickable;
+                        mouse-cursor: root.settings-clickable ? MouseCursor.pointer : MouseCursor.default;
+                        clicked => { root.settings-clicked(); }
+                    }
+                    Image {
+                        source: @image-url("settings.svg");
+                        width: 22px;
+                        height: 22px;
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                        colorize: root.settings-clickable && gear-ta.has-hover ? Theme.blue : Theme.text;
+                        animate colorize { duration: 150ms; }
+                    }
+                }
+            }
+            VerticalLayout {
+                alignment: center;
+                Text { text: "Tux Store"; color: Theme.blue; font-size: 18px; font-weight: 700; }
+                Text { text: "for Arch Linux"; color: Theme.overlay1; font-size: 11px; }
+            }
+        }
+
+        Rectangle { horizontal-stretch: 1; }
+
+        VerticalLayout {
+            alignment: center;
+            HorizontalLayout {
+                spacing: 12px;
+                @children
+            }
+        }
+    }
+}
+
+export component SearchBox inherits Rectangle {
+    in-out property <string> text;
+    in property <string> placeholder: "Search…";
+    callback edited(string);
+    callback accepted(string);
+
+    width: 260px;
+    height: 36px;
+    background: Theme.surface0;
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: input.has-focus ? Theme.blue : Theme.surface1;
+    animate border-color { duration: 150ms; }
+
+    HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 12px;
+        Rectangle {
+            input := TextInput {
+                text <=> root.text;
+                color: Theme.text;
+                font-size: 13px;
+                vertical-alignment: center;
+                edited => { root.edited(self.text); }
+                accepted => { root.accepted(self.text); }
+            }
+            if root.text == "" : Text {
+                text: root.placeholder;
+                color: Theme.overlay0;
+                font-size: 13px;
+                vertical-alignment: center;
+            }
+        }
+    }
+}
+
+// One segment of the floating tab bar.
+export component TabButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> active;
+    in property <color> c1;
+    in property <color> c2;
+    callback clicked();
+
+    min-width: 0px;
+    property <float> grow: root.active ? 1.5 : 1.0;
+    animate grow { duration: 300ms; easing: ease-in-out; }
+    horizontal-stretch: grow;
+    border-radius: 8px;
+    background: root.active ? @linear-gradient(90deg, root.c1, root.c2)
+        : (ta.has-hover ? @linear-gradient(90deg, root.c1.transparentize(0.85), root.c2.transparentize(0.85)) : transparent);
+    drop-shadow-blur: root.active ? 12px : (ta.has-hover ? 8px : 0px);
+    drop-shadow-color: root.active ? root.c1.transparentize(0.3) : (ta.has-hover ? root.c1.transparentize(0.5) : transparent);
+    drop-shadow-offset-y: root.active ? 3px : (ta.has-hover ? 2px : 0px);
+    animate background { duration: 200ms; easing: ease-in-out; }
+    animate drop-shadow-blur { duration: 200ms; }
+
+    ta := TouchArea { clicked => { root.clicked(); } }
+    Text {
+        text: root.label;
+        color: root.active ? Theme.crust : (ta.has-hover ? root.c1 : Theme.overlay1);
+        font-weight: root.active ? 800 : 600;
+        font-size: 14px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        animate color { duration: 200ms; }
+    }
+}
+
+// Thin horizontal scrollbar for a Flickable (bind `offset <=> flick.content-x`).
+export component HScrollBar inherits Rectangle {
+    in property <length> content-width;
+    in property <length> visible-width;
+    in-out property <length> offset;
+    in property <color> accent: Theme.blue;
+
+    height: 6px;
+    border-radius: 3px;
+    background: Theme.surface0;
+
+    property <length> total: max(root.content-width, root.visible-width);
+    property <length> thumb-width: max(36px, root.width * (root.visible-width / root.total));
+    property <length> max-thumb-x: root.width - root.thumb-width;
+    property <length> max-scroll: root.total - root.visible-width;
+    property <length> thumb-x: root.max-thumb-x > 0px ? (-root.offset / max(1px, root.max-scroll)) * root.max-thumb-x : 0px;
+
+    Rectangle {
+        x: root.thumb-x;
+        y: 0px;
+        width: root.thumb-width;
+        height: root.height;
+        border-radius: 3px;
+        background: thumb-ta.has-hover || thumb-ta.pressed ? root.accent : Theme.surface2;
+    }
+
+    thumb-ta := TouchArea {
+        property <length> press-thumb-x: 0px;
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down { self.press-thumb-x = root.thumb-x; }
+        }
+        moved => {
+            if self.pressed && root.max-thumb-x > 0px {
+                root.offset = -(max(0px, min(root.max-thumb-x, self.press-thumb-x + (self.mouse-x - self.pressed-x))) / root.max-thumb-x) * root.max-scroll;
+            }
+        }
+    }
+}
+
+// Thin vertical scrollbar for a Flickable (bind `offset <=> flick.content-y`).
+// Drag the thumb to cross a long page quickly; hidden when nothing scrolls.
+export component VScrollBar inherits Rectangle {
+    in property <length> content-height;
+    in property <length> visible-height;
+    in-out property <length> offset;
+    in property <color> accent: Theme.blue;
+
+    width: 10px;
+    border-radius: 5px;
+    visible: root.max-scroll > 1px;
+
+    property <length> total: max(root.content-height, root.visible-height);
+    property <length> thumb-height: max(44px, root.height * (root.visible-height / root.total));
+    property <length> max-thumb-y: root.height - root.thumb-height;
+    property <length> max-scroll: root.total - root.visible-height;
+    property <length> thumb-y: root.max-thumb-y > 0px ? max(0px, min(root.max-thumb-y, (-root.offset / max(1px, root.max-scroll)) * root.max-thumb-y)) : 0px;
+
+    Rectangle {
+        x: 2px;
+        y: root.thumb-y;
+        width: root.width - 4px;
+        height: root.thumb-height;
+        border-radius: 3px;
+        background: thumb-ta.has-hover || thumb-ta.pressed ? root.accent : Theme.surface2;
+        animate background { duration: 120ms; }
+    }
+
+    thumb-ta := TouchArea {
+        property <length> press-thumb-y: 0px;
+        mouse-cursor: pointer;
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down { self.press-thumb-y = root.thumb-y; }
+        }
+        moved => {
+            if self.pressed && root.max-thumb-y > 0px {
+                root.offset = -(max(0px, min(root.max-thumb-y, self.press-thumb-y + (self.mouse-y - self.pressed-y))) / root.max-thumb-y) * root.max-scroll;
+            }
+        }
+    }
+}
+
+// Round "back to the top" button, shown by a page once it is scrolled far down.
+export component ToTopButton inherits Rectangle {
+    in property <color> accent: Theme.blue;
+    callback clicked();
+
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: top-ta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-width: 1px;
+    border-color: top-ta.has-hover ? root.accent : Theme.surface1;
+    drop-shadow-blur: 10px;
+    drop-shadow-color: #00000066;
+    animate background { duration: 150ms; }
+
+    Text {
+        text: "↑";
+        color: Theme.text;
+        font-size: 22px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+    top-ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+// ── Screenshot gallery ─────────────────────────────────────────────────────
+
+// Round arrow button floating over the edge of the gallery.
+component GalleryArrow inherits Rectangle {
+    in property <bool> points-right: false;
+    in property <color> accent: Theme.blue;
+    callback clicked();
+
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: arrow-ta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-width: 1px;
+    border-color: arrow-ta.has-hover ? root.accent : Theme.surface1;
+    animate background { duration: 150ms; }
+
+    Text {
+        text: root.points-right ? "›" : "‹";
+        color: Theme.text;
+        font-size: 28px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    arrow-ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+// Horizontal strip of screenshots: drag it, use the two arrows, or move the
+// slider underneath.
+export component ScreenshotGallery inherits Rectangle {
+    in property <[image]> images;
+    in property <color> accent: Theme.blue;
+    /// A picture was clicked (its index): the page opens the big viewer.
+    callback shot-clicked(int);
+
+    property <length> shot-w: 480px;
+    property <length> shot-h: 300px;
+    property <length> gap: 16px;
+    property <length> step: root.shot-w + root.gap;
+    // One arrow click moves by the pictures that fit, at least one.
+    property <length> page-w: max(1, floor(strip.width / root.step)) * root.step;
+    property <length> max-scroll: max(0px, strip.content-width - strip.width);
+
+    height: root.shot-h + 14px + 6px;
+
+    VerticalLayout {
+        spacing: 14px;
+
+        Rectangle {
+            height: root.shot-h;
+
+            strip := Flickable {
+                content-width: max(self.width, root.images.length * root.step - root.gap);
+                interactive: true;
+                HorizontalLayout {
+                    spacing: root.gap;
+                    alignment: start;
+                    for img[idx] in root.images : Rectangle {
+                        width: root.shot-w;
+                        height: root.shot-h;
+                        background: Theme.mantle;
+                        border-radius: 12px;
+                        border-width: 1px;
+                        border-color: shot-ta.has-hover ? root.accent : Theme.surface0;
+                        animate border-color { duration: 150ms; }
+                        clip: true;
+                        Image {
+                            source: img;
+                            width: parent.width;
+                            height: parent.height;
+                            image-fit: contain;
+                        }
+                        shot-ta := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => { root.shot-clicked(idx); }
+                        }
+                    }
+                }
+            }
+
+            if strip.content-x < -2px : GalleryArrow {
+                x: 12px;
+                y: (parent.height - self.height) / 2;
+                accent: root.accent;
+                clicked => { strip.content-x = min(0px, strip.content-x + root.page-w); }
+            }
+            if root.max-scroll > 0px && strip.content-x > -root.max-scroll + 2px : GalleryArrow {
+                x: parent.width - self.width - 12px;
+                y: (parent.height - self.height) / 2;
+                points-right: true;
+                accent: root.accent;
+                clicked => { strip.content-x = max(-root.max-scroll, strip.content-x - root.page-w); }
+            }
+        }
+
+        HScrollBar {
+            content-width: strip.content-width;
+            visible-width: strip.width;
+            offset <=> strip.content-x;
+            accent: root.accent;
+        }
+    }
+}
+
+// Full-window viewer for one screenshot (the page decides when to show it).
+//  * Back button or a click on the dark area closes it (Esc too).
+//  * Arrows at both edges, ← →, A / D and Vim's H / L go to the previous / next
+//    picture.
+//  * Mouse wheel, the − / + buttons and the + / − / 0 keys zoom (up to 5×); a
+//    zoomed picture is dragged to move it. While zoomed, going to another
+//    picture is off (the keys move the picture instead).
+export component ScreenshotViewer inherits Rectangle {
+    in property <image> shot;
+    in property <bool> has-prev: false;
+    in property <bool> has-next: false;
+    in property <string> counter;
+    callback close();
+    callback prev();
+    callback next();
+
+    // Fit the window, never enlarged past 100 %.
+    property <float> fit: min(
+        (root.width - 240px) / 1px / max(1, root.shot.width),
+        (root.height - 200px) / 1px / max(1, root.shot.height));
+    property <float> scale: min(1.0, root.fit);
+    property <length> frame-w: max(1px, root.shot.width * root.scale * 1px);
+    property <length> frame-h: max(1px, root.shot.height * root.scale * 1px);
+
+    // 1.0 = fitted; the picture moves inside the frame by (pan-x, pan-y) ≤ 0.
+    property <float> zoom: 1.0;
+    property <length> pan-x: 0px;
+    property <length> pan-y: 0px;
+    property <bool> zoomed: root.zoom > 1.001;
+
+    function clamp-pan(p: length, extent: length, z: float) -> length {
+        return min(0px, max(extent * (1 - z), p));
+    }
+    // Zoom to `nz` keeping the point (cx, cy) of the frame where it is.
+    function zoom-to(nz: float, cx: length, cy: length) {
+        root.pan-x = root.clamp-pan(cx - (cx - root.pan-x) * (min(5.0, max(1.0, nz)) / root.zoom), root.frame-w, min(5.0, max(1.0, nz)));
+        root.pan-y = root.clamp-pan(cy - (cy - root.pan-y) * (min(5.0, max(1.0, nz)) / root.zoom), root.frame-h, min(5.0, max(1.0, nz)));
+        root.zoom = min(5.0, max(1.0, nz));
+    }
+    function pan-by(dx: length, dy: length) {
+        root.pan-x = root.clamp-pan(root.pan-x + dx, root.frame-w, root.zoom);
+        root.pan-y = root.clamp-pan(root.pan-y + dy, root.frame-h, root.zoom);
+    }
+
+    background: Theme.crust.transparentize(0.08);
+    init => { keys.focus(); }
+
+    keys := FocusScope {
+        key-pressed(e) => {
+            if e.text == Key.Escape {
+                if root.zoomed { root.zoom-to(1.0, 0px, 0px); } else { root.close(); }
+                return EventResult.accept;
+            }
+            if e.text == "+" || e.text == "=" {
+                root.zoom-to(root.zoom * 1.25, root.frame-w / 2, root.frame-h / 2);
+                return EventResult.accept;
+            }
+            if e.text == "-" || e.text == "_" {
+                root.zoom-to(root.zoom / 1.25, root.frame-w / 2, root.frame-h / 2);
+                return EventResult.accept;
+            }
+            if e.text == "0" {
+                root.zoom-to(1.0, 0px, 0px);
+                return EventResult.accept;
+            }
+            if e.text == Key.RightArrow || e.text == "d" || e.text == "D" || e.text == "l" || e.text == "L" {
+                if root.zoomed { root.pan-by(-60px, 0px); } else if root.has-next { root.next(); }
+                return EventResult.accept;
+            }
+            if e.text == Key.LeftArrow || e.text == "a" || e.text == "A" || e.text == "h" || e.text == "H" {
+                if root.zoomed { root.pan-by(60px, 0px); } else if root.has-prev { root.prev(); }
+                return EventResult.accept;
+            }
+            if e.text == Key.DownArrow || e.text == "s" || e.text == "S" || e.text == "j" || e.text == "J" {
+                if root.zoomed { root.pan-by(0px, -60px); }
+                return EventResult.accept;
+            }
+            if e.text == Key.UpArrow || e.text == "w" || e.text == "W" || e.text == "k" || e.text == "K" {
+                if root.zoomed { root.pan-by(0px, 60px); }
+                return EventResult.accept;
+            }
+            return EventResult.reject;
+        }
+    }
+
+    // Behind everything, so the dark area closes the viewer.
+    TouchArea {
+        clicked => { root.close(); }
+    }
+
+    Rectangle {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        width: root.frame-w;
+        height: root.frame-h;
+        background: Theme.mantle;
+        border-color: Theme.surface1;
+        border-width: 1px;
+        border-radius: 12px;
+        clip: true;
+
+        Image {
+            source: root.shot;
+            x: root.pan-x;
+            y: root.pan-y;
+            width: parent.width * root.zoom;
+            height: parent.height * root.zoom;
+            image-fit: contain;
+        }
+        // Takes the clicks on the picture (they must not close the viewer),
+        // the wheel (zoom) and the drag (move while zoomed).
+        TouchArea {
+            property <length> start-x: 0px;
+            property <length> start-y: 0px;
+            mouse-cursor: root.zoomed ? MouseCursor.move : MouseCursor.default;
+            pointer-event(event) => {
+                if event.kind == PointerEventKind.down {
+                    self.start-x = root.pan-x;
+                    self.start-y = root.pan-y;
+                }
+            }
+            moved => {
+                if self.pressed && root.zoomed {
+                    root.pan-x = root.clamp-pan(self.start-x + (self.mouse-x - self.pressed-x), root.frame-w, root.zoom);
+                    root.pan-y = root.clamp-pan(self.start-y + (self.mouse-y - self.pressed-y), root.frame-h, root.zoom);
+                }
+            }
+            scroll-event(event) => {
+                if event.delta-y > 0px {
+                    root.zoom-to(root.zoom * 1.15, self.mouse-x, self.mouse-y);
+                } else if event.delta-y < 0px {
+                    root.zoom-to(root.zoom / 1.15, self.mouse-x, self.mouse-y);
+                }
+                return EventResult.accept;
+            }
+        }
+    }
+
+    // Previous / next, at the far left and far right (off while zoomed).
+    if root.has-prev && !root.zoomed : GalleryArrow {
+        x: 24px;
+        y: (root.height - self.height) / 2;
+        clicked => { root.prev(); }
+    }
+    if root.has-next && !root.zoomed : GalleryArrow {
+        x: root.width - self.width - 24px;
+        y: (root.height - self.height) / 2;
+        points-right: true;
+        clicked => { root.next(); }
+    }
+
+    PillButton {
+        x: 24px;
+        y: 20px;
+        width: 96px;
+        text: "⟨ Back";
+        clicked => { root.close(); }
+    }
+
+    HorizontalLayout {
+        x: root.width - self.width - 24px;
+        y: 20px;
+        width: 170px;
+        height: 36px;
+        spacing: 8px;
+        PillButton {
+            width: 44px;
+            text: "−";
+            enabled: root.zoomed;
+            clicked => { root.zoom-to(root.zoom / 1.25, root.frame-w / 2, root.frame-h / 2); }
+        }
+        Text {
+            text: "" + round(root.zoom * 100) + "%";
+            color: Theme.subtext0;
+            font-size: 13px;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+        PillButton {
+            width: 44px;
+            text: "+";
+            enabled: root.zoom < 4.99;
+            clicked => { root.zoom-to(root.zoom * 1.25, root.frame-w / 2, root.frame-h / 2); }
+        }
+    }
+
+    Text {
+        x: 0px;
+        y: root.height - 48px;
+        width: root.width;
+        text: root.counter;
+        color: Theme.subtext0;
+        font-size: 14px;
+        horizontal-alignment: center;
+    }
+}
+
+// ── Package cards ──────────────────────────────────────────────────────────
+
+export component AppCard inherits Rectangle {
+    in property <UiPackage> pkg;
+    in property <int> accent-idx;
+    callback clicked();
+
+    background: ta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-color: ta.has-hover ? Theme.surface2 : Theme.surface1;
+    border-width: 1px;
+    border-radius: 12px;
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+
+    VerticalLayout {
+        padding: 20px;
+        spacing: 12px;
+        alignment: center;
+
+        HorizontalLayout {
+            alignment: center;
+            if root.pkg.icon.width > 0 : Image {
+                source: root.pkg.icon;
+                width: 64px;
+                height: 64px;
+            }
+            if root.pkg.icon.width == 0 : Rectangle {
+                width: 64px;
+                height: 64px;
+                background: Theme.accents[mod(root.accent-idx, Theme.accents.length)];
+                border-radius: 12px;
+                Text {
+                    text: "↻";
+                    color: Theme.crust;
+                    font-size: 24px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        VerticalLayout {
+            spacing: 3px;
+            Text {
+                text: root.pkg.pretty-name;
+                color: Theme.text;
+                font-weight: 700;
+                font-size: 14px;
+                horizontal-alignment: center;
+                overflow: elide;
+            }
+            Text {
+                text: root.pkg.repo + " • " + root.pkg.version;
+                color: Theme.overlay1;
+                font-size: 11px;
+                horizontal-alignment: center;
+                overflow: elide;
+            }
+            Text {
+                text: root.pkg.repo == "script" ? (root.pkg.installed ? "Installed add-on" : "Add-on package")
+                    : (root.pkg.installed ? "Installed" : "Not Installed");
+                color: root.pkg.repo == "script" ? (root.pkg.installed ? Theme.green : Theme.mauve)
+                    : (root.pkg.installed ? Theme.green : Theme.overlay0);
+                font-size: 11px;
+                font-weight: 700;
+                horizontal-alignment: center;
+            }
+        }
+    }
+}
+
+export component SuggestionCard inherits Rectangle {
+    in property <UiPackage> pkg;
+    in property <int> accent-idx;
+    callback clicked();
+
+    width: 168px;
+    height: 190px;
+    background: ta.has-hover ? Theme.surface1 : Theme.surface0;
+    border-color: ta.has-hover ? Theme.accents[mod(root.accent-idx, Theme.accents.length)] : Theme.surface1;
+    border-width: 1px;
+    border-radius: 14px;
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+
+    VerticalLayout {
+        padding: 18px;
+        spacing: 10px;
+        alignment: start;
+
+        if root.pkg.icon.width > 0 : Image {
+            source: root.pkg.icon;
+            width: 48px;
+            height: 48px;
+            horizontal-alignment: left;
+        }
+        if root.pkg.icon.width == 0 : Rectangle {
+            width: 48px;
+            height: 48px;
+            background: Theme.accents[mod(root.accent-idx, Theme.accents.length)];
+            border-radius: 10px;
+        }
+
+        VerticalLayout {
+            spacing: 4px;
+            Text { text: root.pkg.pretty-name; color: Theme.text; font-weight: 700; font-size: 13px; overflow: elide; }
+            Text { text: root.pkg.repo; color: Theme.overlay1; font-size: 10px; overflow: elide; }
+        }
+
+        Rectangle { vertical-stretch: 1; }
+
+        Text {
+            text: root.pkg.repo == "script" ? "View add-on" : (root.pkg.installed ? "Installed" : "View details");
+            color: root.pkg.installed && root.pkg.repo != "script" ? Theme.green : Theme.accents[mod(root.accent-idx, Theme.accents.length)];
+            font-size: 11px;
+            font-weight: 700;
+        }
+    }
+}
+
+// A titled, horizontally scrolling shelf of cards (one Home section).
+export component AppRow inherits Rectangle {
+    in property <string> title;
+    in property <[UiPackage]> pkgs;
+    in property <int> row-idx;
+    callback clicked(UiPackage);
+
+    height: root.pkgs.length > 0 ? 260px : 0px;
+    clip: true;
+
+    if root.pkgs.length > 0 : VerticalLayout {
+        spacing: 12px;
+        padding-left: 24px;
+        padding-right: 24px;
+
+        Text { text: root.title; font-size: 20px; font-weight: 800; color: Theme.text; }
+
+        Rectangle {
+            height: 190px;
+            flick := Flickable {
+                content-width: max(self.width, root.pkgs.length * (200px + 16px));
+                HorizontalLayout {
+                    spacing: 16px;
+                    for pkg[idx] in root.pkgs : AppCard {
+                        width: 200px;
+                        height: 180px;
+                        pkg: pkg;
+                        accent-idx: root.row-idx * 10 + idx;
+                        clicked => { root.clicked(pkg); }
+                    }
+                }
+            }
+        }
+
+        HScrollBar {
+            content-width: flick.content-width;
+            visible-width: flick.width;
+            offset <=> flick.content-x;
+        }
+    }
+}
+
+// Responsive grid of cards inside a Flickable, with an optional "Show more".
+export component PackageGrid inherits Flickable {
+    in property <[UiPackage]> packages;
+    in property <bool> has-more: false;
+    in property <string> empty-text: "";
+    callback app-clicked(UiPackage);
+    callback more-clicked();
+
+    property <length> card-w: 200px;
+    property <length> card-h: 180px;
+    property <length> gap: 16px;
+    property <length> pad: 24px;
+    property <int> cols: max(1, floor((self.width - pad * 2 + gap) / (card-w + gap)));
+    property <int> total-rows: packages.length > 0 ? floor((packages.length + cols - 1) / cols) : 0;
+    property <length> button-row: root.has-more ? 72px : 0px;
+    content-height: max(self.height, pad + total-rows * (card-h + gap) + button-row);
+
+    for pkg[idx] in root.packages : AppCard {
+        x: root.pad + mod(idx, root.cols) * (root.card-w + root.gap);
+        y: root.pad + floor(idx / root.cols) * (root.card-h + root.gap);
+        width: root.card-w;
+        height: root.card-h;
+        pkg: pkg;
+        accent-idx: idx;
+        clicked => { root.app-clicked(pkg); }
+    }
+
+    if root.packages.length == 0 && root.empty-text != "" : Text {
+        x: 0px;
+        y: 80px;
+        width: root.width;
+        text: root.empty-text;
+        color: Theme.overlay1;
+        font-size: 16px;
+        horizontal-alignment: center;
+    }
+
+    if root.has-more : Rectangle {
+        x: root.pad;
+        y: root.pad + root.total-rows * (root.card-h + root.gap) + 8px;
+        width: root.width - root.pad * 2;
+        height: 48px;
+        border-radius: 12px;
+        background: more-ta.has-hover ? Theme.surface1 : Theme.surface0;
+        border-color: more-ta.has-hover ? Theme.blue : Theme.surface1;
+        border-width: 1px;
+        animate background { duration: 150ms; }
+        animate border-color { duration: 150ms; }
+
+        more-ta := TouchArea {
+            mouse-cursor: pointer;
+            clicked => { root.more-clicked(); }
+        }
+        HorizontalLayout {
+            alignment: center;
+            spacing: 8px;
+            Text { text: "Show more"; color: more-ta.has-hover ? Theme.blue : Theme.text; font-size: 14px; font-weight: 700; vertical-alignment: center; }
+            Text { text: "↓"; color: more-ta.has-hover ? Theme.blue : Theme.overlay1; font-size: 16px; font-weight: 700; vertical-alignment: center; }
+        }
+    }
+}
+
+export component DepRow inherits Rectangle {
+    in property <UiPackageDependency> dep;
+    in property <color> accent;
+
+    height: 34px;
+
+    HorizontalLayout {
+        spacing: 10px;
+        alignment: start;
+
+        Rectangle {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            background: root.dep.installed ? Theme.surface1 : root.accent.transparentize(0.82);
+            Text {
+                text: root.dep.installed ? "✓" : "↓";
+                color: root.dep.installed ? Theme.overlay1 : root.accent;
+                font-size: 11px;
+                font-weight: 700;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+        Text {
+            text: root.dep.name;
+            color: root.dep.installed ? Theme.subtext0 : Theme.subtext1;
+            font-size: 13px;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+        }
+        Text {
+            text: root.dep.size-str;
+            color: root.dep.installed ? Theme.overlay1 : Theme.subtext0;
+            font-size: 12px;
+            font-weight: root.dep.installed ? 400 : 700;
+            vertical-alignment: center;
+        }
+    }
+}
+
+// ── Home banner ────────────────────────────────────────────────────────────
+
+export component CoverCarousel inherits Rectangle {
+    in property <string> caption;
+    in property <image> picture;
+    in property <int> count;
+    callback prev();
+    callback next();
+    callback clicked();
+
+    width: 100%;
+    property <length> banner-width: min(root.width - 64px, 1000px);
+    height: root.count > 0 ? root.banner-width * 9 / 16 : 0px;
+
+    if root.count > 0 : Rectangle {
+        width: root.banner-width;
+        height: root.height;
+        x: (parent.width - self.width) / 2;
+        border-radius: 20px;
+        clip: true;
+        background: Theme.surface0;
+
+        Image {
+            width: 100%;
+            height: 100%;
+            source: root.picture;
+            image-fit: cover;
+        }
+
+        banner-ta := TouchArea {
+            mouse-cursor: pointer;
+            clicked => { root.clicked(); }
+        }
+
+        // Auto-advance, paused while the pointer is over the banner.
+        Timer {
+            interval: 8s;
+            running: root.count > 1 && !banner-ta.has-hover;
+            triggered => { root.next(); }
+        }
+
+        Rectangle {
+            y: parent.height - self.height;
+            width: 100%;
+            height: 120px;
+            background: @linear-gradient(180deg, #00000000 0%, #000000cc 100%);
+            Text {
+                x: 32px;
+                y: parent.height - 70px;
+                text: root.caption;
+                color: white;
+                font-size: 36px;
+                font-weight: 800;
+            }
+        }
+
+        if root.count > 1 : Rectangle {
+            x: 16px;
+            y: (parent.height - self.height) / 2;
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: left-ta.has-hover ? #ffffffcc : #ffffff88;
+            Text { text: "<"; color: black; font-size: 24px; font-weight: 800; horizontal-alignment: center; vertical-alignment: center; width: 100%; height: 100%; }
+            left-ta := TouchArea { mouse-cursor: pointer; clicked => { root.prev(); } }
+        }
+
+        if root.count > 1 : Rectangle {
+            x: parent.width - self.width - 16px;
+            y: (parent.height - self.height) / 2;
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: right-ta.has-hover ? #ffffffcc : #ffffff88;
+            Text { text: ">"; color: black; font-size: 24px; font-weight: 800; horizontal-alignment: center; vertical-alignment: center; width: 100%; height: 100%; }
+            right-ta := TouchArea { mouse-cursor: pointer; clicked => { root.next(); } }
+        }
+    }
+}
+
+// ── Transaction progress (install / remove / system upgrade) ────────────────
+
+export component ProgressCard inherits Rectangle {
+    in property <UiInstallState> state;
+    callback console-clicked();
+
+    property <bool> running: root.state.phase == OpPhase.running;
+    property <bool> upgrade: root.state.kind == OpKind.upgrade;
+    property <bool> removal: root.state.kind == OpKind.remove;
+
+    background: Theme.mantle;
+    border-color: Theme.surface0;
+    border-width: 1px;
+    border-radius: 16px;
+
+    VerticalLayout {
+        padding: 22px;
+        spacing: 14px;
+
+        HorizontalLayout {
+            alignment: space-between;
+            Text {
+                text: root.running
+                    ? (root.removal ? "Uninstalling…"
+                        : (root.state.progress >= 0.98 ? "Finishing up…"
+                        : (root.upgrade ? "Updating system…" : "Installing…")))
+                    : (root.state.success
+                        ? (root.removal ? "Uninstalled successfully"
+                            : (root.upgrade ? "System updated successfully" : "Installed successfully"))
+                        : (root.removal ? "Uninstallation failed"
+                            : (root.upgrade ? "System update failed" : "Installation failed")));
+                color: !root.running && !root.state.success ? Theme.red : Theme.text;
+                font-size: 15px;
+                font-weight: 700;
+                vertical-alignment: center;
+            }
+            Text {
+                text: round(root.state.progress * 100) + "%";
+                color: Theme.overlay1;
+                font-size: 13px;
+                vertical-alignment: center;
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 12px;
+
+            Rectangle {
+                horizontal-stretch: 1;
+                height: 10px;
+                border-radius: 5px;
+                background: Theme.surface1;
+                clip: true;
+                // blue = dependencies, mauve = the app itself, grey = still to do
+                HorizontalLayout {
+                    Rectangle {
+                        background: #89b4fa;
+                        horizontal-stretch: max(0.0001, min(root.state.progress, root.state.deps-ratio));
+                    }
+                    Rectangle {
+                        background: #cba6f7;
+                        horizontal-stretch: max(0.0001, max(0.0, root.state.progress - root.state.deps-ratio));
+                    }
+                    Rectangle {
+                        background: #6c7086;
+                        horizontal-stretch: max(0.0001, 1.0 - min(root.state.progress, root.state.deps-ratio)
+                            - max(0.0, root.state.progress - root.state.deps-ratio));
+                    }
+                }
+            }
+
+            PillButton {
+                text: "Console";
+                clicked => { root.console-clicked(); }
+            }
+        }
+    }
+}
+
+// Full-window overlay showing the raw pacman output.
+export component ConsoleOverlay inherits Rectangle {
+    in property <string> text;
+    callback close();
+
+    background: Theme.crust.transparentize(0.15);
+    TouchArea {} // swallows clicks behind the dialog
+
+    Rectangle {
+        x: 60px;
+        y: 60px;
+        width: parent.width - 120px;
+        height: parent.height - 120px;
+        background: Theme.mantle;
+        border-color: Theme.surface1;
+        border-width: 1px;
+        border-radius: 14px;
+
+        VerticalLayout {
+            padding: 20px;
+            spacing: 12px;
+
+            HorizontalLayout {
+                alignment: space-between;
+                Text { text: "pacman output"; color: Theme.text; font-size: 15px; font-weight: 700; vertical-alignment: center; }
+                PillButton { text: "Close"; clicked => { root.close(); } }
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+                background: Theme.crust;
+                border-radius: 8px;
+                clip: true;
+                Flickable {
+                    content-height: max(self.height, log-text.height + 20px);
+                    log-text := Text {
+                        x: 10px;
+                        y: 10px;
+                        width: parent.width - 20px;
+                        text: root.text;
+                        color: #a6e3a1;
+                        font-size: 11px;
+                        font-family: "monospace";
+                        wrap: word-wrap;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// ── Interactive scripts ────────────────────────────────────────────────────
+
+component ScriptOptionCard inherits Rectangle {
+    in property <string> label;
+    in property <string> hint;
+    in property <bool> selected;
+    in property <bool> multi;
+    in property <bool> has-icon;
+    in property <image> icon;
+    in property <color> accent;
+    callback clicked();
+
+    min-height: inner.min-height;
+    preferred-height: inner.preferred-height;
+    background: root.selected ? root.accent.transparentize(0.86) : (ta.has-hover ? Theme.surface1 : Theme.surface0);
+    border-color: root.selected ? root.accent : Theme.surface1;
+    border-width: root.selected ? 2px : 1px;
+    border-radius: 12px;
+    animate background { duration: 120ms; }
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    inner := HorizontalLayout {
+        padding: 14px;
+        spacing: 14px;
+        VerticalLayout {
+            alignment: start;
+            // radio dot (one choice)
+            if !root.multi : Rectangle {
+                width: 20px;
+                height: 20px;
+                border-radius: 10px;
+                border-width: 2px;
+                border-color: root.selected ? root.accent : Theme.overlay0;
+                Rectangle {
+                    x: 4px;
+                    y: 4px;
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: root.selected ? root.accent : transparent;
+                }
+            }
+            // check box (any number)
+            if root.multi : Rectangle {
+                width: 20px;
+                height: 20px;
+                border-radius: 6px;
+                border-width: 2px;
+                border-color: root.selected ? root.accent : Theme.overlay0;
+                background: root.selected ? root.accent : transparent;
+                animate background { duration: 120ms; }
+                if root.selected : Image {
+                    source: @image-url("check.svg");
+                    width: 14px;
+                    height: 14px;
+                    x: 1px;
+                    y: 1px;
+                    colorize: Theme.crust;
+                }
+            }
+        }
+        // small picture of the option
+        if root.has-icon : VerticalLayout {
+            alignment: start;
+            Rectangle {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                background: Theme.mantle;
+                Image {
+                    source: root.icon;
+                    x: 4px;
+                    y: 4px;
+                    width: parent.width - 8px;
+                    height: parent.height - 8px;
+                    image-fit: contain;
+                }
+            }
+        }
+        VerticalLayout {
+            spacing: 4px;
+            Text { text: root.label; color: Theme.text; font-size: 14px; font-weight: 700; wrap: word-wrap; }
+            if root.hint != "" : Text { text: root.hint; color: Theme.subtext0; font-size: 12px; wrap: word-wrap; }
+        }
+    }
+}
+
+// Modal dialog that renders one screen of a running script. It is purely
+// presentational: Rust decides what to show and what a button does.
+export component ScriptDialog inherits Rectangle {
+    in property <UiScriptView> view;
+    in property <float> progress;
+    in property <string> progress-label;
+    in property <bool> has-output;
+    in-out property <int> selected: -1;
+    in property <int> checked-count;
+    callback option-toggled(int);
+    callback button-clicked(int);
+    callback details-clicked();
+    callback minimize-clicked();
+
+    property <color> tone-color: root.view.tone == 1 ? #f9e2af
+        : (root.view.tone == 2 ? Theme.red
+        : (root.view.tone == 3 ? Theme.green : Theme.blue));
+
+    background: Theme.crust.transparentize(0.1);
+    TouchArea {} // swallows clicks behind the dialog
+
+    card := Rectangle {
+        width: min(680px, root.width - 48px);
+        height: min(root.height - 48px, lay.preferred-height);
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        background: Theme.mantle;
+        border-color: Theme.surface1;
+        border-width: 1px;
+        border-radius: 16px;
+        clip: true;
+
+        lay := VerticalLayout {
+            Rectangle { height: 4px; background: root.tone-color; }
+
+            VerticalLayout {
+                padding: 22px;
+                padding-bottom: 6px;
+                spacing: 4px;
+                Text { text: root.view.script-title; color: Theme.overlay1; font-size: 11px; font-weight: 700; }
+                Text { text: root.view.title; color: Theme.text; font-size: 21px; font-weight: 800; wrap: word-wrap; }
+            }
+
+            // Scrollable body
+            Rectangle {
+                vertical-stretch: 1;
+                min-height: 60px;
+                preferred-height: body.preferred-height;
+                scroll := Flickable {
+                    width: parent.width;
+                    height: parent.height;
+                    content-width: self.width;
+                    content-height: body.preferred-height;
+                    body := VerticalLayout {
+                        width: scroll.width;
+                        padding: 22px;
+                        padding-top: 10px;
+                        padding-bottom: 14px;
+                        spacing: 12px;
+
+                        if root.view.message != "" : Text {
+                            text: root.view.message;
+                            color: Theme.subtext1;
+                            font-size: 14px;
+                            wrap: word-wrap;
+                        }
+
+                        for opt[i] in root.view.options : ScriptOptionCard {
+                            label: opt.label;
+                            hint: opt.hint;
+                            multi: root.view.multi;
+                            has-icon: opt.has-icon;
+                            icon: opt.icon;
+                            selected: root.view.multi ? opt.checked : root.selected == i;
+                            accent: root.tone-color;
+                            clicked => {
+                                if root.view.multi { root.option-toggled(i); } else { root.selected = i; }
+                            }
+                        }
+
+                        if root.view.busy : VerticalLayout {
+                            spacing: 8px;
+                            padding-top: 6px;
+                            HorizontalLayout {
+                                spacing: 12px;
+                                Text {
+                                    horizontal-stretch: 1;
+                                    text: root.progress-label;
+                                    color: Theme.subtext0;
+                                    font-size: 12px;
+                                    overflow: elide;
+                                }
+                                Text { text: round(root.progress * 100) + "%"; color: Theme.overlay1; font-size: 12px; }
+                            }
+                            Rectangle {
+                                height: 10px;
+                                border-radius: 5px;
+                                background: Theme.surface1;
+                                clip: true;
+                                Rectangle {
+                                    x: 0px;
+                                    width: parent.width * max(0.02, min(1.0, root.progress));
+                                    background: Theme.mauve;
+                                    animate width { duration: 350ms; easing: ease-out; }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Footer
+            HorizontalLayout {
+                padding: 18px;
+                padding-top: 8px;
+                spacing: 10px;
+                alignment: end;
+
+                if root.has-output : PillButton {
+                    text: "Show details";
+                    clicked => { root.details-clicked(); }
+                }
+                if root.view.busy : PillButton {
+                    text: "Run in background";
+                    clicked => { root.minimize-clicked(); }
+                }
+                Rectangle { horizontal-stretch: 1; }
+                for b[i] in root.view.buttons : PillButton {
+                    text: b.label;
+                    primary: b.style == 0 || b.style == 2;
+                    accent: b.style == 2 ? Theme.red : Theme.blue;
+                    enabled: !b.needs-selection
+                        || (root.view.multi ? root.checked-count >= root.view.min-select : root.selected >= 0);
+                    clicked => { root.button-clicked(i); }
+                }
+            }
+        }
+    }
+}
