@@ -1,0 +1,256 @@
+{
+  "schema": 2,
+  "id": "laravel-php-id-1",
+  "title": "Laravel (PHP + Composer)",
+  "description": "Backend starter: PHP, Composer and the Laravel installer, installed in your home folder with the official php.new script. No administrator password needed.",
+  "version": "1.0",
+  "author": "Tux Store",
+  "keywords": [
+    "laravel", "php", "composer", "backend", "web", "framework", "herd", "php.new",
+    "لارافل", "لارافيل", "بي اتش بي", "كومبوزر", "باك اند", "برمجة", "تطوير"
+  ],
+  "show_on_home": true,
+  "icon": [
+    { "file": "laravel-php-id-1.svg" },
+    { "theme": "applications-development" }
+  ],
+  "info": {
+    "download_mb": 45,
+    "extracted_mb": 45,
+    "installed_mb": 90,
+    "note": "Sizes are approximate. Installed with the official php.new script (Laravel Herd Lite) into ~/.config/herd-lite/bin."
+  },
+  "start": "welcome",
+  "uninstall": "un_confirm",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Laravel development setup",
+      "message": [
+        "This installs PHP, Composer and the Laravel installer using the official php.new script.",
+        "",
+        "• Everything goes into ~/.config/herd-lite/bin — no administrator password is needed.",
+        "• Two lines are added to your shell profile (~/.bashrc or ~/.zshrc) so php, composer and laravel work in the terminal.",
+        "• This PHP will be used before any PHP installed with pacman."
+      ],
+      "buttons": [
+        { "label": "Continue", "style": "primary", "goto": "check_system" },
+        { "label": "Cancel", "exit": true }
+      ]
+    },
+
+    "check_system": {
+      "type": "check",
+      "command": { "label": "Checking your system…", "script": "checking-your-system.sh" },
+      "capture": "sys_err",
+      "on_success": "sys_branch",
+      "on_failure": "sys_branch"
+    },
+    "sys_branch": {
+      "type": "branch",
+      "cases": [
+        { "when": { "var": "sys_err", "ne": "" }, "goto": "sys_failed" }
+      ],
+      "default": "check_existing"
+    },
+    "sys_failed": {
+      "type": "dialog",
+      "title": "Can't continue",
+      "tone": "error",
+      "message": "${sys_err}",
+      "buttons": [
+        { "label": "Close", "exit": true }
+      ]
+    },
+
+    "check_existing": {
+      "type": "check",
+      "command": { "label": "Looking for an existing php.new install…", "script": "looking-for-an-existing-install.sh" },
+      "capture": "existing",
+      "on_success": "existing_branch",
+      "on_failure": "existing_branch"
+    },
+    "existing_branch": {
+      "type": "branch",
+      "cases": [
+        { "when": { "var": "existing", "eq": "yes" }, "goto": "already" }
+      ],
+      "default": "pick_php"
+    },
+    "already": {
+      "type": "dialog",
+      "title": "Already installed",
+      "tone": "warning",
+      "message": [
+        "PHP from php.new was found in ~/.config/herd-lite/bin.",
+        "Continuing will download and overwrite php, composer and laravel there (a good way to update or choose another PHP version)."
+      ],
+      "buttons": [
+        { "label": "Reinstall / update", "style": "primary", "goto": "pick_php" },
+        { "label": "Cancel", "exit": true }
+      ]
+    },
+
+    "pick_php": {
+      "type": "choice",
+      "title": "Choose the PHP version",
+      "message": "Laravel 12 needs PHP 8.2 or newer.",
+      "store_as": "php_version",
+      "default": "8.5",
+      "next": "confirm",
+      "continue_label": "Continue",
+      "options": [
+        { "value": "8.5", "label": "PHP 8.5", "hint": "Newest. If you see deprecation warnings from the laravel installer, reinstall with 8.4." },
+        { "value": "8.4", "label": "PHP 8.4", "hint": "Very safe choice, works everywhere." },
+        { "value": "8.3", "label": "PHP 8.3", "hint": "For older projects." }
+      ],
+      "buttons": [
+        { "label": "Back", "goto": "welcome" }
+      ]
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to install",
+      "message": [
+        "PHP ${php_version}, Composer and the Laravel installer will be downloaded from php.new and installed in ~/.config/herd-lite/bin.",
+        "",
+        "Your shell profile gets two PATH lines (they are removed again on Uninstall)."
+      ],
+      "buttons": [
+        { "label": "Install", "style": "primary", "goto": "run" },
+        { "label": "Back", "goto": "pick_php" }
+      ]
+    },
+
+    "run": {
+      "type": "run",
+      "title": "Installing…",
+      "message": "Downloading PHP, Composer and the Laravel installer. Please keep the computer on.",
+      "commands": [
+        {
+          "label": "Installing PHP, Composer and Laravel",
+          "script": "installing-php-composer-and-laravel.sh",
+          "expected_secs": 40,
+          "timeout_secs": 300,
+          "percent": 100
+        }
+      ],
+      "on_success": "verify_php",
+      "on_failure": "install_failed",
+      "echo": true
+    },
+
+    "verify_php": {
+      "type": "check",
+      "command": { "label": "Checking PHP…", "script": "reading-the-php-version.sh" },
+      "capture": "installed_version",
+      "on_success": "verify_tools",
+      "on_failure": "install_failed"
+    },
+    "verify_tools": {
+      "type": "check",
+      "command": { "label": "Checking Composer and Laravel…", "script": "reading-composer-and-laravel-versions.sh" },
+      "capture": "tools_msg",
+      "on_success": "remember",
+      "on_failure": "remember"
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "Installation failed",
+      "tone": "error",
+      "message": [
+        "Something went wrong while installing.",
+        "",
+        "${last_output}",
+        "",
+        "Nothing was recorded, so you can simply try again."
+      ],
+      "buttons": [
+        { "label": "Close", "exit": true }
+      ]
+    },
+
+    "remember": {
+      "type": "record",
+      "files": [ "~/.config/herd-lite" ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "title": "Laravel tools are ready",
+      "message": [
+        "PHP ${installed_version} installed.",
+        "${tools_msg}",
+        "",
+        "Open a NEW terminal (or run: source ~/.bashrc  /  source ~/.zshrc), then try:",
+        "  laravel new example-app",
+        "  cd example-app && composer run dev",
+        "",
+        "Tips:",
+        "• Vite / npm needs Node.js:  sudo pacman -S nodejs npm",
+        "• fish shell: add the folder yourself with  fish_add_path ~/.config/herd-lite/bin"
+      ],
+      "success": true,
+      "button": "Close",
+      "mark": "installed"
+    },
+
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove PHP, Composer and Laravel?",
+      "tone": "warning",
+      "message": [
+        "This deletes: ${recorded_files}",
+        "and removes the two PATH lines from your shell profiles (a .tux-store-backup copy is kept next to each changed file).",
+        "",
+        "Your Laravel projects and your global Composer packages are not touched."
+      ],
+      "buttons": [
+        { "label": "Remove", "style": "danger", "goto": "un_run" },
+        { "label": "Cancel", "exit": true }
+      ]
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing…",
+      "message": "Please wait.",
+      "commands": [
+        {
+          "label": "Cleaning the shell profiles",
+          "script": "cleaning-the-shell-profiles.sh",
+          "percent": 40
+        },
+        {
+          "label": "Deleting the recorded files",
+          "script": "deleting-the-recorded-files.sh",
+          "percent": 100
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Removal failed",
+      "tone": "error",
+      "message": [
+        "Could not remove everything.",
+        "",
+        "${last_output}",
+        "",
+        "The install record was kept, so you can try again."
+      ],
+      "buttons": [
+        { "label": "Close", "exit": true }
+      ]
+    },
+    "un_done": {
+      "type": "finish",
+      "title": "Removed",
+      "message": "PHP, Composer and the Laravel installer from php.new were removed. Open a new terminal so the old PATH is gone.",
+      "success": true,
+      "button": "Close",
+      "mark": "uninstalled"
+    }
+  }
+}
