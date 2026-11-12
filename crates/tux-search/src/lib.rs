@@ -17,7 +17,7 @@ use std::time::{Duration, Instant};
 use tux_abi::sync::lock;
 use tux_abi::text::is_valid_package_name;
 use tux_abi::{paths, Bus, Message, Module, Package, PackageDetails, ScriptInfo, Section};
-use tux_pacman::{localdb, queries};
+use tux_pacman::localdb;
 
 const DETAILS_TTL: Duration = Duration::from_secs(60);
 const DETAILS_CACHE_MAX: usize = 32;
@@ -44,6 +44,12 @@ impl Module for SearchModule {
 
     fn on_message(&self, msg: Message) {
         match msg {
+            Message::EngineChanged { engine } => {
+                tux_libalpm::set_active(engine);
+                *lock(&self.home_cache) = None;
+                lock(&self.details_cache).clear();
+                self.search_gen.fetch_add(1, Ordering::SeqCst);
+            }
             Message::HomeRequested => self.home(),
             Message::SearchRequested { query } => self.search(query),
             Message::DetailsRequested { name } => self.details(name),
@@ -94,7 +100,10 @@ impl SearchModule {
         thread::spawn(move || {
             // Scripts that match come first, then the pacman results.
             let mut packages = catalog.scripts_matching(&query);
-            packages.extend(catalog.filter_visible(queries::search(&query, queries::SEARCH_LIMIT)));
+            packages.extend(catalog.filter_visible(tux_libalpm::search(
+                &query,
+                tux_pacman::queries::SEARCH_LIMIT,
+            )));
             if latest.load(Ordering::SeqCst) == my_gen {
                 bus.publish(&Message::SearchResults { query, packages });
             }
@@ -112,7 +121,7 @@ impl SearchModule {
                 .filter(|(at, _)| at.elapsed() < DETAILS_TTL)
                 .map(|(_, d)| d.clone());
             let details = fresh.unwrap_or_else(|| {
-                let d = queries::details(&name);
+                let d = tux_libalpm::details(&name);
                 let mut g = lock(&cache);
                 if g.len() >= DETAILS_CACHE_MAX {
                     g.clear();
@@ -131,7 +140,7 @@ impl SearchModule {
         }
         let bus = self.bus;
         thread::spawn(move || {
-            bus.publish(&Message::ExactReady { package: queries::exact(&name) });
+            bus.publish(&Message::ExactReady { package: tux_libalpm::exact(&name) });
         });
     }
 
@@ -142,7 +151,7 @@ impl SearchModule {
         }
         let (bus, catalog) = (self.bus, self.catalog.clone());
         thread::spawn(move || {
-            let packages = catalog.filter_visible(queries::packages_by_name(&names));
+            let packages = catalog.filter_visible(tux_libalpm::packages_by_name(&names));
             bus.publish(&Message::AddonsReady { package, packages });
         });
     }
@@ -150,7 +159,7 @@ impl SearchModule {
     fn installed(&self) {
         let (bus, catalog) = (self.bus, self.catalog.clone());
         thread::spawn(move || {
-            let mut packages = catalog.filter_installed(queries::installed_packages());
+            let mut packages = catalog.filter_installed(tux_libalpm::installed_packages());
             packages.extend(catalog.installed_addons());
             bus.publish(&Message::InstalledReady { packages });
         });
@@ -159,7 +168,7 @@ impl SearchModule {
     fn updates(&self) {
         let bus = self.bus;
         thread::spawn(move || {
-            let msg = match queries::updates() {
+            let msg = match tux_libalpm::updates() {
                 Ok(updates) => Message::UpdatesReady { updates, error: None },
                 Err(e) => Message::UpdatesReady { updates: Vec::new(), error: Some(e) },
             };
@@ -171,7 +180,7 @@ impl SearchModule {
 /// One `pacman -Si` for the whole curated list, then split into sections.
 fn build_home(catalog: &Catalog) -> Vec<Section> {
     let all = catalog.all_package_names();
-    let by_name: HashMap<String, Package> = queries::packages_by_name(&all)
+    let by_name: HashMap<String, Package> = tux_libalpm::packages_by_name(&all)
         .into_iter()
         .map(|p| (p.name.clone(), p))
         .collect();
