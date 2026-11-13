@@ -82,6 +82,26 @@ fn wire(ui: &MainWindow) {
         with_state(|st| st.more_search());
     });
 
+    // ── side menu ──
+    ui.on_menu_home(|| {
+        with_state(|st| st.menu_home());
+    });
+    ui.on_menu_browse(|section| {
+        with_state(|st| st.open_browse(section));
+    });
+    ui.on_browse_back_clicked(|| {
+        with_state(|st| st.browse_back());
+    });
+    ui.on_browse_entry_clicked(|entry| {
+        with_state(|st| st.browse_entry_clicked(entry));
+    });
+    ui.on_browse_app_clicked(|pkg| {
+        with_state(|st| st.app_clicked(convert::from_ui(&pkg)));
+    });
+    ui.on_browse_more_clicked(|| {
+        with_state(|st| st.browse_more());
+    });
+
     // ── tabs ──
     ui.on_tab_changed(|tab| {
         with_state(|st| st.tab_changed(tab));
