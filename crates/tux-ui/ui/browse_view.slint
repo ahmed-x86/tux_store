@@ -1,0 +1,460 @@
+import { Theme } from "theme.slint";
+import { UiPackage, UiTaxonomyEntry } from "types.slint";
+import { PackageGrid, VScrollBar, ToTopButton } from "components.slint";
+
+// One repository / group / category row. Everything shown here was discovered
+// by the backend; the UI only draws it.
+component BrowseRow inherits Rectangle {
+    in property <UiTaxonomyEntry> entry;
+    in property <color> accent;
+    in property <int> section: 0;
+    callback clicked();
+
+    function badge-color(b: string) -> color {
+        if b == "Official" { return Theme.green; }
+        if b == "Third-party" { return Theme.accents[7]; }
+        if b == "Family" { return root.accent; }
+        return Theme.overlay1;
+    }
+
+    // Whether a built-in category icon is available for this entry.
+    property <bool> is-audio-video: root.entry.icon-key == "applications-multimedia" || root.entry.id == "audio-video" || root.entry.title == "Audio & Video";
+    property <bool> is-dev: root.entry.icon-key == "applications-development" || root.entry.id == "developer-tools" || root.entry.title == "Developer Tools";
+    property <bool> is-education: root.entry.icon-key == "applications-education" || root.entry.id == "education" || root.entry.title == "Education";
+    property <bool> is-games: root.entry.icon-key == "applications-games" || root.entry.id == "games" || root.entry.title == "Games";
+    property <bool> is-graphics: root.entry.icon-key == "applications-graphics" || root.entry.id == "graphics" || root.entry.title == "Graphics & Photography";
+    property <bool> is-office: root.entry.icon-key == "applications-office" || root.entry.id == "office" || root.entry.title == "Office";
+    property <bool> is-science: root.entry.icon-key == "applications-science" || root.entry.id == "science" || root.entry.title == "Science";
+    property <bool> is-comm: root.entry.icon-key == "applications-internet" || root.entry.id == "communication" || root.entry.title == "Communication & News";
+    property <bool> is-utilities: root.entry.icon-key == "applications-utilities" || root.entry.id == "utilities" || root.entry.title == "Utilities";
+    property <bool> is-other: root.entry.icon-key == "applications-other" || root.entry.id == "other" || root.entry.title == "Other";
+
+    property <bool> has-builtin: root.is-audio-video || root.is-dev || root.is-education || root.is-games
+        || root.is-graphics || root.is-office || root.is-science || root.is-comm || root.is-utilities || root.is-other;
+
+    height: root.entry.depth > 0 ? 56px : 66px;
+    border-radius: 12px;
+    background: row-ta.has-hover ? Theme.surface0 : transparent;
+    animate background { duration: 120ms; }
+
+    HorizontalLayout {
+        padding-left: 14px + root.entry.depth * 28px;
+        padding-right: 16px;
+        spacing: 14px;
+
+        // Avatar: built-in category SVG → system-resolved icon → first letter.
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 38px;
+                height: 38px;
+                border-radius: 11px;
+                background: root.has-builtin ? root.accent.transparentize(0.85)
+                    : (root.entry.icon.width > 0 ? Theme.surface0 : root.accent.transparentize(0.82));
+                border-width: 1px;
+                border-color: root.has-builtin ? root.accent.transparentize(0.60)
+                    : (root.entry.icon.width > 0 ? Theme.surface1 : root.accent.transparentize(0.55));
+
+                // ── built-in category SVGs ──
+                if root.is-audio-video : Image {
+                    source: @image-url("cat-audio-video.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-dev : Image {
+                    source: @image-url("cat-developer-tools.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-education : Image {
+                    source: @image-url("cat-education.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-games : Image {
+                    source: @image-url("cat-games.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-graphics : Image {
+                    source: @image-url("cat-graphics.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-office : Image {
+                    source: @image-url("cat-office.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-science : Image {
+                    source: @image-url("cat-science.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-comm : Image {
+                    source: @image-url("cat-communication.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-utilities : Image {
+                    source: @image-url("cat-utilities.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+                if root.is-other : Image {
+                    source: @image-url("cat-other.svg");
+                    width: 20px; height: 20px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    colorize: root.accent;
+                }
+
+                // ── fallback: system icon or initial ──
+                if !root.has-builtin && root.entry.icon.width > 0 : Image {
+                    source: root.entry.icon;
+                    width: 22px;
+                    height: 22px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                }
+                if !root.has-builtin && root.entry.icon.width == 0 : Text {
+                    text: root.entry.initial;
+                    color: root.accent;
+                    font-size: 15px;
+                    font-weight: 800;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 3px;
+
+            HorizontalLayout {
+                spacing: 8px;
+                Text {
+                    text: root.entry.title;
+                    color: Theme.text;
+                    font-size: 14px;
+                    font-weight: 700;
+                    vertical-alignment: center;
+                }
+                if root.entry.badge != "" : Rectangle {
+                    height: 19px;
+                    border-radius: 9px;
+                    background: root.badge-color(root.entry.badge).transparentize(0.84);
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        Text {
+                            text: root.entry.badge;
+                            color: root.badge-color(root.entry.badge);
+                            font-size: 9px;
+                            font-weight: 800;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+            Text {
+                text: root.entry.subtitle;
+                color: Theme.overlay1;
+                font-size: 11px;
+                vertical-alignment: center;
+            }
+        }
+
+        Rectangle { horizontal-stretch: 1; }
+
+        Text {
+            text: root.entry.expandable ? (root.entry.expanded ? "▾" : "›") : "›";
+            color: row-ta.has-hover ? root.accent : Theme.overlay0;
+            font-size: 18px;
+            font-weight: 700;
+            vertical-alignment: center;
+            animate color { duration: 120ms; }
+        }
+    }
+
+    row-ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+// Full-window page of the side menu: a list of repositories / groups /
+// categories, and the packages of one of them. It slides in from the right.
+export component BrowseView inherits Rectangle {
+    in property <int> section: 0; // 0 categories · 1 groups · 2 repositories
+    in property <string> section-title;
+    in property <string> status;
+    in property <bool> loading: false;
+    in property <[UiTaxonomyEntry]> entries;
+
+    in property <bool> entry-open: false;
+    in property <string> entry-title;
+    in property <string> entry-subtitle;
+    in property <[UiPackage]> packages;
+    in property <bool> has-more;
+
+    callback back-clicked();
+    callback entry-clicked(UiTaxonomyEntry);
+    callback app-clicked(UiPackage);
+    callback more-clicked();
+
+    property <color> accent: Theme.accents[root.section == 0 ? 0 : (root.section == 1 ? 1 : 4)];
+    background: Theme.base;
+
+    VerticalLayout {
+        // ── header ──
+        Rectangle {
+            height: 66px;
+            background: Theme.mantle;
+            border-color: Theme.surface0;
+            border-width: 1px;
+
+            HorizontalLayout {
+                padding-left: 20px;
+                padding-right: 20px;
+                spacing: 14px;
+
+                VerticalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 40px;
+                        height: 36px;
+                        border-radius: 10px;
+                        background: header-back.has-hover ? Theme.surface1 : Theme.surface0;
+                        border-color: header-back.has-hover ? root.accent : Theme.surface1;
+                        border-width: 1px;
+                        animate background { duration: 150ms; }
+                        animate border-color { duration: 150ms; }
+
+                        header-back := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => { root.back-clicked(); }
+                        }
+                        Text {
+                            text: "⟨";
+                            color: header-back.has-hover ? root.accent : Theme.text;
+                            font-size: 20px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 38px;
+                        height: 38px;
+                        border-radius: 11px;
+                        background: root.accent.transparentize(0.84);
+                        if root.section == 0 : Image {
+                            source: @image-url("categories.svg");
+                            width: 20px;
+                            height: 20px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            colorize: root.accent;
+                        }
+                        if root.section == 1 : Image {
+                            source: @image-url("groups.svg");
+                            width: 20px;
+                            height: 20px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            colorize: root.accent;
+                        }
+                        if root.section == 2 : Image {
+                            source: @image-url("repositories.svg");
+                            width: 20px;
+                            height: 20px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            colorize: root.accent;
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 2px;
+                    Text {
+                        text: root.entry-open ? root.entry-title : root.section-title;
+                        color: Theme.text;
+                        font-size: 17px;
+                        font-weight: 800;
+                        vertical-alignment: center;
+                    }
+                    Text {
+                        text: root.entry-open ? root.entry-subtitle : root.status;
+                        color: Theme.overlay1;
+                        font-size: 11px;
+                        vertical-alignment: center;
+                    }
+                }
+
+                Rectangle { horizontal-stretch: 1; }
+
+                if root.loading : Text {
+                    text: "Discovering…";
+                    color: root.accent;
+                    font-size: 12px;
+                    font-weight: 600;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        // ── body ──
+        Rectangle {
+            vertical-stretch: 1;
+
+            // Level 0: every entry of this section.
+            if !root.entry-open : Rectangle {
+                width: parent.width;
+                height: parent.height;
+
+                list := Flickable {
+                    width: parent.width;
+                    height: parent.height;
+                    content-width: self.width;
+                    content-height: max(self.height, list-layout.preferred-height + 32px);
+                    // A new section starts at the top, not where the last one was.
+                    property <int> shown-section: root.section;
+                    changed shown-section => { self.content-y = 0px; }
+
+                    list-layout := VerticalLayout {
+                        width: list.width;
+                        padding-top: 18px;
+                        padding-bottom: 40px;
+                        padding-left: 24px;
+                        padding-right: 24px;
+                        spacing: 2px;
+
+                        for entry in root.entries : BrowseRow {
+                            entry: entry;
+                            accent: root.accent;
+                            section: root.section;
+                            clicked => { root.entry-clicked(entry); }
+                        }
+
+                        if root.entries.length == 0 : Rectangle {
+                            height: 160px;
+                            Text {
+                                text: root.loading ? "Building the list from this machine…" : "Nothing to show here";
+                                color: Theme.overlay1;
+                                font-size: 14px;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+
+                VScrollBar {
+                    x: parent.width - self.width - 3px;
+                    y: 4px;
+                    height: parent.height - 8px;
+                    content-height: list.content-height;
+                    visible-height: list.height;
+                    offset <=> list.content-y;
+                    accent: root.accent;
+                }
+                if list.content-y < -600px : ToTopButton {
+                    x: parent.width - self.width - 28px;
+                    y: parent.height - self.height - 24px;
+                    accent: root.accent;
+                    clicked => { list.content-y = 0px; }
+                }
+            }
+
+            // Level 1: the packages of one entry.
+            if root.entry-open : Rectangle {
+                width: parent.width;
+                height: parent.height;
+
+                VerticalLayout {
+                    Rectangle {
+                        height: 46px;
+                        HorizontalLayout {
+                            padding-left: 28px;
+                            padding-right: 28px;
+                            spacing: 8px;
+                            alignment: start;
+
+                            crumb := Rectangle {
+                                height: 28px;
+                                border-radius: 8px;
+                                background: crumb-ta.has-hover ? Theme.surface0 : transparent;
+                                HorizontalLayout {
+                                    padding-left: 8px;
+                                    padding-right: 10px;
+                                    spacing: 4px;
+                                    Text {
+                                        text: "‹";
+                                        color: root.accent;
+                                        font-size: 15px;
+                                        font-weight: 700;
+                                        vertical-alignment: center;
+                                    }
+                                    Text {
+                                        text: "All " + root.section-title;
+                                        color: crumb-ta.has-hover ? root.accent : Theme.overlay1;
+                                        font-size: 12px;
+                                        font-weight: 600;
+                                        vertical-alignment: center;
+                                        animate color { duration: 150ms; }
+                                    }
+                                }
+                                crumb-ta := TouchArea {
+                                    mouse-cursor: pointer;
+                                    clicked => { root.back-clicked(); }
+                                }
+                            }
+                            Rectangle { horizontal-stretch: 1; }
+                            Text {
+                                text: root.packages.length + " packages listed";
+                                color: Theme.overlay0;
+                                font-size: 11px;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    PackageGrid {
+                        vertical-stretch: 1;
+                        packages: root.packages;
+                        has-more: root.has-more;
+                        empty-text: root.loading ? "Loading packages…" : "No packages in this section";
+                        app-clicked(p) => { root.app-clicked(p); }
+                        more-clicked => { root.more-clicked(); }
+                    }
+                }
+            }
+        }
+    }
+}
