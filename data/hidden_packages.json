@@ -1,5 +1,5 @@
 {
-  "note": "Packages listed here are hidden from search, Home and add-on lists. They are installed through the 'Install NVIDIA drivers' script instead, because choosing the wrong NVIDIA package can leave the system without a working display. Installed packages still appear in the Installed tab unless hide_in_installed is true.",
+  "note": "Packages listed here are hidden across Tux Store (categories, groups, repositories, search, and Home).",
   "hide_in_installed": false,
   "hidden_packages": [
     "nvidia",
@@ -12,6 +12,21 @@
     "lib32-nvidia-utils",
     "nvidia-settings",
     "opencl-nvidia",
-    "lib32-opencl-nvidia"
+    "lib32-opencl-nvidia",
+    "xiphos",
+    "bibletime",
+    "sword",
+    "python-sword",
+    "biblesync",
+    "diatheke",
+    "ezra-bible-app",
+    "ezra-bible-app-bin",
+    "openlp",
+    "bpbible",
+    "andbible",
+    "bibleedit",
+    "gnome-bible",
+    "theword",
+    "bible-kjv"
   ]
 }
