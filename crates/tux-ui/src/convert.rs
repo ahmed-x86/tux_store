@@ -2,14 +2,14 @@
 
 use crate::{
     UiAddon, UiPackage, UiPackageDependency, UiPackageDetails, UiScriptButton, UiScriptOption, UiScriptView,
-    UiSpecialCase, UiUpdate,
+    UiSpecialCase, UiTaxonomyEntry, UiUpdate,
 };
 use slint::{Image, ModelRc, VecModel};
 use std::collections::HashMap;
 use std::rc::Rc;
 use tux_abi::text::{format_size, prettify_name};
 use tux_abi::script::{ButtonStyle, Tone};
-use tux_abi::{Package, PackageDetails, ScriptViewData, SpecialCase, UpdateEntry};
+use tux_abi::{Package, PackageDetails, ScriptViewData, SpecialCase, TaxonomyEntry, UpdateEntry};
 
 pub fn to_ui(p: &Package, icon: Option<&Image>) -> UiPackage {
     // Scripts carry a real title; pacman packages get one derived from the name.
@@ -98,6 +98,27 @@ pub fn update(u: &UpdateEntry) -> UiUpdate {
         name: u.name.as_str().into(),
         old_version: u.old_version.as_str().into(),
         new_version: u.new_version.as_str().into(),
+    }
+}
+
+/// One row of the side menu. `icon` is the picture already loaded under
+/// `entry.icon` (icon-theme name); absent icons fall back to the first letter.
+pub fn taxonomy(e: &TaxonomyEntry, icon: Option<&Image>, expanded: bool) -> UiTaxonomyEntry {
+    let initial: String = e.title.chars().next().map(|c| c.to_uppercase().to_string()).unwrap_or_default();
+    UiTaxonomyEntry {
+        id: e.id.as_str().into(),
+        title: e.title.as_str().into(),
+        subtitle: e.subtitle.as_str().into(),
+        badge: e.badge.as_str().into(),
+        packages: e.packages as i32,
+        installed: e.installed as i32,
+        icon: icon.cloned().unwrap_or_default(),
+        icon_key: e.icon.as_str().into(),
+        initial: initial.as_str().into(),
+        depth: e.depth as i32,
+        parent: e.parent.as_str().into(),
+        expandable: e.expandable,
+        expanded,
     }
 }
 
