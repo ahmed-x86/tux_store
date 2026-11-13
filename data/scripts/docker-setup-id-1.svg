@@ -1,5 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="6" y="6" width="52" height="52" rx="12" fill="#2b2f3a"/>
-  <rect x="6" y="6" width="52" height="52" rx="12" fill="none" stroke="#89dceb" stroke-width="3"/>
-  <path d="M10 33 H48 C52 33 54 30 54 27 C51 27 50 25 50 25 C49 22 46 22 46 22 C46 26 43 26 43 26" fill="none" stroke="#89dceb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 33 C13 42 20 48 30 48 C42 48 48 42 50 33" fill="none" stroke="#89dceb" stroke-width="3" stroke-linecap="round"/><rect x="16" y="24" width="6" height="6" fill="#89b4fa"/><rect x="24" y="24" width="6" height="6" fill="#89b4fa"/><rect x="32" y="24" width="6" height="6" fill="#89b4fa"/><rect x="24" y="17" width="6" height="6" fill="#89b4fa"/>
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Docker background -->
+  <circle cx="512" cy="512" r="512" fill="#0091e2"/>
+
+  <!-- Docker logo -->
+  <path fill="#fff" d="M827.3 461.5c-1.6-1.3-16.1-12.2-46.7-12.2-8.1 0-16.2.6-24.2 2.1-5.9-40.7-39.5-60.5-41-61.4l-8.2-4.8-5.4 7.8c-6.8 10.5-11.7 22-14.6 34.2-5.5 23.2-2.2 45 9.6 63.6-14.2 7.9-37.1 9.9-41.7 10H277c-9.9 0-17.9 8-17.9 17.9-.4 33.1 5.2 66 16.5 97.1 13 34.2 32.4 59.3 57.6 74.7 28.2 17.3 74.1 27.2 126.2 27.2 23.5.1 47-2.1 70.1-6.4 32.1-5.9 63-17.1 91.4-33.2 23.4-13.6 44.5-30.8 62.4-51.1 29.9-33.9 47.8-71.7 61.1-105.2h5.3c32.8 0 53-13.1 64.1-24.1 7.4-7 13.2-15.5 16.9-25l2.3-6.9-5.7-4.3z"/>
+
+  <!-- Container blocks -->
+  <g fill="#fff">
+    <rect x="308" y="436" width="59" height="54" rx="4"/>
+    <rect x="378" y="436" width="59" height="54" rx="4"/>
+    <rect x="448" y="436" width="59" height="54" rx="4"/>
+    <rect x="518" y="436" width="59" height="54" rx="4"/>
+    <rect x="589" y="436" width="59" height="54" rx="4"/>
+
+    <rect x="378" y="371" width="59" height="54" rx="4"/>
+    <rect x="448" y="371" width="59" height="54" rx="4"/>
+    <rect x="518" y="371" width="59" height="54" rx="4"/>
+
+    <rect x="518" y="306" width="59" height="54" rx="4"/>
+  </g>
+
+  <!-- Small developer code badge -->
+  <g transform="translate(470 880)">
+    <path d="M0 35L45 0L45 18L22 35L45 52L45 70Z" fill="#fff"/>
+    <path d="M100 0L145 35L100 70L100 52L123 35L100 18Z" fill="#fff"/>
+    <path d="M78 0H98L67 70H47Z" fill="#fff"/>
+  </g>
+
 </svg>
