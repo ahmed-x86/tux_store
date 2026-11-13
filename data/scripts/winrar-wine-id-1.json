@@ -2,7 +2,7 @@
   "schema": 2,
   "id": "winrar-wine-id-1",
   "title": "Install WinRAR (Wine)",
-  "description": "Downloads the official WinRAR installer from rarlab.com and installs it silently inside Wine. Can be removed again with WinRAR's own uninstaller or the Wine uninstaller window.",
+  "description": "Downloads the official WinRAR installer from rarlab.com and installs it silently inside Wine, then adds WinRAR to the right-click menu of the file managers you choose. Can be removed again with WinRAR's own uninstaller or the Wine uninstaller window.",
   "version": {
     "label": "Latest WinRAR version",
     "script": "latest-winrar-version.sh"
@@ -22,7 +22,17 @@
     "فك الضغط",
     "وينرار",
     "ملفات مضغوطة",
-    "برنامج"
+    "برنامج",
+    "right click",
+    "context menu",
+    "nautilus",
+    "dolphin",
+    "thunar",
+    "nemo",
+    "caja",
+    "pcmanfm",
+    "كليك يمين",
+    "قائمة السياق"
   ],
   "show_on_home": true,
   "vars": {
@@ -33,13 +43,15 @@
     "existing": "no",
     "lang_code": "en",
     "verify_msg": "",
-    "un_mode": "auto"
+    "un_mode": "auto",
+    "default_fm": "",
+    "menu_fms": ""
   },
   "info": {
     "download_mb": 4,
     "extracted_mb": 10,
     "installed_mb": 12,
-    "note": "WinRAR is installed inside your Wine prefix (WINEPREFIX, or ~/.wine by default). No administrator password is needed. WinRAR is shareware from rarlab.com; Tux Store only downloads the official installer."
+    "note": "WinRAR is installed inside your Wine prefix (WINEPREFIX, or ~/.wine by default). The right-click menu files are small scripts downloaded from GitHub (ahmed-x86/winemenu-winrar) into your home folder. No administrator password is needed. WinRAR is shareware from rarlab.com; Tux Store only downloads the official installer."
   },
   "icon": [
     {
@@ -59,7 +71,7 @@
       "message": [
         "This guide installs WinRAR through Wine.",
         "",
-        "It checks Wine, finds the latest version on the official site (rarlab.com), downloads the installer and runs it silently. No administrator password is needed."
+        "It checks Wine, finds the latest version on the official site (rarlab.com), downloads the installer and runs it silently. Then it adds WinRAR to the right-click menu of your file manager. No administrator password is needed."
       ],
       "buttons": [
         {
@@ -147,7 +159,7 @@
       "message": "WinRAR ${winrar_pretty} will be downloaded from the official site (rarlab.com).",
       "store_as": "lang_code",
       "default": "en",
-      "next": "probe_existing",
+      "next": "detect_fm",
       "continue_label": "Continue",
       "options": [
         {
@@ -221,6 +233,7 @@
         "WinRAR ${winrar_pretty} (64-bit, language: ${lang_code}) will be installed.",
         "",
         "Wine prefix: ${wine_prefix}",
+        "Right-click menu for: ${menu_fms}",
         "Download: about 4 MB from www.rarlab.com",
         "",
         "If the Wine prefix does not exist yet it will be created first (this can take a minute).",
@@ -235,7 +248,7 @@
         },
         {
           "label": "Back",
-          "goto": "choose_lang"
+          "goto": "choose_fm"
         },
         {
           "label": "Cancel",
@@ -272,6 +285,13 @@
           "script": "installing-winrar-in-wine.sh"
         },
         {
+          "label": "Adding WinRAR to the right-click menu",
+          "ignore_failure": true,
+          "percent": 93,
+          "timeout_secs": 120,
+          "script": "installing-the-right-click-menu.sh"
+        },
+        {
           "label": "Removing the downloaded installer",
           "ignore_failure": true,
           "percent": 95,
@@ -302,7 +322,8 @@
       "type": "record",
       "set": {
         "winrar_prefix": "${wine_prefix}",
-        "winrar_language": "${lang_code}"
+        "winrar_language": "${lang_code}",
+        "menu_fms": "${menu_fms}"
       },
       "files": [
         "~/.local/share/applications/wine/Programs/WinRAR"
@@ -318,6 +339,8 @@
         "WinRAR ${winrar_pretty} was installed in Wine.",
         "",
         "Find it in your application menu, or right-click an archive and open it with WinRAR.",
+        "Right-click menu added for: ${menu_fms}",
+        "Restart your file manager (or log out and in) to see the new entries. If nothing appears, open “Show details” of this install and check the log.",
         "Install folder: ${wine_prefix}/drive_c/Program Files/WinRAR"
       ],
       "mark": "installed"
@@ -445,7 +468,7 @@
         "WinRAR will be removed from this Wine prefix:",
         "${winrar_prefix}",
         "",
-        "Its menu entries, shortcuts, file-association launchers and registry keys are cleaned up too. Other Wine programs are not touched."
+        "Its menu entries, shortcuts, file-association launchers, registry keys and the right-click menu entries are cleaned up too. Other Wine programs are not touched."
       ],
       "buttons": [
         {
@@ -553,6 +576,12 @@
       "message": "Removing leftovers. Please wait.",
       "commands": [
         {
+          "label": "Removing the right-click menu",
+          "ignore_failure": true,
+          "percent": 65,
+          "script": "removing-the-right-click-menu.sh"
+        },
+        {
           "label": "Removing leftover files and shortcuts",
           "percent": 70,
           "script": "removing-leftover-files-and-shortcuts.sh"
@@ -592,6 +621,166 @@
           "label": "Close",
           "style": "primary",
           "exit": true
+        }
+      ]
+    },
+    "detect_fm": {
+      "type": "check",
+      "command": {
+        "label": "Detecting your file manager…",
+        "script": "detecting-your-file-manager.sh"
+      },
+      "capture": "default_fm",
+      "on_success": "choose_fm",
+      "on_failure": "choose_fm"
+    },
+    "choose_fm": {
+      "type": "choice",
+      "multiple": true,
+      "title": "Add WinRAR to the right-click menu",
+      "message": "Tick one or more file managers. Your default one is ticked for you. Untick everything to skip the right-click menu.",
+      "store_as": "menu_fms",
+      "default": "${default_fm}",
+      "next": "probe_existing",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "nautilus",
+          "label": "Nautilus (GNOME)",
+          "hint": "Needs nautilus-python.",
+          "icon": [
+            {
+              "theme": "org.gnome.Nautilus"
+            },
+            {
+              "theme": "system-file-manager"
+            }
+          ],
+          "notes": [
+            {
+              "when": {
+                "var": "default_fm",
+                "eq": "nautilus"
+              },
+              "text": "✔ Recommended (your default file manager)"
+            }
+          ]
+        },
+        {
+          "value": "nemo",
+          "label": "Nemo (Cinnamon)",
+          "hint": "Needs nemo-python.",
+          "icon": [
+            {
+              "theme": "nemo"
+            },
+            {
+              "theme": "system-file-manager"
+            }
+          ],
+          "notes": [
+            {
+              "when": {
+                "var": "default_fm",
+                "eq": "nemo"
+              },
+              "text": "✔ Recommended (your default file manager)"
+            }
+          ]
+        },
+        {
+          "value": "caja",
+          "label": "Caja (MATE)",
+          "hint": "Needs python-caja.",
+          "icon": [
+            {
+              "theme": "caja"
+            },
+            {
+              "theme": "system-file-manager"
+            }
+          ],
+          "notes": [
+            {
+              "when": {
+                "var": "default_fm",
+                "eq": "caja"
+              },
+              "text": "✔ Recommended (your default file manager)"
+            }
+          ]
+        },
+        {
+          "value": "thunar",
+          "label": "Thunar (XFCE)",
+          "hint": "Needs thunarx-python.",
+          "icon": [
+            {
+              "theme": "org.xfce.thunar"
+            },
+            {
+              "theme": "system-file-manager"
+            }
+          ],
+          "notes": [
+            {
+              "when": {
+                "var": "default_fm",
+                "eq": "thunar"
+              },
+              "text": "✔ Recommended (your default file manager)"
+            }
+          ]
+        },
+        {
+          "value": "dolphin",
+          "label": "Dolphin (KDE Plasma)",
+          "hint": "A service menu, no extra package needed.",
+          "icon": [
+            {
+              "theme": "system-file-manager"
+            },
+            {
+              "theme": "system-file-manager"
+            }
+          ],
+          "notes": [
+            {
+              "when": {
+                "var": "default_fm",
+                "eq": "dolphin"
+              },
+              "text": "✔ Recommended (your default file manager)"
+            }
+          ]
+        },
+        {
+          "value": "pcmanfm",
+          "label": "PCManFM / PCManFM-Qt (LXDE, LXQt)",
+          "hint": "Custom actions, no extra package needed.",
+          "icon": [
+            {
+              "theme": "pcmanfm"
+            },
+            {
+              "theme": "system-file-manager"
+            }
+          ],
+          "notes": [
+            {
+              "when": {
+                "var": "default_fm",
+                "eq": "pcmanfm"
+              },
+              "text": "✔ Recommended (your default file manager)"
+            }
+          ]
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "choose_lang"
         }
       ]
     }
