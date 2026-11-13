@@ -1,0 +1,329 @@
+{
+  "schema": 2,
+  "id": "peazip-id-1",
+  "title": "Install PeaZip",
+  "description": "Installs PeaZip from pacman, then adds PeaZip to the right-click menu of the file managers you choose.",
+  "version": {
+    "label": "Installed PeaZip version",
+    "shell": "pacman -Si peazip 2>/dev/null | awk '/^Version/ {print $3; exit}'"
+  },
+  "author": "Tux Store",
+  "keywords": [
+    "peazip",
+    "rar",
+    "zip",
+    "7z",
+    "archive",
+    "archiver",
+    "compress",
+    "extract",
+    "ضغط",
+    "فك الضغط",
+    "بيزيب",
+    "ملفات مضغوطة",
+    "right click",
+    "context menu",
+    "nautilus",
+    "dolphin",
+    "thunar",
+    "nemo",
+    "caja",
+    "pcmanfm",
+    "كليك يمين",
+    "قائمة السياق"
+  ],
+  "show_on_home": true,
+  "vars": {
+    "preflight_err": "",
+    "default_fm": "",
+    "menu_fms": ""
+  },
+  "info": {
+    "installed_mb": 20,
+    "note": "PeaZip is installed from the official Arch repositories via pacman. The right-click menu files are small scripts downloaded from GitHub (ahmed-x86/peazip_rightclick) into your home folder. No administrator password is needed for the menu files; pacman itself requires root."
+  },
+  "icon": [
+    { "theme": "peazip" }
+  ],
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+
+    "welcome": {
+      "type": "dialog",
+      "title": "Install PeaZip",
+      "tone": "info",
+      "message": [
+        "This guide installs PeaZip from pacman and adds it to the right-click menu of your file manager.",
+        "",
+        "PeaZip supports ZIP, RAR, 7Z, TAR, GZ and many more formats."
+      ],
+      "buttons": [
+        { "label": "Continue", "style": "primary", "goto": "preflight" },
+        { "label": "Cancel", "exit": true }
+      ]
+    },
+
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "timeout_secs": 15,
+        "script": "checking-your-system.sh"
+      },
+      "capture": "preflight_err",
+      "on_success": "preflight_gate",
+      "on_failure": "error_generic"
+    },
+
+    "preflight_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": { "var": "preflight_err", "ne": "" },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "detect_fm"
+    },
+
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight_err}",
+      "buttons": [
+        { "label": "Close", "style": "primary", "exit": true }
+      ]
+    },
+
+    "detect_fm": {
+      "type": "check",
+      "command": {
+        "label": "Detecting your file manager…",
+        "script": "detecting-your-file-manager.sh"
+      },
+      "capture": "default_fm",
+      "on_success": "choose_fm",
+      "on_failure": "choose_fm"
+    },
+
+    "choose_fm": {
+      "type": "choice",
+      "multiple": true,
+      "title": "Add PeaZip to the right-click menu",
+      "message": "Tick one or more file managers. Your default one is ticked for you. Untick everything to skip the right-click menu.",
+      "store_as": "menu_fms",
+      "default": "${default_fm}",
+      "next": "confirm",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "nautilus",
+          "label": "Nautilus (GNOME)",
+          "hint": "Needs nautilus-python.",
+          "icon": [ { "theme": "org.gnome.Nautilus" }, { "theme": "system-file-manager" } ],
+          "notes": [ { "when": { "var": "default_fm", "eq": "nautilus" }, "text": "✔ Recommended (your default file manager)" } ]
+        },
+        {
+          "value": "nemo",
+          "label": "Nemo (Cinnamon)",
+          "hint": "Needs nemo-python.",
+          "icon": [ { "theme": "nemo" }, { "theme": "system-file-manager" } ],
+          "notes": [ { "when": { "var": "default_fm", "eq": "nemo" }, "text": "✔ Recommended (your default file manager)" } ]
+        },
+        {
+          "value": "caja",
+          "label": "Caja (MATE)",
+          "hint": "Needs python-caja.",
+          "icon": [ { "theme": "caja" }, { "theme": "system-file-manager" } ],
+          "notes": [ { "when": { "var": "default_fm", "eq": "caja" }, "text": "✔ Recommended (your default file manager)" } ]
+        },
+        {
+          "value": "thunar",
+          "label": "Thunar (XFCE)",
+          "hint": "Needs thunarx-python.",
+          "icon": [ { "theme": "org.xfce.thunar" }, { "theme": "system-file-manager" } ],
+          "notes": [ { "when": { "var": "default_fm", "eq": "thunar" }, "text": "✔ Recommended (your default file manager)" } ]
+        },
+        {
+          "value": "dolphin",
+          "label": "Dolphin (KDE Plasma)",
+          "hint": "Service menus, no extra package needed.",
+          "icon": [ { "theme": "system-file-manager" } ],
+          "notes": [ { "when": { "var": "default_fm", "eq": "dolphin" }, "text": "✔ Recommended (your default file manager)" } ]
+        },
+        {
+          "value": "pcmanfm",
+          "label": "PCManFM / PCManFM-Qt (LXDE, LXQt)",
+          "hint": "Custom actions, no extra package needed.",
+          "icon": [ { "theme": "pcmanfm" }, { "theme": "system-file-manager" } ],
+          "notes": [ { "when": { "var": "default_fm", "eq": "pcmanfm" }, "text": "✔ Recommended (your default file manager)" } ]
+        }
+      ],
+      "buttons": [
+        { "label": "Back", "goto": "welcome" }
+      ]
+    },
+
+    "confirm": {
+      "type": "dialog",
+      "title": "Ready to install",
+      "tone": "info",
+      "message": [
+        "PeaZip will be installed from pacman.",
+        "Right-click menu for: ${menu_fms}",
+        "",
+        "An administrator password is required to run pacman.",
+        "",
+        "Do you want to continue?"
+      ],
+      "buttons": [
+        { "label": "Install", "style": "primary", "goto": "install" },
+        { "label": "Back", "goto": "choose_fm" },
+        { "label": "Cancel", "exit": true }
+      ]
+    },
+
+    "install": {
+      "type": "run",
+      "title": "Installing PeaZip…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing PeaZip",
+          "root": true,
+          "weight": 6,
+          "expected_secs": 30,
+          "percent": 80,
+          "script": "installing-peazip.sh"
+        },
+        {
+          "label": "Adding PeaZip to the right-click menu",
+          "ignore_failure": true,
+          "percent": 95,
+          "timeout_secs": 60,
+          "script": "installing-the-right-click-menu.sh"
+        }
+      ],
+      "on_success": "record_install",
+      "on_failure": "install_failed"
+    },
+
+    "record_install": {
+      "type": "record",
+      "set": {
+        "menu_fms": "${menu_fms}"
+      },
+      "packages": ["peazip"],
+      "next": "done"
+    },
+
+    "done": {
+      "type": "finish",
+      "success": true,
+      "title": "PeaZip installed",
+      "button": "Close",
+      "message": [
+        "PeaZip was installed successfully.",
+        "",
+        "Right-click menu added for: ${menu_fms}",
+        "Restart your file manager (or log out and in) to see the new entries."
+      ],
+      "mark": "installed"
+    },
+
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong (step: ${last_failed}). Use \"Show details\" to read the output.",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        { "label": "Close", "style": "primary", "exit": true }
+      ]
+    },
+
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "\"${last_failed}\" did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        { "label": "Close", "style": "primary", "exit": true }
+      ]
+    },
+
+    "un_start": {
+      "type": "dialog",
+      "title": "Remove PeaZip?",
+      "tone": "warning",
+      "message": [
+        "PeaZip will be removed via pacman.",
+        "Its right-click menu entries will also be removed.",
+        "",
+        "An administrator password is required."
+      ],
+      "buttons": [
+        { "label": "Remove", "style": "danger", "goto": "un_run" },
+        { "label": "Cancel", "exit": true }
+      ]
+    },
+
+    "un_run": {
+      "type": "run",
+      "title": "Removing PeaZip…",
+      "message": "Please wait.",
+      "commands": [
+        {
+          "label": "Removing the right-click menu",
+          "ignore_failure": true,
+          "percent": 40,
+          "script": "removing-the-right-click-menu.sh"
+        },
+        {
+          "label": "Removing PeaZip",
+          "root": true,
+          "percent": 95,
+          "timeout_secs": 120,
+          "script": "removing-peazip.sh"
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+
+    "un_done": {
+      "type": "finish",
+      "title": "PeaZip removed",
+      "success": true,
+      "button": "Close",
+      "mark": "uninstalled",
+      "message": "PeaZip and its right-click menu entries were removed."
+    },
+
+    "un_failed": {
+      "type": "dialog",
+      "title": "PeaZip could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use \"Show details\" to read the output.",
+        "",
+        "${last_output}",
+        "",
+        "The install record is kept, so you can try again."
+      ],
+      "buttons": [
+        { "label": "Close", "style": "primary", "exit": true }
+      ]
+    }
+
+  }
+}
