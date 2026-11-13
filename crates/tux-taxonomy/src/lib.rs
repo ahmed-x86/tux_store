@@ -38,6 +38,18 @@ pub fn build() -> TaxonomyState {
         .map(|c| (c.pkg.clone(), (c.name.clone(), c.summary.clone())))
         .collect();
 
+    let is_pkg_hidden = |p: &str| {
+        if tux_abi::hidden::is_hidden(p) {
+            return true;
+        }
+        if let Some((name, _)) = names.get(p) {
+            if tux_abi::hidden::is_hidden(name) {
+                return true;
+            }
+        }
+        false
+    };
+
     let mut category_packages: HashMap<String, Vec<String>> = HashMap::new();
     let mut categories = Vec::new();
     for bucket in &discovered.buckets {
@@ -45,7 +57,7 @@ pub fn build() -> TaxonomyState {
         let pkgs: Vec<String> = bucket
             .packages
             .iter()
-            .filter(|p| index.get(p).is_some() || index.is_installed(p))
+            .filter(|p| !is_pkg_hidden(p) && (index.get(p).is_some() || index.is_installed(p)))
             .cloned()
             .collect();
         if pkgs.is_empty() {
@@ -96,18 +108,25 @@ pub fn sort_by_display(list: &mut [Package]) {
 
 /// The complete list of one repo / group / category (installed or not).
 pub fn packages_for(state: &TaxonomyState, kind: TaxonomyKind, id: &str) -> Message {
-    let mut list: Vec<Package> = match kind {
+    let list: Vec<Package> = match kind {
         TaxonomyKind::Repository => state.index.repo_packages(id),
         TaxonomyKind::Group => state
             .groups
             .get(id)
-            .map(|members| members.iter().map(|m| state.index.package(m)).collect())
+            .map(|members| {
+                members
+                    .iter()
+                    .filter(|m| !tux_abi::hidden::is_hidden(m))
+                    .map(|m| state.index.package(m))
+                    .collect()
+            })
             .unwrap_or_default(),
         TaxonomyKind::Category => state
             .category_packages
             .get(id)
             .map(|pkgs| {
                 pkgs.iter()
+                    .filter(|p| !tux_abi::hidden::is_hidden(p))
                     .map(|p| {
                         let mut pkg = state.index.package(p);
                         if let Some((name, summary)) = state.names.get(p) {
@@ -123,6 +142,7 @@ pub fn packages_for(state: &TaxonomyState, kind: TaxonomyKind, id: &str) -> Mess
             .unwrap_or_default(),
     };
 
+    let mut list = tux_abi::hidden::filter_packages(list);
     let installed = list.iter().filter(|p| p.installed).count();
     sort_by_display(&mut list);
     let title = match kind {
@@ -141,5 +161,40 @@ pub fn packages_for(state: &TaxonomyState, kind: TaxonomyKind, id: &str) -> Mess
         title,
         subtitle: taxonomy::counts(list.len(), installed),
         packages: list,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hidden_packages_filtered_from_taxonomy() {
+        assert!(tux_abi::hidden::is_hidden("xiphos"));
+        assert!(tux_abi::hidden::is_hidden("Xiphos"));
+        assert!(tux_abi::hidden::is_hidden("bibletime"));
+        assert!(tux_abi::hidden::is_hidden("BibleTime"));
+
+        let state = build();
+        for cat in &state.message.categories {
+            if let Some(pkgs) = state.category_packages.get(&cat.id) {
+                for p in pkgs {
+                    assert!(!tux_abi::hidden::is_hidden(p), "Category {} contains hidden pkg {}", cat.id, p);
+                }
+            }
+        }
+
+        for (grp_name, members) in &state.groups {
+            for m in members {
+                assert!(!tux_abi::hidden::is_hidden(m), "Group {} contains hidden pkg {}", grp_name, m);
+            }
+        }
+
+        let repo_msg = packages_for(&state, TaxonomyKind::Repository, "extra");
+        if let Message::TaxonomyPackagesReady { packages, .. } = repo_msg {
+            for p in &packages {
+                assert!(!tux_abi::hidden::is_hidden(&p.name), "Repo extra contains hidden package {}", p.name);
+            }
+        }
     }
 }
