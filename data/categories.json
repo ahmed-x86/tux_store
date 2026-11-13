@@ -14,9 +14,9 @@
       "id": "browsers",
       "title": "Browsers",
       "packages": [
-        "firefox", "chromium", "epiphany", "falkon", "qutebrowser", "midori",
-        "brave-browser", "torbrowser-launcher", "vivaldi", "opera",
-        "librewolf-bin", "floorp-bin", "zen-browser-bin",
+        "firefox", "chromium", "epiphany", "falkon", "qutebrowser",
+        "brave-bin", "torbrowser-launcher", "vivaldi",
+        "librewolf", "zen-browser-bin",
         "lynx", "w3m", "nyxt"
       ]
     },
@@ -24,12 +24,12 @@
       "id": "communication",
       "title": "Communication",
       "packages": [
-        "telegram-desktop", "discord", "session-desktop", "session-desktop-bin",
-        "signal-desktop", "element-desktop", "skypeforlinux", "slack-desktop",
+        "telegram-desktop", "discord",
+        "signal-desktop", "element-desktop", "slack-desktop",
         "thunderbird", "evolution", "geary",
-        "hexchat", "weechat", "irssi",
-        "zoom", "teams", "jitsi-meet-desktop-bin",
-        "mumble", "matrix-mirage"
+        "weechat", "irssi",
+        "zoom", "teams-for-linux", "jitsi-meet-desktop",
+        "mumble"
       ]
     },
     {
@@ -37,7 +37,7 @@
       "title": "Design & Multimedia",
       "packages": [
         "blender", "gimp", "kdenlive", "audacity", "inkscape", "krita", "obs-studio",
-        "vlc", "shotcut", "pitivi", "flowblade", "openshot",
+        "vlc", "shotcut", "pitivi", "flowblade",
         "darktable", "rawtherapee", "digikam",
         "handbrake", "ffmpeg", "mkvtoolnix-gui",
         "lmms", "ardour", "hydrogen", "musescore",
@@ -48,11 +48,10 @@
       "id": "office",
       "title": "Office & Productivity",
       "packages": [
-        "libreoffice-fresh", "libreoffice-still", "onlyoffice-bin", "abiword",
-        "gnumeric", "calligra", "wps-office",
-        "obsidian", "joplin-desktop", "logseq-desktop-bin",
-        "okular", "zathura", "evince",
-        "xournalpp", "foliate",
+        "libreoffice-fresh", "libreoffice-still", "onlyoffice-bin",
+        "abiword", "gnumeric", "calligra", "wps-office",
+        "obsidian", "joplin-beta", "logseq-desktop",
+        "okular", "zathura", "evince", "xournalpp", "foliate",
         "thunderbird", "gscan2pdf", "simple-scan"
       ]
     },
@@ -60,41 +59,41 @@
       "id": "development",
       "title": "Development",
       "packages": [
-        "python", "gcc", "base-devel", "rust", "code", "vscodium", "nodejs", "go",
-        "docker", "git",
-        "neovim", "vim", "emacs",
-        "clang", "cmake", "meson", "ninja",
-        "gdb", "valgrind", "strace",
-        "python-pip", "npm", "yarn", "bun",
-        "jdk-openjdk", "kotlin", "dotnet-sdk",
-        "php", "composer", "ruby",
-        "postgresql", "sqlite", "mariadb",
-        "redis", "dbeaver", "insomnia",
-        "podman", "kubectl", "helm",
-        "github-cli", "lazygit", "gitui",
-        "jetbrains-toolbox", "android-tools"
+        "code", "vscodium", "neovim", "emacs", "helix", "kakoune", "geany",
+        "kate", "sublime-text-4",
+        "git", "git-lfs", "lazygit", "github-cli",
+        "docker", "podman", "docker-compose",
+        "gcc", "clang", "rust", "go", "python", "nodejs", "npm", "pnpm", "yarn",
+        "ruby", "php", "perl", "lua", "zig", "julia", "elixir",
+        "cmake", "meson", "ninja",
+        "gdb", "lldb", "valgrind",
+        "postgresql", "mariadb", "sqlite", "valkey",
+        "dbeaver", "postman-bin", "insomnia"
       ]
     },
     {
       "id": "utilities",
       "title": "Utilities",
       "packages": [
-        "htop", "neovim", "kitty", "timeshift", "alacritty", "bleachbit", "gparted",
-        "flameshot",
-        "btop", "nvtop", "iotop",
+        "alacritty", "kitty", "foot", "wezterm", "gnome-terminal", "konsole",
         "fish", "zsh", "starship",
-        "tmux", "zellij", "screen",
-        "ranger", "yazi", "nnn",
-        "bat", "eza", "fd", "ripgrep", "fzf", "zoxide",
-        "rsync", "rclone", "syncthing",
-        "ufw", "gufw", "firewalld",
-        "fail2ban", "lynis", "clamav",
-        "zip", "unzip", "p7zip", "unrar",
-        "wget", "curl", "aria2",
-        "openssh", "nmap", "wireshark-qt",
-        "xclip", "xdotool", "wmctrl",
-        "cpupower", "powertop", "thermald",
-        "ventoy-bin", "balena-etcher-bin", "gnome-disk-utility"
+        "btop", "htop", "bottom", "fastfetch",
+        "ripgrep", "fd", "bat", "eza", "fzf", "zoxide", "jq",
+        "tmux", "zellij",
+        "tar", "unzip", "zip", "7zip",
+        "curl", "wget", "rsync",
+        "ffmpeg", "imagemagick", "pandoc-cli",
+        "rclone", "restic",
+        "flameshot", "scrot",
+        "copyq",
+        "rofi", "wofi", "dmenu",
+        "feh",
+        "pavucontrol",
+        "input-leap",
+        "redshift",
+        "gromit-mpx",
+        "ventoy-bin", "balena-etcher",
+        "gnome-calculator", "gnome-calendar", "baobab", "filelight", "bleachbit"
       ]
     },
     {
@@ -103,10 +102,10 @@
       "packages": [
         "steam", "lutris", "heroic-games-launcher-bin",
         "wine", "wine-mono", "wine-gecko", "winetricks",
-        "proton-ge-custom-bin", "protontricks",
+        "protonup-qt", "protontricks",
         "mangohud", "goverlay", "gamemode", "gamescope",
-        "retroarch", "libretro-cores-info",
-        "pcsx2", "rpcs3-git", "dolphin-emu",
+        "retroarch", "libretro-core-info",
+        "pcsx2-git", "rpcs3-git", "dolphin-emu",
         "openrgb", "piper", "antimicrox"
       ]
     },
@@ -115,9 +114,9 @@
       "title": "Security & Privacy",
       "packages": [
         "torbrowser-launcher", "keepassxc", "bitwarden", "gnupg",
-        "veracrypt", "cryptomator-bin",
+        "veracrypt", "cryptomator",
         "ufw", "gufw", "fail2ban", "clamav",
-        "wireshark-qt", "nmap", "netcat",
+        "wireshark-qt", "nmap", "openbsd-netcat",
         "lynis", "rkhunter", "chkrootkit",
         "firejail", "apparmor",
         "kleopatra", "seahorse"
@@ -127,14 +126,14 @@
       "id": "system",
       "title": "System & Hardware",
       "packages": [
-        "gparted", "gnome-disk-utility", "ventoy-bin", "balena-etcher-bin",
+        "gparted", "gnome-disk-utility", "ventoy-bin", "balena-etcher",
         "timeshift", "snapper", "btrfs-assistant",
         "cpupower", "powertop", "thermald", "tlp",
         "lshw", "hwinfo", "dmidecode", "inxi",
         "mesa", "vulkan-tools", "opencl-headers",
         "acpi", "acpid", "upower",
         "cups", "system-config-printer", "hplip",
-        "bluez", "bluez-utils", "blueberry",
+        "bluez", "bluez-utils", "blueman",
         "alsa-utils", "pulseaudio", "pipewire", "wireplumber",
         "xorg-server", "xorg-xinput", "xorg-xrandr", "xdotool"
       ]
