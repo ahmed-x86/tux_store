@@ -120,7 +120,7 @@ impl SearchModule {
     }
 
     fn details(&self, name: String) {
-        if !is_valid_package_name(&name) {
+        if !is_valid_package_name(&name) || self.catalog.is_hidden(&name) {
             return;
         }
         let (bus, catalog, cache) = (self.bus, self.catalog.clone(), self.details_cache.clone());
@@ -144,7 +144,7 @@ impl SearchModule {
     }
 
     fn exact(&self, name: String) {
-        if !is_valid_package_name(&name) {
+        if !is_valid_package_name(&name) || self.catalog.is_hidden(&name) {
             return;
         }
         let bus = self.bus;
