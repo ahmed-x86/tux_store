@@ -14,6 +14,7 @@
 //! UTF-8 JSON, so modules need not be built by the same compiler version.
 
 pub mod engine;
+pub mod hidden;
 pub mod logging;
 pub mod message;
 pub mod module;
