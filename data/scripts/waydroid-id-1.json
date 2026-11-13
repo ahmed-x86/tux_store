@@ -1,0 +1,737 @@
+{
+  "schema": 2,
+  "id": "waydroid-id-1",
+  "title": "Install Waydroid",
+  "description": "Run Android apps on your Arch desktop. Installs Waydroid from the official repositories, lets you set up windows, screen size and other Waydroid options, and can remove it again.",
+  "version": {
+    "label": "Latest Waydroid version",
+    "script": "latest-waydroid-version.sh"
+  },
+  "author": "Tux Store",
+  "keywords": [
+    "waydroid",
+    "android",
+    "apk",
+    "emulator",
+    "apps",
+    "container",
+    "lxc",
+    "اندرويد",
+    "محاكي",
+    "تطبيقات اندرويد",
+    "ويدرويد",
+    "multi window",
+    "prop",
+    "شاشة",
+    "نوافذ"
+  ],
+  "show_on_home": true,
+  "info": {
+    "download_mb": {
+      "label": "Download size (Waydroid package)",
+      "script": "download-size.sh"
+    },
+    "installed_mb": {
+      "label": "Installed size (Waydroid package)",
+      "script": "installed-size.sh"
+    },
+    "extracted_mb": 0,
+    "note": "Sizes are for the Waydroid package only. The Android system image is downloaded later from inside Waydroid."
+  },
+  "icon": [
+    {
+      "file": "waydroid-id-1.svg"
+    }
+  ],
+  "vars": {
+    "gpu_nvidia": "",
+    "gpu_other": "",
+    "render_mode": "auto",
+    "render_label": "Automatic (nothing changed)",
+    "separate_windows": "no",
+    "windows_label": "All apps inside the Waydroid screen",
+    "new_pkgs": "",
+    "preflight": "",
+    "kernel_msg": "",
+    "verify_msg": "",
+    "extras": "",
+    "extras_label": "none",
+    "size_mode": "auto",
+    "size_label": "Automatic"
+  },
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Install Waydroid",
+      "tone": "info",
+      "message": [
+        "Waydroid runs a full Android system in a container, so you can use Android apps on your Arch desktop.",
+        "",
+        "This add-on installs the waydroid package from the official Arch repositories, enables its container service, and creates an android-files folder in your home with shortcuts to Android's Download, Pictures and other folders.",
+        "",
+        "It needs a Wayland session and a kernel with binder support."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_result",
+      "on_failure": "error_generic"
+    },
+    "preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "kernel_check"
+    },
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "kernel_check": {
+      "type": "check",
+      "command": {
+        "label": "Checking kernel support…",
+        "script": "checking-kernel-support.sh"
+      },
+      "capture": "kernel_msg",
+      "on_success": "kernel_result",
+      "on_failure": "error_generic"
+    },
+    "kernel_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "kernel_msg",
+            "ne": ""
+          },
+          "goto": "kernel_failed"
+        }
+      ],
+      "default": "detect_nvidia"
+    },
+    "kernel_failed": {
+      "type": "dialog",
+      "title": "Kernel not supported",
+      "tone": "error",
+      "message": "${kernel_msg}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "detect_nvidia": {
+      "type": "check",
+      "command": {
+        "label": "Looking for your graphics card…",
+        "script": "detecting-nvidia.sh"
+      },
+      "capture": "gpu_nvidia",
+      "on_success": "nvidia_gate",
+      "on_failure": "error_generic"
+    },
+    "nvidia_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "gpu_nvidia",
+            "eq": ""
+          },
+          "goto": "image_note"
+        }
+      ],
+      "default": "detect_other"
+    },
+    "detect_other": {
+      "type": "check",
+      "command": {
+        "label": "Looking for integrated graphics…",
+        "script": "detecting-integrated-graphics.sh"
+      },
+      "capture": "gpu_other",
+      "on_success": "other_gate",
+      "on_failure": "error_generic"
+    },
+    "other_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "gpu_other",
+            "ne": ""
+          },
+          "goto": "choose_render"
+        }
+      ],
+      "default": "nvidia_only"
+    },
+    "choose_render": {
+      "type": "choice",
+      "title": "NVIDIA graphics detected",
+      "tone": "warning",
+      "message": [
+        "Detected NVIDIA card: ${gpu_nvidia}",
+        "",
+        "We don't support NVIDIA cards yet. Where do you want Waydroid to run instead?"
+      ],
+      "store_as": "render_mode",
+      "default": "igpu",
+      "next": "image_note",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "igpu",
+          "label": "Integrated graphics",
+          "icon": {
+            "file": "waydroid-id-1-igpu.svg"
+          },
+          "hint": "Waydroid uses your computer's integrated graphics (Intel or AMD). Faster. Your desktop should also be running on the integrated graphics, which is the default on most laptops.",
+          "notes": [
+            {
+              "when": {
+                "var": "gpu_other",
+                "ne": ""
+              },
+              "text": "Detected: ${gpu_other}"
+            }
+          ],
+          "set": {
+            "render_label": "Integrated graphics (${gpu_other})"
+          }
+        },
+        {
+          "value": "cpu",
+          "label": "Processor (CPU)",
+          "icon": {
+            "file": "waydroid-id-1-cpu.svg"
+          },
+          "hint": "Waydroid draws everything with the processor (software rendering). Works on any computer, but is slower.",
+          "set": {
+            "render_label": "Processor (software rendering)"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "welcome"
+        }
+      ]
+    },
+    "nvidia_only": {
+      "type": "dialog",
+      "title": "NVIDIA graphics detected",
+      "tone": "warning",
+      "message": [
+        "Detected NVIDIA card: ${gpu_nvidia}",
+        "",
+        "We don't support NVIDIA cards yet, and no integrated graphics was found on this computer.",
+        "Waydroid will run on the processor (CPU) instead. It works, but it is slower."
+      ],
+      "buttons": [
+        {
+          "label": "Continue with the processor",
+          "style": "primary",
+          "goto": "image_note",
+          "set": {
+            "render_mode": "cpu",
+            "render_label": "Processor (software rendering)"
+          }
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "image_note": {
+      "type": "dialog",
+      "title": "Android system image",
+      "tone": "info",
+      "message": [
+        "The Android system image is downloaded from inside Waydroid itself, the first time you open it.",
+        "",
+        "Downloading it from here is not supported yet."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "choose_windows"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "choose_windows": {
+      "type": "choice",
+      "title": "How should Android apps appear?",
+      "tone": "info",
+      "message": "Do you want every Android app to open as its own window on your desktop, or all apps together inside the Waydroid screen that looks like a phone?",
+      "store_as": "separate_windows",
+      "default": "no",
+      "next": "windows_gate",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes, each app in its own window",
+          "hint": "Every Android app opens as a separate window on your desktop (Waydroid's window integration).",
+          "set": {
+            "windows_label": "Each app in its own window"
+          }
+        },
+        {
+          "value": "no",
+          "label": "No, all apps inside the Waydroid screen",
+          "hint": "Android apps stay together inside one phone-like Waydroid screen.",
+          "set": {
+            "windows_label": "All apps inside the Waydroid screen"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "image_note"
+        }
+      ]
+    },
+    "find_state": {
+      "type": "check",
+      "command": {
+        "label": "Looking at what is already installed…",
+        "script": "looking-at-what-is-already-installed.sh"
+      },
+      "capture": "new_pkgs",
+      "on_success": "describe",
+      "on_failure": "error_generic"
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Are you sure?",
+      "tone": "warning",
+      "message": [
+        "You are about to install Waydroid from the official Arch repositories and enable its container service.",
+        "",
+        "Graphics: ${render_label}",
+        "App windows: ${windows_label}",
+        "Screen size: ${size_label}",
+        "Extra options: ${extras_label}",
+        "",
+        "Your choices are applied when Waydroid starts after its Android image has been downloaded.",
+        "",
+        "Do you want to continue?"
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "install"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "install": {
+      "type": "run",
+      "title": "Installing Waydroid…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing Waydroid",
+          "script": "installing-waydroid.sh",
+          "root": true,
+          "weight": 6,
+          "expected_secs": 60,
+          "percent": 60
+        },
+        {
+          "label": "Setting up the Waydroid service",
+          "script": "setting-up-waydroid.sh",
+          "root": true,
+          "weight": 2,
+          "expected_secs": 15,
+          "percent": 90
+        },
+        {
+          "label": "Creating the android-files folder",
+          "script": "setting-up-android-files.sh",
+          "percent": 95
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Checking the result…",
+        "script": "checking-the-result.sh"
+      },
+      "capture": "verify_msg",
+      "on_success": "read_version",
+      "on_failure": "verify_failed"
+    },
+    "verify_failed": {
+      "type": "dialog",
+      "title": "Something is missing",
+      "tone": "error",
+      "message": "${verify_msg}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "read_version": {
+      "type": "check",
+      "command": {
+        "label": "Reading the installed version…",
+        "script": "reading-the-installed-version.sh"
+      },
+      "capture": "installed_version",
+      "on_success": "record_install",
+      "on_failure": "record_install"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_render": "${render_mode}",
+        "installed_windows": "${separate_windows}",
+        "installed_size": "${size_mode}",
+        "installed_extras": "${extras}"
+      },
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "files": [
+        "~/android-files/Download",
+        "~/android-files/DCIM",
+        "~/android-files/Pictures",
+        "~/android-files/Movies",
+        "~/android-files/Music",
+        "~/android-files/Documents",
+        "~/android-files"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "success": true,
+      "title": "Waydroid installed",
+      "button": "Close",
+      "mark": "installed",
+      "message": [
+        "Waydroid is installed. Open Waydroid from your applications menu; it will offer to download the Android system image.",
+        "",
+        "Your graphics and window choices are applied when the Waydroid container starts after the image has been downloaded. If the first start does not look right, restart the computer once.",
+        "",
+        "Your Android files (Download, Pictures…) are linked in ~/android-files."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong while installing (step: ${last_failed}). Use “Show details” to read the output."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "“${last_failed}” did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "recorded_packages",
+            "eq": ""
+          },
+          "goto": "un_set_none"
+        }
+      ],
+      "default": "un_set_pkgs"
+    },
+    "un_set_none": {
+      "type": "set",
+      "vars": {
+        "un_pkg_text": "The waydroid package was already on your computer before this add-on, so it stays installed."
+      },
+      "next": "un_confirm"
+    },
+    "un_set_pkgs": {
+      "type": "set",
+      "vars": {
+        "un_pkg_text": "Package(s): ${recorded_packages} (and dependencies nothing else needs)."
+      },
+      "next": "un_confirm"
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove Waydroid?",
+      "tone": "warning",
+      "message": [
+        "This removes:",
+        "${un_pkg_text}",
+        "The Waydroid container service and the settings helper this add-on added.",
+        "The Android system image and ALL Android apps and data (/var/lib/waydroid and ~/.local/share/waydroid).",
+        "The shortcuts in ~/android-files (your other files are not touched).",
+        "",
+        "Do not turn off the computer while it is working."
+      ],
+      "buttons": [
+        {
+          "label": "Remove Waydroid",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-your-system-2.sh"
+      },
+      "capture": "preflight",
+      "on_success": "un_preflight_result",
+      "on_failure": "error_generic"
+    },
+    "un_preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Waydroid…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Stopping Waydroid",
+          "script": "stopping-waydroid.sh",
+          "ignore_failure": true,
+          "percent": 10,
+          "expected_secs": 5
+        },
+        {
+          "label": "Removing the android-files shortcuts",
+          "script": "removing-your-android-files-links.sh",
+          "percent": 20
+        },
+        {
+          "label": "Removing Waydroid and its data",
+          "script": "removing-waydroid.sh",
+          "root": true,
+          "percent": 95,
+          "expected_secs": 30
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "Waydroid removed",
+      "message": "Waydroid and its data were removed."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Waydroid could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "Waydroid may still be running or mounted. Its record was kept, so you can try again after a restart."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "windows_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "separate_windows",
+            "eq": "no"
+          },
+          "goto": "choose_size"
+        }
+      ],
+      "default": "choose_extras"
+    },
+    "choose_size": {
+      "type": "choice",
+      "title": "Size of the Waydroid screen",
+      "tone": "info",
+      "message": "How big should the phone-like Waydroid screen be? You can change this later with Waydroid's own settings.",
+      "store_as": "size_mode",
+      "default": "auto",
+      "next": "choose_extras",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Automatic",
+          "hint": "Waydroid picks the size itself.",
+          "set": {
+            "size_label": "Automatic"
+          }
+        },
+        {
+          "value": "compact",
+          "label": "Compact (576 × 1024)",
+          "hint": "A small phone-sized window.",
+          "set": {
+            "size_label": "Compact 576 × 1024"
+          }
+        },
+        {
+          "value": "large",
+          "label": "Large (720 × 1280)",
+          "hint": "A bigger phone-sized window.",
+          "set": {
+            "size_label": "Large 720 × 1280"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "choose_windows"
+        }
+      ]
+    },
+    "choose_extras": {
+      "type": "choice",
+      "title": "Extra Waydroid options",
+      "tone": "info",
+      "multiple": true,
+      "message": "Tick anything you want. You can leave all of them unticked.",
+      "store_as": "extras",
+      "default": "",
+      "min_select": 0,
+      "next": "find_state",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "keep_awake",
+          "label": "Keep Android awake",
+          "hint": "By default the Android container sleeps when no app is open. Tick this to stop it from sleeping (uses more battery)."
+        },
+        {
+          "value": "reverse_scroll",
+          "label": "Reverse scrolling",
+          "hint": "Inverts the scrolling direction inside Android (natural scrolling)."
+        },
+        {
+          "value": "hotplug",
+          "label": "Direct access to plugged-in devices",
+          "hint": "Lets Android use devices you plug in later (for example USB devices) directly."
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "choose_windows"
+        }
+      ]
+    },
+    "describe": {
+      "type": "check",
+      "command": {
+        "label": "Summarising your choices…",
+        "script": "describing-your-choices.sh"
+      },
+      "capture": "extras_label",
+      "on_success": "confirm",
+      "on_failure": "confirm"
+    }
+  }
+}
