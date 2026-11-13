@@ -12,4 +12,6 @@ path = "src/main.rs"
 [dependencies]
 tux-abi.workspace = true
 tux-libalpm.workspace = true
+tux-taxonomy.workspace = true
+serde_json.workspace = true
 libloading.workspace = true
