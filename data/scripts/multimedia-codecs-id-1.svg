@@ -1,10 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="6" y="10" width="52" height="38" rx="6" fill="#2b2f3a"/>
-  <rect x="6" y="10" width="52" height="38" rx="6" fill="none" stroke="#cba6f7" stroke-width="3"/>
-  <path d="M27 20 L27 38 L42 29 Z" fill="#cba6f7"/>
-  <rect x="12" y="53" width="4" height="6" rx="2" fill="#89b4fa"/>
-  <rect x="20" y="51" width="4" height="10" rx="2" fill="#89b4fa"/>
-  <rect x="28" y="54" width="4" height="4" rx="2" fill="#89b4fa"/>
-  <rect x="36" y="50" width="4" height="12" rx="2" fill="#89b4fa"/>
-  <rect x="44" y="53" width="4" height="6" rx="2" fill="#89b4fa"/>
+  <!-- Background -->
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#1f1a2e"/>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="none" stroke="#cba6f7" stroke-width="2.5" opacity="0.9"/>
+
+  <!-- Film reel left -->
+  <circle cx="17" cy="32" r="10" fill="none" stroke="#cba6f7" stroke-width="2.2"/>
+  <circle cx="17" cy="32" r="3.5" fill="#cba6f7" opacity="0.3"/>
+  <circle cx="17" cy="32" r="1.5" fill="#cba6f7"/>
+  <!-- Reel spokes -->
+  <line x1="17" y1="22.5" x2="17" y2="25.5" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+  <line x1="17" y1="38.5" x2="17" y2="41.5" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+  <line x1="7.5" y1="32" x2="10.5" y2="32" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+  <line x1="23.5" y1="32" x2="26.5" y2="32" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+  <line x1="10.4" y1="25.4" x2="12.5" y2="27.5" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+  <line x1="21.5" y1="36.5" x2="23.6" y2="38.6" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+  <line x1="10.4" y1="38.6" x2="12.5" y2="36.5" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+  <line x1="21.5" y1="27.5" x2="23.6" y2="25.4" stroke="#cba6f7" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Film strip connecting -->
+  <path d="M27 25 L38 25 L38 39 L27 39" fill="none" stroke="#89b4fa" stroke-width="2"/>
+  <!-- Film perforations on strip -->
+  <rect x="29" y="27" width="3" height="4" rx="1" fill="#cba6f7" opacity="0.7"/>
+  <rect x="34" y="27" width="3" height="4" rx="1" fill="#cba6f7" opacity="0.7"/>
+  <rect x="29" y="33" width="3" height="4" rx="1" fill="#cba6f7" opacity="0.7"/>
+  <rect x="34" y="33" width="3" height="4" rx="1" fill="#cba6f7" opacity="0.7"/>
+
+  <!-- Film reel right -->
+  <circle cx="49" cy="32" r="10" fill="none" stroke="#f5a97f" stroke-width="2.2"/>
+  <circle cx="49" cy="32" r="3.5" fill="#f5a97f" opacity="0.3"/>
+  <circle cx="49" cy="32" r="1.5" fill="#f5a97f"/>
+  <!-- Reel spokes -->
+  <line x1="49" y1="22.5" x2="49" y2="25.5" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+  <line x1="49" y1="38.5" x2="49" y2="41.5" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+  <line x1="39.5" y1="32" x2="42.5" y2="32" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+  <line x1="55.5" y1="32" x2="58.5" y2="32" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+  <line x1="42.4" y1="25.4" x2="44.5" y2="27.5" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+  <line x1="53.5" y1="36.5" x2="55.6" y2="38.6" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+  <line x1="42.4" y1="38.6" x2="44.5" y2="36.5" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+  <line x1="53.5" y1="27.5" x2="55.6" y2="25.4" stroke="#f5a97f" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Sound wave bars at bottom -->
+  <rect x="15" y="50" width="3" height="6" rx="1.5" fill="#89b4fa" opacity="0.8"/>
+  <rect x="20" y="47" width="3" height="9" rx="1.5" fill="#cba6f7" opacity="0.8"/>
+  <rect x="25" y="52" width="3" height="4" rx="1.5" fill="#89b4fa" opacity="0.8"/>
+  <rect x="30" y="49" width="3" height="7" rx="1.5" fill="#cba6f7" opacity="0.8"/>
+  <rect x="35" y="51" width="3" height="5" rx="1.5" fill="#89b4fa" opacity="0.8"/>
+  <rect x="40" y="48" width="3" height="8" rx="1.5" fill="#cba6f7" opacity="0.8"/>
+  <rect x="45" y="52" width="3" height="4" rx="1.5" fill="#89b4fa" opacity="0.8"/>
 </svg>
