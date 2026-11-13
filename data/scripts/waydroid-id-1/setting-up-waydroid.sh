@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-case "$TUX_VAR_RENDER_MODE" in auto|igpu|cpu) ;; *) echo "Unexpected graphics choice."; exit 1 ;; esac
+case "$TUX_VAR_RENDER_MODE" in auto|igpu|cpu|nvidia) ;; *) echo "Unexpected graphics choice."; exit 1 ;; esac
 case "$TUX_VAR_SEPARATE_WINDOWS" in yes|no) ;; *) echo "Unexpected window choice."; exit 1 ;; esac
 case "$TUX_VAR_SIZE_MODE" in auto|compact|large) ;; *) echo "Unexpected screen size choice."; exit 1 ;; esac
 for x in $TUX_VAR_EXTRAS; do
@@ -81,7 +81,7 @@ if render != "cpu" and cp.has_option("properties", "ro.hardware.egl") and cp.get
     stale.append("ro.hardware.egl")
     if cp.has_option("properties", "ro.hardware.gralloc") and cp.get("properties", "ro.hardware.gralloc") == "default":
         stale.append("ro.hardware.gralloc")
-if render != "igpu":
+if render not in ("igpu", "nvidia"):
     stale.append("gralloc.gbm.device")
 for k in sorted(old - set(want)):
     if k not in stale:
@@ -115,5 +115,10 @@ ExecStartPre=-/usr/local/lib/tux-store/waydroid-apply.sh
 DROPIN
 systemctl daemon-reload
 systemctl enable waydroid-container.service
-systemctl restart waydroid-container.service || echo "The container service did not start yet; it will be started again at boot."
+if [ "$TUX_VAR_RENDER_MODE" = nvidia ]; then
+  # waydroid-nvidia-setup (next step) installs the vendor image and starts the container itself
+  echo "The container will be started by the NVIDIA setup."
+else
+  systemctl restart waydroid-container.service || echo "The container service did not start yet; it will be started again at boot."
+fi
 exit 0
