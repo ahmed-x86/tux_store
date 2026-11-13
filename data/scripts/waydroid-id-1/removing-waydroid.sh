@@ -26,7 +26,7 @@ if grep -Eq '/var/lib/waydroid|/\.local/share/waydroid' /proc/mounts; then
   echo "Waydroid folders are still mounted. Restart the computer and run the uninstall again."
   exit 1
 fi
-rm -rf /var/lib/waydroid /home/.waydroid
+rm -rf /var/lib/waydroid /var/lib/waydroid-nvidia /home/.waydroid
 H=$(getent passwd "${PKEXEC_UID:-}" 2>/dev/null | cut -d: -f6)
 if [ -n "$H" ] && [ "$H" != "/" ] && [ -d "$H" ]; then
   rm -rf "$H/.local/share/waydroid"
