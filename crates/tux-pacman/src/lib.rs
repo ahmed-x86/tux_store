@@ -5,3 +5,4 @@ pub mod localdb;
 pub mod progress;
 pub mod queries;
 pub mod runner;
+pub mod taxonomy;
