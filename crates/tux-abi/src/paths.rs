@@ -53,7 +53,13 @@ pub fn data_dir() -> &'static Path {
         if let Some(p) = std::env::var_os("TUX_DATA_DIR") {
             candidates.push(PathBuf::from(p));
         }
+        if let Some(m) = std::env::var_os("CARGO_MANIFEST_DIR") {
+            let m = PathBuf::from(m);
+            candidates.push(m.join("../../data"));
+            candidates.push(m.join("data"));
+        }
         candidates.push(exe.join("../share").join(APP_DIR));
+        candidates.push(exe.join("../../../data"));
         candidates.push(exe.join("../../data"));
         candidates.push(exe.join("data"));
         candidates.push(PathBuf::from("data"));
