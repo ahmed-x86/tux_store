@@ -1,5 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="6" y="6" width="52" height="52" rx="12" fill="#2b2f3a"/>
-  <rect x="6" y="6" width="52" height="52" rx="12" fill="none" stroke="#fab387" stroke-width="3"/>
-  <path d="M20 20 L32 36 L44 20" fill="none" stroke="#fab387" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 36 V48" stroke="#fab387" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Background -->
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#201e18"/>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="none" stroke="#f9a825" stroke-width="2.5" opacity="0.9"/>
+
+  <!-- AUR arch logo ring -->
+  <path d="M32 8 L56 52 L8 52 Z" fill="none" stroke="#f9a825" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.25"/>
+
+  <!-- Big Y letter - clean bold -->
+  <path d="M20 16 L32 33 L44 16" fill="none" stroke="#f9a825" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 33 L32 50" fill="none" stroke="#f9a825" stroke-width="5.5" stroke-linecap="round"/>
+
+  <!-- Package box hint (small, bottom-right) -->
+  <path d="M44 46 L50 43 L50 50 L44 53 Z" fill="none" stroke="#f5c842" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  <path d="M44 46 L50 43" stroke="#f5c842" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+  <path d="M44 46 L44 53" stroke="#f5c842" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+  <!-- box top -->
+  <path d="M44 43 L47 41.5 L50 43" stroke="#f5c842" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  <path d="M47 41.5 L47 48.5" stroke="#f5c842" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
 </svg>
