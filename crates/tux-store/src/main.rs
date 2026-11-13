@@ -45,9 +45,26 @@ fn main() -> ExitCode {
         }
         return if report.ok { ExitCode::SUCCESS } else { ExitCode::FAILURE };
     }
+    if arg == "--dump-taxonomy" {
+        // Prove that the side menu is built from this machine, not from a list:
+        // prints every repo, group and category with its real package counts.
+        let started = std::time::Instant::now();
+        let state = tux_taxonomy::build();
+        let json = serde_json::to_string_pretty(&state.message).unwrap_or_default();
+        println!("{json}");
+        eprintln!(
+            "[dump-taxonomy] {} repositories, {} group rows, {} categories from {} in {:.2?}",
+            state.message.repositories.len(),
+            state.message.groups.len(),
+            state.message.categories.len(),
+            state.message.category_source,
+            started.elapsed()
+        );
+        return ExitCode::SUCCESS;
+    }
     if arg == "--help" || arg == "-h" {
         println!(
-            "tux-store {}\n\nUSAGE:\n  tux-store                   start the store\n  tux-store openpackage NAME  open a package page directly\n  tux-store --check-script FILE.json  validate an add-on script and explain problems\n\nENVIRONMENT:\n  TUX_LOG=error|warn|info|debug|trace   log level (default info)\n  TUX_MODULE_DIR=DIR                    where to look for libtux_*.so\n  TUX_DATA_DIR=DIR                      where categories.json / images live",
+            "tux-store {}\n\nUSAGE:\n  tux-store                   start the store\n  tux-store openpackage NAME  open a package page directly\n  tux-store --dump-taxonomy   print every repository, group and category as JSON\n  tux-store --check-script FILE.json  validate an add-on script and explain problems\n\nENVIRONMENT:\n  TUX_LOG=error|warn|info|debug|trace   log level (default info)\n  TUX_MODULE_DIR=DIR                    where to look for libtux_*.so\n  TUX_DATA_DIR=DIR                      where categories.json / images live",
             env!("CARGO_PKG_VERSION")
         );
         return ExitCode::SUCCESS;
