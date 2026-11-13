@@ -1,0 +1,18 @@
+{
+  "min_family_size": 2,
+  "min_key_len": 2,
+  "never": ["lib", "python", "perl", "ruby", "go", "rust"],
+  "aliases": {
+    "kubectl": "kubernetes"
+  },
+  "force": {},
+  "labels": {
+    "kde": "KDE",
+    "gnome": "GNOME",
+    "xorg": "Xorg",
+    "kf": "KDE Frameworks",
+    "qt": "Qt",
+    "vst": "VST plugins"
+  },
+  "bundles": {}
+}
