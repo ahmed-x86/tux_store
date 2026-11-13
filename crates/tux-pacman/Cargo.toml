@@ -8,3 +8,5 @@ license.workspace = true
 [dependencies]
 tux-abi.workspace = true
 log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
