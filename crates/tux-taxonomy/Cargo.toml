@@ -1,0 +1,12 @@
+[package]
+name = "tux-taxonomy"
+description = "Repositories, groups and AppStream categories joined with pacman — the side menu data"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tux-abi.workspace = true
+tux-appstream.workspace = true
+tux-pacman.workspace = true
+log.workspace = true
