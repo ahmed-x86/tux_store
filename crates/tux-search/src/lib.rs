@@ -16,8 +16,11 @@ use std::thread;
 use std::time::{Duration, Instant};
 use tux_abi::sync::lock;
 use tux_abi::text::is_valid_package_name;
-use tux_abi::{paths, Bus, Message, Module, Package, PackageDetails, ScriptInfo, Section};
+use tux_abi::{
+    paths, Bus, Message, Module, Package, PackageDetails, ScriptInfo, Section, TaxonomyKind,
+};
 use tux_pacman::localdb;
+use tux_taxonomy::{packages_for, TaxonomyState};
 
 const DETAILS_TTL: Duration = Duration::from_secs(60);
 const DETAILS_CACHE_MAX: usize = 32;
@@ -29,6 +32,7 @@ pub struct SearchModule {
     details_cache: Arc<Mutex<HashMap<String, (Instant, PackageDetails)>>>,
     /// Newest search wins: older ones skip publishing their (stale) results.
     search_gen: Arc<AtomicU64>,
+    taxonomy: Arc<Mutex<Option<Arc<TaxonomyState>>>>,
 }
 
 impl Module for SearchModule {
@@ -39,6 +43,7 @@ impl Module for SearchModule {
             home_cache: Arc::default(),
             details_cache: Arc::default(),
             search_gen: Arc::default(),
+            taxonomy: Arc::default(),
         }
     }
 
@@ -48,6 +53,7 @@ impl Module for SearchModule {
                 tux_libalpm::set_active(engine);
                 *lock(&self.home_cache) = None;
                 lock(&self.details_cache).clear();
+                *lock(&self.taxonomy) = None;
                 self.search_gen.fetch_add(1, Ordering::SeqCst);
             }
             Message::HomeRequested => self.home(),
@@ -61,9 +67,12 @@ impl Module for SearchModule {
             Message::AddonsRequested { package } => self.addons(package),
             Message::InstalledRequested => self.installed(),
             Message::UpdatesRequested => self.updates(),
+            Message::TaxonomyRequested => self.taxonomy(),
+            Message::TaxonomyPackagesRequested { kind, id } => self.taxonomy_packages(kind, id),
             Message::OperationFinished { .. } | Message::ScriptEnded { .. } | Message::ClearIconCache => {
                 *lock(&self.home_cache) = None;
                 lock(&self.details_cache).clear();
+                *lock(&self.taxonomy) = None;
             }
             _ => {}
         }
@@ -174,6 +183,41 @@ impl SearchModule {
             };
             bus.publish(&msg);
         });
+    }
+
+    // ── the side menu: repositories, groups, categories ──
+
+    fn taxonomy(&self) {
+        if let Some(state) = lock(&self.taxonomy).clone() {
+            self.bus.publish(&Message::TaxonomyReady { taxonomy: state.message.clone() });
+            return;
+        }
+        let (bus, slot) = (self.bus, self.taxonomy.clone());
+        thread::spawn(move || {
+            let state = Arc::new(tux_taxonomy::build());
+            *lock(&slot) = Some(state.clone());
+            bus.publish(&Message::TaxonomyReady { taxonomy: state.message.clone() });
+        });
+    }
+
+    fn taxonomy_packages(&self, kind: TaxonomyKind, id: String) {
+        let cached = lock(&self.taxonomy).clone();
+        let bus = self.bus;
+        match cached {
+            Some(state) => {
+                thread::spawn(move || bus.publish(&packages_for(&state, kind, &id)));
+            }
+            None => {
+                let slot = self.taxonomy.clone();
+                thread::spawn(move || {
+                    let state = Arc::new(tux_taxonomy::build());
+                    let answer = packages_for(&state, kind, &id);
+                    *lock(&slot) = Some(state.clone());
+                    bus.publish(&Message::TaxonomyReady { taxonomy: state.message.clone() });
+                    bus.publish(&answer);
+                });
+            }
+        }
     }
 }
 
