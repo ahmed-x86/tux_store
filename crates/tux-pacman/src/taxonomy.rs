@@ -170,7 +170,7 @@ impl SyncIndex {
     pub fn repo_packages(&self, repo: &str) -> Vec<Package> {
         self.packages
             .iter()
-            .filter(|p| p.repo == repo)
+            .filter(|p| p.repo == repo && !tux_abi::hidden::is_hidden(&p.name))
             .map(|p| Package {
                 name: p.name.clone(),
                 repo: p.repo.clone(),
@@ -285,7 +285,9 @@ pub fn discover_groups() -> Vec<Group> {
     let mut map: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for line in sync.stdout.lines() {
         if let Some((group, pkg)) = pair(line) {
-            map.entry(group).or_default().insert(pkg);
+            if !tux_abi::hidden::is_hidden(&pkg) {
+                map.entry(group).or_default().insert(pkg);
+            }
         }
     }
     // The local pass is what makes AUR-only groups visible at all.
@@ -293,8 +295,10 @@ pub fn discover_groups() -> Vec<Group> {
     let mut extra: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for line in local.stdout.lines() {
         if let Some((group, pkg)) = pair(line) {
-            local_groups.insert(group.clone());
-            extra.entry(group).or_default().insert(pkg);
+            if !tux_abi::hidden::is_hidden(&pkg) {
+                local_groups.insert(group.clone());
+                extra.entry(group).or_default().insert(pkg);
+            }
         }
     }
     let mut local_only = BTreeSet::new();
@@ -307,6 +311,7 @@ pub fn discover_groups() -> Vec<Group> {
     }
 
     map.into_iter()
+        .filter(|(_, members)| !members.is_empty())
         .map(|(name, members)| Group {
             local_only: local_only.contains(&name),
             name,
