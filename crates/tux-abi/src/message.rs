@@ -84,6 +84,58 @@ pub struct Cover {
     pub images: Vec<String>,
 }
 
+/// One row of the Categories / Groups / Repositories pages of the side menu.
+///
+/// Nothing about a repo, a group or a category is hardcoded: the rows are
+/// discovered at runtime from `pacman.conf`, the sync/local databases and the
+/// AppStream data on the machine.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TaxonomyEntry {
+    /// Repo name, group name or category id. Stable inside one taxonomy.
+    pub id: String,
+    pub title: String,
+    /// Small line under the title, already formatted and translated by the
+    /// module that discovered the data ("2048 packages · 231 installed").
+    pub subtitle: String,
+    /// Short pill text: "Official", "Third-party", "Local only", "Family"…
+    pub badge: String,
+    pub packages: usize,
+    pub installed: usize,
+    /// Icon-theme name to ask the thumbnail module for ("" = show a letter).
+    pub icon: String,
+    /// 0 = top level, 1 = a member group of a collapsed family.
+    pub depth: u32,
+    /// Group families: the family key this row belongs to ("" = top level).
+    pub parent: String,
+    /// A collapsed family: clicking the row expands its member groups.
+    pub expandable: bool,
+}
+
+/// Which discovery a package list belongs to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TaxonomyKind {
+    Category,
+    Group,
+    Repository,
+}
+
+/// Everything the side menu needs, discovered in one pass.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Taxonomy {
+    /// In `pacman.conf` order, never sorted A-Z.
+    pub repositories: Vec<TaxonomyEntry>,
+    /// Byte order (C locale), related groups collapsed into families.
+    pub groups: Vec<TaxonomyEntry>,
+    /// AppStream category tree order (top level, then its children), "Other"
+    /// last.
+    pub categories: Vec<TaxonomyEntry>,
+    /// Raw AppStream category ids that exist here and how many components use
+    /// each one (proof that nothing is hardcoded; used by `--dump-taxonomy`).
+    pub raw_categories: Vec<(String, usize)>,
+    /// Where the category tree came from: `"libappstream"` or `"raw-ids"`.
+    pub category_source: String,
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UpdateEntry {
     pub name: String,
@@ -242,6 +294,10 @@ pub enum Message {
     InstalledRequested,
     UpdatesRequested,
     CoversRequested,
+    /// Discover repositories, groups and AppStream categories (side menu).
+    TaxonomyRequested,
+    /// List every package of one repo / group / category, installed or not.
+    TaxonomyPackagesRequested { kind: TaxonomyKind, id: String },
     IconRequested { name: String, size: u32 },
     ClearIconCache,
     /// Ask for the screenshots of a package (`data/screenshots/<name>/`).
@@ -280,6 +336,15 @@ pub enum Message {
     InstalledReady { packages: Vec<Package> },
     UpdatesReady { updates: Vec<UpdateEntry>, error: Option<String> },
     CoversReady { covers: Vec<Cover> },
+    TaxonomyReady { taxonomy: Taxonomy },
+    /// The complete list of one entry (no filtering, installed or not).
+    TaxonomyPackagesReady {
+        kind: TaxonomyKind,
+        id: String,
+        title: String,
+        subtitle: String,
+        packages: Vec<Package>,
+    },
     IconReady { name: String, path: String },
     IconFailed { name: String },
     IconCacheCleared { removed: u32 },
