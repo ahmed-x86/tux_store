@@ -10,7 +10,7 @@ use crate::console::ConsoleBuffer;
 use crate::convert;
 use crate::{
     AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails, UiScriptInfo, UiScriptOption,
-    UiSection,
+    UiSection, UiTaxonomyEntry,
 };
 use slint::{Image, Model, ModelRc, VecModel, Weak};
 use std::cell::RefCell;
@@ -20,7 +20,7 @@ use std::rc::Rc;
 use tux_abi::text::prettify_name;
 use tux_abi::{
     Bus, Cover, Engine, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo, ScriptValues, ScriptViewData,
-    Section, SpecialCase,
+    Section, SpecialCase, Taxonomy, TaxonomyEntry, TaxonomyKind,
     UpdateEntry,
 };
 
@@ -131,6 +131,41 @@ fn accent_for(name: &str) -> i32 {
     name.bytes().fold(7i32, |a, b| a.wrapping_mul(31).wrapping_add(i32::from(b))).rem_euclid(14)
 }
 
+/// Which page of the side menu is on screen.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum BrowseSection {
+    Categories,
+    Groups,
+    Repositories,
+}
+
+impl BrowseSection {
+    fn from_int(i: i32) -> Self {
+        match i {
+            1 => BrowseSection::Groups,
+            2 => BrowseSection::Repositories,
+            _ => BrowseSection::Categories,
+        }
+    }
+    fn kind(self) -> TaxonomyKind {
+        match self {
+            BrowseSection::Categories => TaxonomyKind::Category,
+            BrowseSection::Groups => TaxonomyKind::Group,
+            BrowseSection::Repositories => TaxonomyKind::Repository,
+        }
+    }
+    fn title(self) -> &'static str {
+        match self {
+            BrowseSection::Categories => "Categories",
+            BrowseSection::Groups => "Groups",
+            BrowseSection::Repositories => "Repositories",
+        }
+    }
+}
+
+/// The entry whose packages are open inside the browse page.
+type BrowseTarget = (TaxonomyKind, String);
+
 pub struct State {
     ui: Weak<MainWindow>,
     bus: Bus,
@@ -165,7 +200,23 @@ pub struct State {
     history: Vec<Package>,
     /// Pages left with Back; "Forward" returns to them (cleared by any new navigation).
     forward: Vec<Package>,
+    /// Where Back goes when the package history is empty (the side-menu page,
+    /// when the package was opened from there).
+    return_view: Option<AppView>,
     last_details: PackageDetails,
+
+    // ── side menu ──
+    taxonomy: Option<Taxonomy>,
+    taxonomy_pending: bool,
+    browse_section: BrowseSection,
+    /// Every row of the current section, families included (members are hidden
+    /// until their family is expanded).
+    browse_all: Vec<TaxonomyEntry>,
+    expanded: HashSet<String>,
+    browse_entries: Rc<VecModel<UiTaxonomyEntry>>,
+    browse_open: Option<BrowseTarget>,
+    browse_packages: Rc<VecModel<UiPackage>>,
+    browse_paged: Paged,
 
     console: ConsoleBuffer,
     console_dirty: bool,
@@ -222,7 +273,17 @@ impl State {
             current: None,
             history: Vec::new(),
             forward: Vec::new(),
+            return_view: None,
             last_details: PackageDetails::default(),
+            taxonomy: None,
+            taxonomy_pending: false,
+            browse_section: BrowseSection::Categories,
+            browse_all: Vec::new(),
+            expanded: HashSet::new(),
+            browse_entries: Rc::new(VecModel::default()),
+            browse_open: None,
+            browse_packages: Rc::new(VecModel::default()),
+            browse_paged: Paged::default(),
             console: ConsoleBuffer::default(),
             console_dirty: false,
             script_seq: 0,
@@ -241,6 +302,8 @@ impl State {
         ui.set_current_suggestions(ModelRc::from(self.suggestions.clone()));
         ui.set_current_screenshots(ModelRc::from(self.screenshots.clone()));
         ui.set_updates(ModelRc::from(self.updates.clone()));
+        ui.set_browse_entries(ModelRc::from(self.browse_entries.clone()));
+        ui.set_browse_packages(ModelRc::from(self.browse_packages.clone()));
     }
 
     // ───────────────────────── bus → UI ─────────────────────────
@@ -258,6 +321,10 @@ impl State {
                 self.apply_installed_filter();
             }
             Message::UpdatesReady { updates, error } => self.on_updates(updates, error),
+            Message::TaxonomyReady { taxonomy } => self.on_taxonomy(taxonomy),
+            Message::TaxonomyPackagesReady { kind, id, title, subtitle, packages } => {
+                self.on_taxonomy_packages(kind, id, title, subtitle, packages);
+            }
             Message::CoversReady { covers } => {
                 // Remote covers arrive in later, longer lists: stay on the cover that is
                 // showing instead of jumping to another one.
@@ -416,11 +483,202 @@ impl State {
         }
     }
 
+    // ───────────────────────── side menu ─────────────────────────
+
+    fn on_taxonomy(&mut self, taxonomy: Taxonomy) {
+        self.taxonomy = Some(taxonomy);
+        self.taxonomy_pending = false;
+        if self.ui.upgrade().is_some_and(|ui| ui.get_view() == AppView::Browse) {
+            self.rebuild_browse();
+            // The counts may have changed (install / remove): refresh the open list.
+            if let Some((kind, id)) = self.browse_open.clone() {
+                self.bus.publish(&Message::TaxonomyPackagesRequested { kind, id });
+            }
+        }
+    }
+
+    fn on_taxonomy_packages(
+        &mut self,
+        kind: TaxonomyKind,
+        id: String,
+        title: String,
+        subtitle: String,
+        packages: Vec<Package>,
+    ) {
+        if !self.browse_open.as_ref().is_some_and(|(k, i)| *k == kind && *i == id) {
+            return; // the user already opened something else
+        }
+        self.browse_paged.reset(packages);
+        self.browse_packages.set_vec(Vec::new());
+        let missing = push_page(&mut self.browse_paged, &self.browse_packages, &self.icons, FIRST_PAGE + 25);
+        self.request_icons(missing);
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_browse_loading(false);
+            ui.set_browse_has_more(self.browse_paged.has_more());
+            ui.set_browse_entry_title(title.as_str().into());
+            ui.set_browse_entry_subtitle(subtitle.as_str().into());
+        }
+    }
+
+    /// Ask the search module for the whole side menu (once per system change).
+    fn request_taxonomy(&mut self) {
+        if self.taxonomy.is_some() {
+            self.rebuild_browse();
+            return;
+        }
+        if self.taxonomy_pending {
+            return;
+        }
+        self.taxonomy_pending = true;
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_browse_loading(true);
+        }
+        self.bus.publish(&Message::TaxonomyRequested);
+    }
+
+    /// Put the rows of the current section on screen (families collapsed).
+    fn rebuild_browse(&mut self) {
+        let Some(taxonomy) = self.taxonomy.clone() else {
+            self.request_taxonomy();
+            return;
+        };
+        let all = match self.browse_section {
+            BrowseSection::Categories => taxonomy.categories.clone(),
+            BrowseSection::Groups => taxonomy.groups.clone(),
+            BrowseSection::Repositories => taxonomy.repositories.clone(),
+        };
+        self.browse_all = all;
+
+        let mut rows = Vec::with_capacity(self.browse_all.len());
+        let mut missing = Vec::new();
+        let (mut top, mut deep) = (0usize, 0usize);
+        for entry in &self.browse_all {
+            // Member groups stay hidden until their family row is expanded.
+            if entry.depth == 1 && !self.expanded.contains(&entry.parent) {
+                continue;
+            }
+            if entry.depth == 0 {
+                top += 1;
+            } else {
+                deep += 1;
+            }
+            if !entry.icon.is_empty() && !self.icons.contains_key(&entry.icon) {
+                missing.push(entry.icon.clone());
+            }
+            let expanded = entry.expandable && self.expanded.contains(&entry.id);
+            rows.push(convert::taxonomy(entry, self.icons.get(&entry.icon), expanded));
+        }
+        self.browse_entries.set_vec(rows);
+        self.request_icons(missing);
+
+        if let Some(ui) = self.ui.upgrade() {
+            let status = match self.browse_section {
+                BrowseSection::Categories => {
+                    format!("{top} categories · {deep} subcategories · from AppStream")
+                }
+                BrowseSection::Groups => format!("{top} entries · {} groups · from pacman", top + deep),
+                BrowseSection::Repositories => format!("{top} repositories · from pacman.conf"),
+            };
+            ui.set_browse_section(match self.browse_section {
+                BrowseSection::Categories => 0,
+                BrowseSection::Groups => 1,
+                BrowseSection::Repositories => 2,
+            });
+            ui.set_browse_title(self.browse_section.title().into());
+            ui.set_browse_status(status.into());
+            ui.set_browse_loading(false);
+        }
+    }
+
+    /// A drawer row was chosen: show that section, starting at its list.
+    pub fn open_browse(&mut self, section: i32) {
+        let next = BrowseSection::from_int(section);
+        if self.browse_section != next {
+            self.browse_open = None;
+        }
+        self.browse_section = next;
+        self.return_view = None;
+        let Some(ui) = self.ui.upgrade() else { return };
+        ui.set_browse_section(section);
+        ui.set_browse_title(next.title().into());
+        ui.set_browse_entry_open(false);
+        ui.set_browse_entry_title("".into());
+        ui.set_browse_entry_subtitle("".into());
+        ui.set_browse_has_more(false);
+        self.browse_packages.set_vec(Vec::new());
+        ui.set_view(AppView::Browse);
+        self.request_taxonomy();
+    }
+
+    /// A row of the browse page was clicked.
+    pub fn browse_entry_clicked(&mut self, entry: crate::UiTaxonomyEntry) {
+        let id = entry.id.to_string();
+        // Families expand in place; their member groups then open normally.
+        if entry.expandable {
+            if !self.expanded.remove(&id) {
+                self.expanded.insert(id);
+            }
+            self.rebuild_browse();
+            return;
+        }
+        let Some(found) = self.browse_all.iter().find(|e| e.id == id).cloned() else { return };
+        let kind = self.browse_section.kind();
+        self.browse_open = Some((kind, id.clone()));
+        let Some(ui) = self.ui.upgrade() else { return };
+        ui.set_browse_entry_open(true);
+        ui.set_browse_entry_title(found.title.as_str().into());
+        ui.set_browse_entry_subtitle(found.subtitle.as_str().into());
+        ui.set_browse_loading(true);
+        ui.set_browse_has_more(false);
+        self.browse_packages.set_vec(Vec::new());
+        self.bus.publish(&Message::TaxonomyPackagesRequested { kind, id });
+    }
+
+    /// Back of the browse page: close the open entry, then the page itself.
+    pub fn browse_back(&mut self) {
+        if self.browse_open.take().is_some() {
+            let Some(ui) = self.ui.upgrade() else { return };
+            ui.set_browse_entry_open(false);
+            ui.set_browse_entry_title("".into());
+            ui.set_browse_entry_subtitle("".into());
+            ui.set_browse_loading(false);
+            ui.set_browse_has_more(false);
+            self.browse_packages.set_vec(Vec::new());
+        } else if let Some(ui) = self.ui.upgrade() {
+            ui.set_view(AppView::Main);
+        }
+    }
+
+    pub fn browse_more(&mut self) {
+        let missing = push_page(&mut self.browse_paged, &self.browse_packages, &self.icons, PAGE * 2);
+        self.request_icons(missing);
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_browse_has_more(self.browse_paged.has_more());
+        }
+    }
+
+    /// "Home" in the drawer.
+    pub fn menu_home(&mut self) {
+        self.return_view = None;
+        self.start_search("");
+        self.request_home();
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_view(AppView::Main);
+        }
+    }
+
     fn on_icon(&mut self, name: String, path: String) {
         let Ok(img) = Image::load_from_path(Path::new(&path)) else {
             return;
         };
         self.each_model(|m| patch_rows(m, &name, |r| r.icon = img.clone()));
+        // Side-menu rows ask for their icon-theme picture by icon name.
+        for i in 0..self.browse_entries.row_count() {
+            if let Some(mut row) = self.browse_entries.row_data(i).filter(|r| r.icon_key.as_str() == name) {
+                row.icon = img.clone();
+                self.browse_entries.set_row_data(i, row);
+            }
+        }
         if let Some(m) = self.script_options.as_ref() {
             for i in 0..m.row_count() {
                 if let Some(mut row) = m.row_data(i).filter(|r| r.icon_key.as_str() == name) {
@@ -458,6 +716,12 @@ impl State {
         }
         if self.ui.upgrade().is_some_and(|ui| ui.get_active_tab() == 2) {
             self.refresh_installed();
+        }
+        // Installed counts in the side menu changed.
+        self.taxonomy = None;
+        self.taxonomy_pending = false;
+        if self.ui.upgrade().is_some_and(|ui| ui.get_view() == AppView::Browse) {
+            self.request_taxonomy();
         }
     }
 
@@ -694,7 +958,7 @@ impl State {
         for m in self
             .section_models
             .iter()
-            .chain([&self.search, &self.installed, &self.addons, &self.suggestions])
+            .chain([&self.search, &self.installed, &self.addons, &self.suggestions, &self.browse_packages])
         {
             f(m);
         }
@@ -716,6 +980,17 @@ impl State {
                 }
             }
         });
+        // Icon-theme pictures of the side-menu rows are cached under their icon
+        // name, not a package name.
+        for i in 0..self.browse_entries.row_count() {
+            if let Some(mut row) = self.browse_entries.row_data(i) {
+                if !row.icon_key.is_empty() {
+                    names.push(row.icon_key.to_string());
+                }
+                row.icon = Image::default();
+                self.browse_entries.set_row_data(i, row);
+            }
+        }
         if let Some(ui) = self.ui.upgrade() {
             let mut cur = ui.get_current_package();
             if !cur.name.is_empty() {
@@ -778,6 +1053,9 @@ impl State {
         self.bus.publish(&Message::UiReady);
         self.bus.publish(&Message::HomeRequested);
         self.bus.publish(&Message::CoversRequested);
+        // Discover the side menu right away, on a worker thread, so the drawer
+        // opens instantly.
+        self.request_taxonomy();
     }
 
     /// The Engine setting changed: persist it, tell the backends, and refresh
@@ -796,6 +1074,12 @@ impl State {
         self.request_home();
         self.refresh_installed();
         self.request_updates();
+        // Different backend = different repositories / groups / categories.
+        self.taxonomy = None;
+        self.taxonomy_pending = false;
+        if self.ui.upgrade().is_some_and(|ui| ui.get_view() == AppView::Browse) {
+            self.request_taxonomy();
+        }
         if let Some(current) = self.current.clone() {
             self.bus.publish(&Message::DetailsRequested { name: current.name });
         }
@@ -902,6 +1186,8 @@ impl State {
                 }
             } else {
                 self.history.clear();
+                // Opened from the side menu: Back returns to that page.
+                self.return_view = (ui.get_view() == AppView::Browse).then_some(AppView::Browse);
             }
         }
 
@@ -953,9 +1239,10 @@ impl State {
         if let Some(prev) = self.history.pop() {
             self.open_package(prev, true);
         } else {
+            let back_to = self.return_view.take().unwrap_or(AppView::Main);
             self.current = None;
             if let Some(ui) = self.ui.upgrade() {
-                ui.set_view(AppView::Main);
+                ui.set_view(back_to);
             }
         }
         self.sync_nav();
