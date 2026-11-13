@@ -1,6 +1,6 @@
 // Plain data shared between Rust (tux-ui/src) and the .slint views.
 
-export enum AppView { main, details, settings, addons }
+export enum AppView { main, details, settings, addons, browse }
 export enum OpPhase { idle, running, done }
 export enum OpKind { install, remove, upgrade }
 
@@ -69,6 +69,24 @@ export struct UiUpdate {
     name: string,
     old-version: string,
     new-version: string,
+}
+
+// One row of the side menu's Categories / Groups / Repositories pages. Every
+// field comes from a backend discovery, nothing is written in the UI.
+export struct UiTaxonomyEntry {
+    id: string,
+    title: string,
+    subtitle: string,
+    badge: string,       // "Official" · "Third-party" · "Local only" · "Family"
+    packages: int,
+    installed: int,
+    icon: image,
+    icon-key: string,    // icon-theme name, requested from the thumbnail module
+    initial: string,     // letter shown when there is no icon
+    depth: int,          // 0 = section row, 1 = child category / family member
+    parent: string,      // family key for a member group
+    expandable: bool,    // a collapsed family: clicking shows its member groups
+    expanded: bool,
 }
 
 // ── interactive scripts ──
