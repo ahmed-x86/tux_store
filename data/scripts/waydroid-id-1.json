@@ -2,7 +2,7 @@
   "schema": 2,
   "id": "waydroid-id-1",
   "title": "Install Waydroid",
-  "description": "Run Android apps on your Arch desktop. Installs Waydroid from the official repositories, lets you set up windows, screen size and other Waydroid options, and can remove it again.",
+  "description": "Run Android apps on your Arch desktop. Installs Waydroid (with GPU acceleration on NVIDIA cards), lets you set up windows, screen size and other Waydroid options, and can remove it again.",
   "version": {
     "label": "Latest Waydroid version",
     "script": "latest-waydroid-version.sh"
@@ -23,7 +23,11 @@
     "multi window",
     "prop",
     "شاشة",
-    "نوافذ"
+    "نوافذ",
+    "nvidia",
+    "gpu",
+    "انفيديا",
+    "كرت شاشة"
   ],
   "show_on_home": true,
   "info": {
@@ -36,7 +40,7 @@
       "script": "installed-size.sh"
     },
     "extracted_mb": 0,
-    "note": "Sizes are for the Waydroid package only. The Android system image is downloaded later from inside Waydroid."
+    "note": "Sizes are for the official Waydroid package. With NVIDIA acceleration the waydroid-nvidia-bin package from the AUR is built and installed instead (it replaces waydroid), and its setup downloads the Android image."
   },
   "icon": [
     {
@@ -57,7 +61,9 @@
     "extras": "",
     "extras_label": "none",
     "size_mode": "auto",
-    "size_label": "Automatic"
+    "size_label": "Automatic",
+    "nvidia_msg": "",
+    "nvidia_setup_note": ""
   },
   "start": "welcome",
   "uninstall": "un_start",
@@ -69,7 +75,9 @@
       "message": [
         "Waydroid runs a full Android system in a container, so you can use Android apps on your Arch desktop.",
         "",
-        "This add-on installs the waydroid package from the official Arch repositories, enables its container service, and creates an android-files folder in your home with shortcuts to Android's Download, Pictures and other folders.",
+        "This add-on installs Waydroid, enables its container service, and creates an android-files folder in your home with shortcuts to Android's Download, Pictures and other folders.",
+        "",
+        "On NVIDIA cards it can install waydroid-nvidia-bin from the AUR, a build of Waydroid that renders on your NVIDIA GPU.",
         "",
         "It needs a Wayland session and a kernel with binder support."
       ],
@@ -187,21 +195,8 @@
         "script": "detecting-integrated-graphics.sh"
       },
       "capture": "gpu_other",
-      "on_success": "other_gate",
+      "on_success": "choose_render",
       "on_failure": "error_generic"
-    },
-    "other_gate": {
-      "type": "branch",
-      "cases": [
-        {
-          "when": {
-            "var": "gpu_other",
-            "ne": ""
-          },
-          "goto": "choose_render"
-        }
-      ],
-      "default": "nvidia_only"
     },
     "choose_render": {
       "type": "choice",
@@ -210,20 +205,31 @@
       "message": [
         "Detected NVIDIA card: ${gpu_nvidia}",
         "",
-        "We don't support NVIDIA cards yet. Where do you want Waydroid to run instead?"
+        "Where do you want Waydroid to run?"
       ],
       "store_as": "render_mode",
-      "default": "igpu",
-      "next": "image_note",
+      "default": "nvidia",
+      "next": "render_gate",
       "continue_label": "Continue",
       "options": [
+        {
+          "value": "nvidia",
+          "label": "NVIDIA graphics card (recommended)",
+          "icon": {
+            "theme": "nvidia"
+          },
+          "hint": "GPU-accelerated Waydroid on your NVIDIA card (GTX 900 and newer, driver 550+ recommended). Builds and installs waydroid-nvidia-bin from the AUR, which replaces the normal waydroid package. Needs the NVIDIA kernel module with nvidia_drm.modeset=1 and a Wayland desktop running on the NVIDIA GPU.",
+          "set": {
+            "render_label": "NVIDIA graphics card (${gpu_nvidia})"
+          }
+        },
         {
           "value": "igpu",
           "label": "Integrated graphics",
           "icon": {
             "file": "waydroid-id-1-igpu.svg"
           },
-          "hint": "Waydroid uses your computer's integrated graphics (Intel or AMD). Faster. Your desktop should also be running on the integrated graphics, which is the default on most laptops.",
+          "hint": "Waydroid uses your computer's integrated graphics (Intel or AMD). Your desktop should also be running on the integrated graphics, which is the default on most laptops.",
           "notes": [
             {
               "when": {
@@ -235,6 +241,10 @@
           ],
           "set": {
             "render_label": "Integrated graphics (${gpu_other})"
+          },
+          "visible_if": {
+            "var": "gpu_other",
+            "ne": ""
           }
         },
         {
@@ -256,40 +266,16 @@
         }
       ]
     },
-    "nvidia_only": {
-      "type": "dialog",
-      "title": "NVIDIA graphics detected",
-      "tone": "warning",
-      "message": [
-        "Detected NVIDIA card: ${gpu_nvidia}",
-        "",
-        "We don't support NVIDIA cards yet, and no integrated graphics was found on this computer.",
-        "Waydroid will run on the processor (CPU) instead. It works, but it is slower."
-      ],
-      "buttons": [
-        {
-          "label": "Continue with the processor",
-          "style": "primary",
-          "goto": "image_note",
-          "set": {
-            "render_mode": "cpu",
-            "render_label": "Processor (software rendering)"
-          }
-        },
-        {
-          "label": "Cancel",
-          "exit": true
-        }
-      ]
-    },
     "image_note": {
       "type": "dialog",
       "title": "Android system image",
       "tone": "info",
       "message": [
-        "The Android system image is downloaded from inside Waydroid itself, the first time you open it.",
+        "With the normal setup, the Android system image is downloaded from inside Waydroid itself, the first time you open it.",
         "",
-        "Downloading it from here is not supported yet."
+        "With NVIDIA acceleration, the setup downloads and tests the Android image for you as part of the install (this can take several minutes).",
+        "",
+        "Downloading it from here is not supported for the other options yet."
       ],
       "buttons": [
         {
@@ -352,7 +338,7 @@
       "title": "Are you sure?",
       "tone": "warning",
       "message": [
-        "You are about to install Waydroid from the official Arch repositories and enable its container service.",
+        "You are about to install Waydroid and enable its container service. With NVIDIA acceleration, waydroid-nvidia-bin is built from the AUR and replaces the official waydroid package.",
         "",
         "Graphics: ${render_label}",
         "App windows: ${windows_label}",
@@ -386,6 +372,45 @@
           "root": true,
           "weight": 6,
           "expected_secs": 60,
+          "percent": 60,
+          "when": {
+            "var": "render_mode",
+            "ne": "nvidia"
+          }
+        },
+        {
+          "label": "Installing build tools",
+          "script": "preparing-aur-build.sh",
+          "root": true,
+          "when": {
+            "var": "render_mode",
+            "eq": "nvidia"
+          },
+          "weight": 2,
+          "expected_secs": 30,
+          "percent": 20
+        },
+        {
+          "label": "Downloading waydroid-nvidia-bin from the AUR",
+          "script": "building-waydroid-nvidia.sh",
+          "when": {
+            "var": "render_mode",
+            "eq": "nvidia"
+          },
+          "weight": 4,
+          "expected_secs": 90,
+          "percent": 50
+        },
+        {
+          "label": "Installing waydroid-nvidia-bin",
+          "script": "installing-waydroid-nvidia.sh",
+          "root": true,
+          "when": {
+            "var": "render_mode",
+            "eq": "nvidia"
+          },
+          "weight": 3,
+          "expected_secs": 60,
           "percent": 60
         },
         {
@@ -402,7 +427,7 @@
           "percent": 95
         }
       ],
-      "on_success": "verify",
+      "on_success": "nvidia_setup_gate",
       "on_failure": "install_failed"
     },
     "verify": {
@@ -467,9 +492,13 @@
       "button": "Close",
       "mark": "installed",
       "message": [
-        "Waydroid is installed. Open Waydroid from your applications menu; it will offer to download the Android system image.",
+        "Waydroid is installed. Open Waydroid from your applications menu.",
         "",
-        "Your graphics and window choices are applied when the Waydroid container starts after the image has been downloaded. If the first start does not look right, restart the computer once.",
+        "With the normal setup it will offer to download the Android system image. With NVIDIA acceleration the image is already set up; start it with: waydroid session start",
+        "",
+        "After every NVIDIA driver update, run: sudo waydroid-nvidia-setup (Waydroid refuses to start until you do).",
+        "",
+        "Your graphics and window choices are applied when the Waydroid container starts. If the first start does not look right, restart the computer once.",
         "",
         "Your Android files (Download, Pictures…) are linked in ~/android-files."
       ]
@@ -522,7 +551,7 @@
     "un_set_none": {
       "type": "set",
       "vars": {
-        "un_pkg_text": "The waydroid package was already on your computer before this add-on, so it stays installed."
+        "un_pkg_text": "The Waydroid package was already on your computer before this add-on, so it stays installed."
       },
       "next": "un_confirm"
     },
@@ -541,7 +570,7 @@
         "This removes:",
         "${un_pkg_text}",
         "The Waydroid container service and the settings helper this add-on added.",
-        "The Android system image and ALL Android apps and data (/var/lib/waydroid and ~/.local/share/waydroid).",
+        "The Android system image and ALL Android apps and data (/var/lib/waydroid, /var/lib/waydroid-nvidia and ~/.local/share/waydroid).",
         "The shortcuts in ~/android-files (your other files are not touched).",
         "",
         "Do not turn off the computer while it is working."
@@ -732,6 +761,124 @@
       "capture": "extras_label",
       "on_success": "confirm",
       "on_failure": "confirm"
+    },
+    "render_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "render_mode",
+            "eq": "nvidia"
+          },
+          "goto": "nvidia_check"
+        }
+      ],
+      "default": "image_note"
+    },
+    "nvidia_check": {
+      "type": "check",
+      "command": {
+        "label": "Checking NVIDIA support…",
+        "script": "checking-nvidia-support.sh"
+      },
+      "capture": "nvidia_msg",
+      "on_success": "nvidia_result",
+      "on_failure": "error_generic"
+    },
+    "nvidia_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "nvidia_msg",
+            "ne": ""
+          },
+          "goto": "nvidia_problem"
+        }
+      ],
+      "default": "image_note"
+    },
+    "nvidia_problem": {
+      "type": "dialog",
+      "title": "NVIDIA setup is not ready",
+      "tone": "warning",
+      "message": [
+        "${nvidia_msg}",
+        "",
+        "You can fix this first, pick another graphics option, or continue anyway (the NVIDIA setup may then stop with an error)."
+      ],
+      "buttons": [
+        {
+          "label": "Choose another option",
+          "style": "primary",
+          "goto": "choose_render"
+        },
+        {
+          "label": "Continue anyway",
+          "goto": "image_note"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "nvidia_setup_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "render_mode",
+            "eq": "nvidia"
+          },
+          "goto": "nvidia_setup"
+        }
+      ],
+      "default": "verify"
+    },
+    "nvidia_setup": {
+      "type": "run",
+      "title": "Setting up NVIDIA acceleration…",
+      "message": "This checks your system, tests the driver on your GPU and installs the Android image. It can take several minutes. Please don't turn off the computer.",
+      "commands": [
+        {
+          "label": "Running waydroid-nvidia-setup",
+          "script": "running-waydroid-nvidia-setup.sh",
+          "root": true,
+          "weight": 8,
+          "expected_secs": 300,
+          "percent": 95
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "nvidia_setup_failed"
+    },
+    "nvidia_setup_failed": {
+      "type": "dialog",
+      "title": "NVIDIA setup did not finish",
+      "tone": "warning",
+      "message": [
+        "The waydroid-nvidia-bin package is installed, but its setup stopped with an error.",
+        "",
+        "Read the reason with “Show details”, fix it, then run this in a terminal:",
+        "sudo waydroid-nvidia-setup",
+        "",
+        "Run it again after every NVIDIA driver update too.",
+        "",
+        "Last output:",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Keep the installation",
+          "style": "primary",
+          "goto": "verify"
+        },
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
     }
   }
 }
