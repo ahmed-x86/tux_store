@@ -7,8 +7,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use tux_abi::script::LoadedScript;
-use tux_abi::text::is_valid_package_name;
-use tux_abi::{paths, Addon, Package, SpecialCase};
+use tux_abi::{Addon, Package, SpecialCase};
 
 #[derive(Debug, Deserialize)]
 struct CategoriesFile {
@@ -37,28 +36,12 @@ struct SpecialDef {
     items: Vec<Addon>,
 }
 
-/// `hidden_packages.json` (shipped) and `~/.config/tux-store/hidden_packages.json`.
-#[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct HiddenFile {
-    #[serde(default)]
-    hidden_packages: Vec<String>,
-    /// Also hide them in the *Installed* tab (default: no, so that something
-    /// you installed can always be found and removed).
-    #[serde(default)]
-    hide_in_installed: bool,
-    #[serde(default)]
-    #[allow(dead_code)]
-    note: Option<String>,
-}
-
 #[derive(Debug, Default)]
 pub struct Catalog {
     pub sections: Vec<SectionDef>,
     specials: HashMap<String, SpecialDef>,
     addon_of: HashMap<String, String>,
-    hidden: HashSet<String>,
-    hide_in_installed: bool,
+    hidden: tux_abi::hidden::HiddenPackages,
     pub scripts: Vec<LoadedScript>,
 }
 
@@ -111,23 +94,7 @@ impl Catalog {
             cat.specials.insert(parent, SpecialDef { kind, items });
         }
 
-        for path in paths::hidden_packages_files() {
-            let Ok(text) = fs::read_to_string(&path) else { continue };
-            match serde_json::from_str::<HiddenFile>(&text) {
-                Ok(f) => {
-                    cat.hide_in_installed |= f.hide_in_installed;
-                    for name in f.hidden_packages {
-                        if is_valid_package_name(&name) {
-                            cat.hidden.insert(name);
-                        } else {
-                            log::warn!("{}: ignoring invalid package name {name:?}", path.display());
-                        }
-                    }
-                }
-                Err(e) => log::warn!("{}: {e}", path.display()),
-            }
-        }
-
+        cat.hidden = tux_abi::hidden::HiddenPackages::load();
         cat.scripts = tux_abi::script::load_all();
 
         log::info!(
@@ -141,24 +108,17 @@ impl Catalog {
     }
 
     pub fn is_hidden(&self, name: &str) -> bool {
-        self.hidden.contains(name)
+        self.hidden.is_hidden(name)
     }
 
     /// Drop hidden packages from a list shown in search / Home / add-ons.
     pub fn filter_visible(&self, packages: Vec<Package>) -> Vec<Package> {
-        if self.hidden.is_empty() {
-            return packages;
-        }
-        packages.into_iter().filter(|p| !self.is_hidden(&p.name)).collect()
+        self.hidden.filter_packages(packages)
     }
 
     /// Same for the *Installed* tab (only when the file asks for it).
     pub fn filter_installed(&self, packages: Vec<Package>) -> Vec<Package> {
-        if self.hide_in_installed {
-            self.filter_visible(packages)
-        } else {
-            packages
-        }
+        self.hidden.filter_installed(packages)
     }
 
     fn script_package(l: &LoadedScript) -> Package {
@@ -217,7 +177,7 @@ impl Catalog {
         self.sections
             .iter()
             .flat_map(|s| s.packages.iter())
-            .filter(|n| !self.hidden.contains(n.as_str()) && seen.insert(n.as_str()))
+            .filter(|n| !self.is_hidden(n.as_str()) && seen.insert(n.as_str()))
             .cloned()
             .collect()
     }
@@ -239,7 +199,7 @@ impl Catalog {
         self.specials
             .get(parent)
             .map(|s| {
-                s.items.iter().map(|a| a.package.clone()).filter(|n| !self.hidden.contains(n)).collect()
+                s.items.iter().map(|a| a.package.clone()).filter(|n| !self.is_hidden(n)).collect()
             })
             .unwrap_or_default()
     }
