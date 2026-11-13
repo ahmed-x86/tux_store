@@ -1,17 +1,20 @@
 import { Theme } from "theme.slint";
 import { AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
-         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo } from "types.slint";
-import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay, ScriptDialog, VScrollBar, ToTopButton } from "components.slint";
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo,
+         UiTaxonomyEntry } from "types.slint";
+import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay, ScriptDialog, VScrollBar, ToTopButton, MenuRow } from "components.slint";
 import { HomeTab } from "home_tab.slint";
 import { InstalledTab } from "installed_tab.slint";
 import { UpdateTab } from "update_tab.slint";
 import { DetailsView } from "details_view.slint";
 import { SettingsView } from "settings_view.slint";
 import { AddonsStore } from "addons_store.slint";
+import { BrowseView } from "browse_view.slint";
 
 // Everything Rust needs to name must be re-exported from the main file.
 export { Theme, AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
-         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo }
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo,
+         UiTaxonomyEntry }
 
 export component MainWindow inherits Window {
     title: "Tux Store";
@@ -78,6 +81,19 @@ export component MainWindow inherits Window {
     in property <string> cache-status;
     in-out property <string> engine;
 
+    // ── side menu ──
+    in-out property <bool> menu-open: false;
+    in property <int> browse-section: 0;       // 0 Categories · 1 Groups · 2 Repositories
+    in property <string> browse-title;
+    in property <string> browse-status;
+    in property <bool> browse-loading: false;
+    in property <[UiTaxonomyEntry]> browse-entries;
+    in property <bool> browse-entry-open: false;
+    in property <string> browse-entry-title;
+    in property <string> browse-entry-subtitle;
+    in property <[UiPackage]> browse-packages;
+    in property <bool> browse-has-more: false;
+
     // ── Slint → Rust ──
     callback search-edited(string);
     callback search-submitted(string);
@@ -107,6 +123,13 @@ export component MainWindow inherits Window {
     callback run-script-clicked();
     callback uninstall-script-clicked();
     callback eval-script-clicked();
+    // side menu
+    callback menu-home();
+    callback menu-browse(int);
+    callback browse-back-clicked();
+    callback browse-entry-clicked(UiTaxonomyEntry);
+    callback browse-app-clicked(UiPackage);
+    callback browse-more-clicked();
 
     // Copy via a hidden, read-only TextInput: Slint's own clipboard support
     // works on both X11 and Wayland without extra dependencies.
@@ -131,8 +154,8 @@ export component MainWindow inherits Window {
       visible: root.view == AppView.main;
       VerticalLayout {
         TopBar {
-            settings-clickable: true;
-            settings-clicked => { root.view = AppView.settings; }
+            menu-clickable: true;
+            menu-clicked => { root.menu-open = true; }
 
             Rectangle {
                 width: 40px;
@@ -352,6 +375,182 @@ export component MainWindow inherits Window {
         theme-selected(dark) => { root.theme-changed(dark); }
         engine-selected(engine) => { root.engine = engine; root.engine-selected(engine); }
         clear-cache-clicked => { root.clear-icon-cache(); }
+    }
+
+    // ═════════════ side menu: Categories / Groups / Repositories ═════════════
+    // The page is kept alive and slides in from the right (and back out) so
+    // its lists and scroll positions survive a visit to a package page.
+    BrowseView {
+        x: root.view == AppView.browse ? 0px : root.width;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        visible: self.x < root.width - 0.5px;
+        animate x { duration: 260ms; easing: ease-out; }
+
+        section: root.browse-section;
+        section-title: root.browse-title;
+        status: root.browse-status;
+        loading: root.browse-loading;
+        entries: root.browse-entries;
+        entry-open: root.browse-entry-open;
+        entry-title: root.browse-entry-title;
+        entry-subtitle: root.browse-entry-subtitle;
+        packages: root.browse-packages;
+        has-more: root.browse-has-more;
+
+        back-clicked => { root.browse-back-clicked(); }
+        entry-clicked(entry) => { root.browse-entry-clicked(entry); }
+        app-clicked(p) => { root.browse-app-clicked(p); }
+        more-clicked => { root.browse-more-clicked(); }
+    }
+
+    // ═════════════ hamburger drawer ═════════════
+    // Always instantiated; when closed the panel sits off-screen and the
+    // backdrop is transparent, so nothing intercepts the mouse.
+    Rectangle {
+        width: root.width;
+        height: root.height;
+
+        // Dim the page behind the drawer.
+        Rectangle {
+            width: parent.width;
+            height: parent.height;
+            background: #000000;
+            opacity: root.menu-open ? 0.52 : 0.0;
+            visible: self.opacity > 0.001;
+            animate opacity { duration: 220ms; }
+        }
+        backdrop-ta := TouchArea {
+            enabled: root.menu-open;
+            clicked => { root.menu-open = false; }
+        }
+
+        panel := Rectangle {
+            width: 312px;
+            height: parent.height;
+            x: root.menu-open ? 0px : -self.width - 50px;
+            animate x { duration: 250ms; easing: ease-out; }
+            background: Theme.mantle;
+            border-color: Theme.surface0;
+            border-width: 1px;
+            drop-shadow-blur: 30px;
+            drop-shadow-offset-x: 8px;
+            drop-shadow-color: root.menu-open ? #00000099 : #00000000;
+            animate drop-shadow-color { duration: 250ms; }
+            visible: root.menu-open || self.x > -self.width;
+
+            // Swallow clicks meant for the page behind the panel.
+            TouchArea { }
+
+            VerticalLayout {
+                padding: 14px;
+                spacing: 4px;
+
+                // ── header ──
+                Rectangle {
+                    height: 62px;
+                    HorizontalLayout {
+                        padding-left: 10px;
+                        padding-right: 4px;
+                        spacing: 12px;
+
+                        VerticalLayout {
+                            alignment: center;
+                            spacing: 1px;
+                            Text { text: "Tux Store"; color: Theme.blue; font-size: 19px; font-weight: 800; }
+                            Text { text: "for Arch Linux"; color: Theme.overlay1; font-size: 11px; }
+                        }
+                        Rectangle { horizontal-stretch: 1; }
+                        Rectangle {
+                            width: 34px;
+                            height: 34px;
+                            border-radius: 9px;
+                            background: close-ta.has-hover ? Theme.surface0 : transparent;
+                            animate background { duration: 150ms; }
+                            Text {
+                                text: "×";
+                                color: close-ta.has-hover ? Theme.red : Theme.overlay1;
+                                font-size: 20px;
+                                font-weight: 600;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                animate color { duration: 150ms; }
+                            }
+                            close-ta := TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { root.menu-open = false; }
+                            }
+                        }
+                    }
+                }
+
+                Rectangle { height: 1px; background: Theme.surface0; }
+
+                Text {
+                    text: "BROWSE";
+                    color: Theme.overlay0;
+                    font-size: 10px;
+                    font-weight: 800;
+                    letter-spacing: 1.4px;
+                    height: 30px;
+                    vertical-alignment: center;
+                }
+
+                MenuRow {
+                    label: "Home";
+                    icon: @image-url("home.svg");
+                    accent: Theme.accents[0];
+                    active: root.view == AppView.main;
+                    clicked => {
+                        root.menu-open = false;
+                        root.active-tab = 0;
+                        root.search-query = "";
+                        root.menu-home();
+                    }
+                }
+                MenuRow {
+                    label: "Categories";
+                    icon: @image-url("categories.svg");
+                    accent: Theme.accents[0];
+                    active: root.view == AppView.browse && root.browse-section == 0;
+                    clicked => { root.menu-open = false; root.menu-browse(0); }
+                }
+                MenuRow {
+                    label: "Groups";
+                    icon: @image-url("groups.svg");
+                    accent: Theme.accents[1];
+                    active: root.view == AppView.browse && root.browse-section == 1;
+                    clicked => { root.menu-open = false; root.menu-browse(1); }
+                }
+                MenuRow {
+                    label: "Repositories";
+                    icon: @image-url("repositories.svg");
+                    accent: Theme.accents[4];
+                    active: root.view == AppView.browse && root.browse-section == 2;
+                    clicked => { root.menu-open = false; root.menu-browse(2); }
+                }
+
+                Rectangle { vertical-stretch: 1; }
+
+                Rectangle { height: 1px; background: Theme.surface0; }
+                MenuRow {
+                    label: "Settings";
+                    icon: @image-url("settings.svg");
+                    accent: Theme.overlay1;
+                    active: root.view == AppView.settings;
+                    clicked => { root.menu-open = false; root.view = AppView.settings; }
+                }
+                Text {
+                    text: "Tux Store " + root.app-version;
+                    color: Theme.overlay0;
+                    font-size: 10px;
+                    height: 26px;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                }
+            }
+        }
     }
 
     // A running script's dialog sits above every screen (but under the console).
