@@ -15,6 +15,7 @@
     "دوكر"
   ],
   "show_on_home": true,
+  "category": "developer-tools",
   "vars": {
     "new_pkgs": "",
     "skipped_pkgs": "",
