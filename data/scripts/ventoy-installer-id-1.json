@@ -19,6 +19,7 @@
     "فلاشة"
   ],
   "show_on_home": true,
+  "category": "utilities",
   "vars": {
     "ventoy_version": "unknown"
   },
