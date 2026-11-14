@@ -1,7 +1,7 @@
 # Maintainer: you
 # Build from a local checkout:  cd packaging && makepkg -si
 pkgname=tux-store
-pkgver=0.10.0
+pkgver=0.15.0
 pkgrel=1
 pkgdesc="Native Rust + Slint package store for Arch Linux (modular .so architecture)"
 arch=('x86_64')
