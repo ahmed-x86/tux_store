@@ -595,8 +595,16 @@ pub struct Script {
     pub show_on_home: bool,
     /// AppStream category id this add-on belongs to (`audio-video`,
     /// `developer-tools`, `utilities`…). Empty = not listed in Categories.
+    /// Kept for files written before 0.15.0; [`Script::category_list`] adds
+    /// [`Script::categories`] to it.
     #[serde(default)]
     pub category: String,
+    /// Every category this add-on belongs to (since 0.15.0): AppStream ids or
+    /// titles and custom add-on category ids (`data/addon_categories/`), in
+    /// any number and any mix. `category` above is not required when this is
+    /// used.
+    #[serde(default)]
+    pub categories: Vec<String>,
     /// Download / disk-space estimate for the page (format version 2).
     #[serde(default)]
     pub info: Option<StorageInfo>,
@@ -680,6 +688,20 @@ pub fn is_valid_addon_script_name(f: &str) -> bool {
         && f.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'-' | b'+'))
 }
 
+/// A category named by a script: an AppStream id or title (`graphics`,
+/// `Graphics & Photography`, `games/strategy`) or a custom add-on category id
+/// (`artcraft`). Never a path, never a control character.
+pub fn is_valid_category_name(c: &str) -> bool {
+    let c = c.trim();
+    !c.is_empty()
+        && c.len() <= 80
+        && c != "."
+        && c != ".."
+        && !c.contains("..")
+        && !c.starts_with('/')
+        && !c.chars().any(|ch| ch.is_control() || ch == '\\' || ch == '\0')
+}
+
 pub fn is_valid_var_name(n: &str) -> bool {
     let mut c = n.chars();
     matches!(c.next(), Some('a'..='z'))
@@ -695,6 +717,18 @@ fn is_valid_env_name(n: &str) -> bool {
 }
 
 impl Script {
+    /// Every category this add-on belongs to: the legacy `category` first (when
+    /// non-empty), then `categories`, trimmed and without duplicates. Empty
+    /// names are dropped, so an add-on without categories gives an empty list.
+    pub fn category_list(&self) -> Vec<String> {
+        let mut seen = std::collections::HashSet::new();
+        std::iter::once(&self.category)
+            .chain(self.categories.iter())
+            .map(|c| c.trim().to_string())
+            .filter(|c| !c.is_empty() && seen.insert(c.to_ascii_lowercase()))
+            .collect()
+    }
+
     /// The row shown wherever an add-on package is listed as a package
     /// (search, Home and the Categories page).
     pub fn package(&self) -> Package {
@@ -736,6 +770,14 @@ impl Script {
         }
         if let Some(icon) = &self.icon {
             check_icon(icon)?;
+        }
+        if self.categories.len() > 16 {
+            return Err("at most 16 categories".into());
+        }
+        for c in self.category_list() {
+            if !is_valid_category_name(&c) {
+                return Err(format!("invalid category {c:?}"));
+            }
         }
         if self.screenshots.len() > MAX_SCREENSHOTS {
             return Err(format!("at most {MAX_SCREENSHOTS} screenshots"));
@@ -1180,12 +1222,35 @@ mod tests {
     #[test]
     fn category_is_optional_and_parsed() {
         assert_eq!(sample().category, "");
+        assert!(sample().category_list().is_empty());
         let s: Script = serde_json::from_str(
             r#"{"schema":1,"id":"x","title":"t","category":"utilities","start":"a",
                 "steps":{"a":{"type":"finish","title":"t"}}}"#,
         )
         .unwrap();
         assert_eq!(s.category, "utilities");
+        assert_eq!(s.category_list(), vec!["utilities"]);
+    }
+
+    #[test]
+    fn categories_list_is_merged_and_deduplicated() {
+        let s: Script = serde_json::from_str(
+            r#"{"schema":2,"id":"x","title":"t","category":"graphics",
+                "categories":["artcraft"," Graphics ","graphics",""],"start":"a",
+                "steps":{"a":{"type":"finish","title":"t"}}}"#,
+        )
+        .unwrap();
+        assert_eq!(s.category_list(), vec!["graphics", "artcraft"]);
+        s.validate().unwrap();
+    }
+
+    #[test]
+    fn invalid_category_is_rejected() {
+        let mut s = sample();
+        s.categories = vec!["bad\nname".into()];
+        assert!(s.validate().is_err());
+        s.categories = vec!["../escape".into()];
+        assert!(s.validate().is_err());
     }
 
     #[test]
