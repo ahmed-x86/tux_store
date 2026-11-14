@@ -18,6 +18,8 @@ pub struct TaxonomyState {
     pub category_packages: HashMap<String, Vec<String>>,
     /// pkgname → (AppStream display name, summary)
     pub names: HashMap<String, (String, String)>,
+    /// Add-on package id → the package row shown in category lists.
+    pub scripts: HashMap<String, Package>,
 }
 
 /// Discover every section of the side menu. Blocking; runs on a worker thread.
@@ -32,7 +34,7 @@ pub fn build() -> TaxonomyState {
     let group_entries = taxonomy::group_entries(&group_list, &index);
 
     // Categories: AppStream catalogs joined with the system category tree.
-    let (discovered, components) = tux_appstream::discover_with_components(&paths::cache_dir());
+    let (mut discovered, components) = tux_appstream::discover_with_components(&paths::cache_dir());
     let names: HashMap<String, (String, String)> = components
         .iter()
         .map(|c| (c.pkg.clone(), (c.name.clone(), c.summary.clone())))
@@ -50,20 +52,62 @@ pub fn build() -> TaxonomyState {
         false
     };
 
+    // Add-on packages are not in AppStream: their JSON says which category
+    // they belong to. Put them into the matching bucket before counting.
+    let loaded_scripts = tux_abi::script::load_all();
+    let scripts: HashMap<String, Package> =
+        loaded_scripts.iter().map(|l| (l.script.id.clone(), l.script.package())).collect();
+    for loaded in &loaded_scripts {
+        let target = loaded.script.category.trim();
+        if target.is_empty() {
+            continue;
+        }
+        let Some(pkg) = scripts.get(&loaded.script.id) else { continue };
+        if is_pkg_hidden(&pkg.name) || (!pkg.title.is_empty() && tux_abi::hidden::is_hidden(&pkg.title)) {
+            continue;
+        }
+        let Some(bucket) =
+            discovered.buckets.iter_mut().find(|b| category_matches(&b.id, &b.title, target))
+        else {
+            log::warn!(
+                "script {}: category {:?} does not exist on this system",
+                loaded.script.id,
+                target
+            );
+            continue;
+        };
+        if !bucket.packages.iter().any(|p| p == &pkg.name) {
+            bucket.packages.push(pkg.name.clone());
+        }
+    }
+
     let mut category_packages: HashMap<String, Vec<String>> = HashMap::new();
     let mut categories = Vec::new();
     for bucket in &discovered.buckets {
-        // A stale catalog may list packages that no longer exist: join with pacman.
+        // A stale catalog may list packages that no longer exist: join with
+        // pacman. Add-on packages (scripts) are known without that join.
         let pkgs: Vec<String> = bucket
             .packages
             .iter()
-            .filter(|p| !is_pkg_hidden(p) && (index.get(p).is_some() || index.is_installed(p)))
+            .filter(|p| {
+                !is_pkg_hidden(p)
+                    && (scripts.contains_key(p.as_str())
+                        || index.get(p).is_some()
+                        || index.is_installed(p))
+            })
             .cloned()
             .collect();
         if pkgs.is_empty() {
             continue;
         }
-        let installed = pkgs.iter().filter(|p| index.is_installed(p)).count();
+        let installed = pkgs
+            .iter()
+            .filter(|p| {
+                scripts
+                    .get(p.as_str())
+                    .map_or_else(|| index.is_installed(p), |s| s.installed)
+            })
+            .count();
         category_packages.insert(bucket.id.clone(), pkgs.clone());
         categories.push(TaxonomyEntry {
             id: bucket.id.clone(),
@@ -85,7 +129,24 @@ pub fn build() -> TaxonomyState {
         raw_categories: discovered.raw,
         category_source: discovered.source,
     };
-    TaxonomyState { message, index, groups, category_packages, names }
+    TaxonomyState { message, index, groups, category_packages, names, scripts }
+}
+
+/// AppStream ids and titles both work, in any case; spaces, `&`, `_`, `-`
+/// and `/` are ignored so `Audio & Video`, `audio-video` and
+/// `raw:AudioVideo` all name the same category.
+fn category_matches(id: &str, title: &str, target: &str) -> bool {
+    let id = id.strip_prefix("raw:").unwrap_or(id);
+    let target = target.trim();
+    !target.is_empty()
+        && (id.eq_ignore_ascii_case(target)
+            || title.eq_ignore_ascii_case(target)
+            || category_key(id) == category_key(target)
+            || category_key(title) == category_key(target))
+}
+
+fn category_key(s: &str) -> String {
+    s.chars().filter(|c| c.is_ascii_alphanumeric()).flat_map(char::to_lowercase).collect()
 }
 
 pub fn display_name(p: &Package) -> &str {
@@ -128,6 +189,9 @@ pub fn packages_for(state: &TaxonomyState, kind: TaxonomyKind, id: &str) -> Mess
                 pkgs.iter()
                     .filter(|p| !tux_abi::hidden::is_hidden(p))
                     .map(|p| {
+                        if let Some(pkg) = state.scripts.get(p) {
+                            return pkg.clone();
+                        }
                         let mut pkg = state.index.package(p);
                         if let Some((name, summary)) = state.names.get(p) {
                             pkg.title = name.clone();
@@ -167,6 +231,18 @@ pub fn packages_for(state: &TaxonomyState, kind: TaxonomyKind, id: &str) -> Mess
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn categories_match_ids_and_titles() {
+        assert!(category_matches("audio-video", "Audio & Video", "audio-video"));
+        assert!(category_matches("audio-video", "Audio & Video", "Audio & Video"));
+        assert!(category_matches("audio-video", "Audio & Video", "Audio Video"));
+        assert!(category_matches("raw:AudioVideo", "Audio Video", "audio-video"));
+        assert!(category_matches("communication", "Communication & News", "communication"));
+        assert!(category_matches("developer-tools", "Developer Tools", "developer-tools"));
+        assert!(!category_matches("audio-video", "Audio & Video", "games"));
+        assert!(!category_matches("audio-video", "Audio & Video", ""));
+    }
 
     #[test]
     fn hidden_packages_filtered_from_taxonomy() {
