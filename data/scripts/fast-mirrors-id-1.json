@@ -18,6 +18,7 @@
     "بطء"
   ],
   "show_on_home": false,
+  "category": "utilities",
   "vars": {
     "new_pkgs": "",
     "skipped_pkgs": "",
