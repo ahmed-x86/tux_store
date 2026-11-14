@@ -52,32 +52,46 @@ pub fn build() -> TaxonomyState {
         false
     };
 
-    // Add-on packages are not in AppStream: their JSON says which category
-    // they belong to. Put them into the matching bucket before counting.
+    // Add-on packages are not in AppStream: their JSON says which categories
+    // they belong to. Custom add-on categories (`data/addon_categories/…`) are
+    // store rows rather than AppStream ones; they come first, and their ids are
+    // prefixed with `addon:` so they can never collide with an AppStream id.
+    let addon_categories = tux_abi::addon_category::load_all();
+    let mut buckets: Vec<tux_appstream::Bucket> = addon_categories
+        .iter()
+        .map(|l| tux_appstream::Bucket {
+            id: format!("addon:{}", l.category.id),
+            title: l.category.title.clone(),
+            icon: tux_abi::addon_category::category_icon_key(&l.category.id),
+            depth: 0,
+            parent: String::new(),
+            packages: Vec::new(),
+        })
+        .collect();
+    buckets.append(&mut discovered.buckets);
+    discovered.buckets = buckets;
+
     let loaded_scripts = tux_abi::script::load_all();
     let scripts: HashMap<String, Package> =
         loaded_scripts.iter().map(|l| (l.script.id.clone(), l.script.package())).collect();
     for loaded in &loaded_scripts {
-        let target = loaded.script.category.trim();
-        if target.is_empty() {
-            continue;
-        }
         let Some(pkg) = scripts.get(&loaded.script.id) else { continue };
         if is_pkg_hidden(&pkg.name) || (!pkg.title.is_empty() && tux_abi::hidden::is_hidden(&pkg.title)) {
             continue;
         }
-        let Some(bucket) =
-            discovered.buckets.iter_mut().find(|b| category_matches(&b.id, &b.title, target))
-        else {
-            log::warn!(
-                "script {}: category {:?} does not exist on this system",
-                loaded.script.id,
-                target
-            );
-            continue;
-        };
-        if !bucket.packages.iter().any(|p| p == &pkg.name) {
-            bucket.packages.push(pkg.name.clone());
+        for target in loaded.script.category_list() {
+            let Some(index) = find_bucket(&discovered.buckets, &addon_categories, &target) else {
+                log::warn!(
+                    "script {}: category {:?} does not exist on this system",
+                    loaded.script.id,
+                    target
+                );
+                continue;
+            };
+            let bucket = &mut discovered.buckets[index];
+            if !bucket.packages.iter().any(|p| p == &pkg.name) {
+                bucket.packages.push(pkg.name.clone());
+            }
         }
     }
 
@@ -143,6 +157,37 @@ fn category_matches(id: &str, title: &str, target: &str) -> bool {
             || title.eq_ignore_ascii_case(target)
             || category_key(id) == category_key(target)
             || category_key(title) == category_key(target))
+}
+
+/// Does a custom add-on category answer this name? Its folder id or its title,
+/// compared exactly like an AppStream category.
+fn custom_category_matches(loaded: &tux_abi::addon_category::LoadedCategory, target: &str) -> bool {
+    let c = &loaded.category;
+    let target = target.trim();
+    !target.is_empty()
+        && (c.id.eq_ignore_ascii_case(target)
+            || c.title.eq_ignore_ascii_case(target)
+            || category_key(&c.id) == category_key(target)
+            || category_key(&c.title) == category_key(target))
+}
+
+/// The bucket a script's `category` / `categories` entry points at.
+///
+/// The first `addon_categories.len()` buckets are the custom ones in the same
+/// order; a custom category wins over an AppStream category of the same name,
+/// then the AppStream id or title is matched.
+fn find_bucket(
+    buckets: &[tux_appstream::Bucket],
+    addon: &[tux_abi::addon_category::LoadedCategory],
+    target: &str,
+) -> Option<usize> {
+    if let Some(i) = addon.iter().position(|l| custom_category_matches(l, target)) {
+        return Some(i);
+    }
+    buckets[addon.len()..]
+        .iter()
+        .position(|b| category_matches(&b.id, &b.title, target))
+        .map(|i| i + addon.len())
 }
 
 fn category_key(s: &str) -> String {
@@ -242,6 +287,46 @@ mod tests {
         assert!(category_matches("developer-tools", "Developer Tools", "developer-tools"));
         assert!(!category_matches("audio-video", "Audio & Video", "games"));
         assert!(!category_matches("audio-video", "Audio & Video", ""));
+    }
+
+    #[test]
+    fn custom_categories_are_matched_before_appstream_ones() {
+        let custom = tux_abi::addon_category::AddonCategory {
+            schema: 1,
+            id: "artcraft".into(),
+            title: "ArtCraft".into(),
+            description: String::new(),
+            icon: None,
+        };
+        let loaded = tux_abi::addon_category::LoadedCategory {
+            category: custom,
+            path: std::path::PathBuf::from("/tmp/artcraft/artcraft.json"),
+        };
+        assert!(custom_category_matches(&loaded, "artcraft"));
+        assert!(custom_category_matches(&loaded, "ArtCraft"));
+        assert!(custom_category_matches(&loaded, "ART CRAFT"));
+        assert!(!custom_category_matches(&loaded, "graphics"));
+
+        let bucket = |id: &str, title: &str| tux_appstream::Bucket {
+            id: id.into(),
+            title: title.into(),
+            ..Default::default()
+        };
+        let buckets = vec![
+            bucket("addon:artcraft", "ArtCraft"),
+            bucket("graphics", "Graphics & Photography"),
+            bucket("games", "Games"),
+        ];
+        assert_eq!(find_bucket(&buckets, &[loaded.clone()], "artcraft"), Some(0));
+        assert_eq!(find_bucket(&buckets, &[loaded], "graphics"), Some(1));
+
+        // Without custom categories the buckets are the AppStream ones only.
+        let appstream = vec![
+            bucket("graphics", "Graphics & Photography"),
+            bucket("games", "Games"),
+        ];
+        assert_eq!(find_bucket(&appstream, &[], "Graphics & Photography"), Some(0));
+        assert_eq!(find_bucket(&appstream, &[], "artcraft"), None);
     }
 
     #[test]
