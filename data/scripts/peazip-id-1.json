@@ -33,6 +33,7 @@
     "قائمة السياق"
   ],
   "show_on_home": true,
+  "category": "utilities",
   "vars": {
     "preflight_err": "",
     "default_fm": "",
