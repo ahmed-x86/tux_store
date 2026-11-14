@@ -162,6 +162,21 @@ impl Resolver {
                     }
                 }
             }
+            // Custom add-on categories (`data/addon_categories/…`) show their
+            // own thumbnail under `addon-category-<id>`.
+            for l in tux_abi::addon_category::load_all() {
+                let Some(icon) = &l.category.icon else { continue };
+                let Some(dir) = l.dir().map(Path::to_path_buf) else { continue };
+                let sources = icon.sources();
+                if sources.is_empty() {
+                    continue;
+                }
+                list.push(ScriptIcon {
+                    id: tux_abi::addon_category::category_icon_key(&l.category.id),
+                    dir,
+                    sources,
+                });
+            }
             Arc::new(list)
         })
         .clone()
@@ -246,8 +261,8 @@ impl Resolver {
             }
             // A choice option's picture is exactly what its JSON says: when none of
             // the sources works there is nothing to guess (no Papirus lookup by a
-            // made-up name).
-            if name.contains(".opt-") {
+            // made-up name). The same goes for a custom category's thumbnail.
+            if name.contains(".opt-") || name.starts_with("addon-category-") {
                 return Offline::KnownMissing;
             }
         }
@@ -626,6 +641,21 @@ mod tests {
         assert_eq!(r.script_file_icon(&base, "fake.png", "demo"), None);
         assert_eq!(r.script_file_icon(&base, "missing.svg", "demo"), None);
         assert_eq!(r.script_file_icon(&base, "../logo.svg", "demo"), None);
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn custom_category_icon_resolves_offline() {
+        let dir = tux_abi::paths::data_dir().join("addon_categories/artcraft");
+        if !dir.is_dir() {
+            return;
+        }
+        let base = std::env::temp_dir().join(format!("tux-cat-icon-{}", std::process::id()));
+        let r = Resolver::new(base.join("cache"));
+        match r.resolve_offline(&tux_abi::addon_category::category_icon_key("artcraft")) {
+            Offline::Hit(p) => assert!(p.ends_with("artcraft/artcraft.svg"), "{}", p.display()),
+            _ => panic!("the artcraft category icon was not found offline"),
+        }
         let _ = fs::remove_dir_all(&base);
     }
 
