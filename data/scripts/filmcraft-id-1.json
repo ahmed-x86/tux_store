@@ -1,0 +1,317 @@
+{
+  "schema": 2,
+  "id": "filmcraft-id-1",
+  "title": "Install FilmCraft",
+  "description": "FilmCraft is the filmmaking app of the ArtCraft suite. This downloads the latest Linux AppImage from GitHub, packages it into a native pacman package (icon + desktop entry + a filmcraft command), and installs it — no manual extracting or building needed.",
+  "version": {
+    "label": "Latest FilmCraft version",
+    "script": "latest-version.sh"
+  },
+  "author": "Community",
+  "keywords": [
+    "filmcraft",
+    "artcraft",
+    "filmmaking",
+    "video editor",
+    "movie",
+    "storyteller",
+    "appimage",
+    "فيلم",
+    "مونتاج",
+    "تحرير الفيديو",
+    "أفلام"
+  ],
+  "show_on_home": true,
+  "categories": ["artcraft", "graphics"],
+  "info": {
+    "download_mb": 102,
+    "installed_mb": 103,
+    "extracted_mb": 0,
+    "note": "Sizes are approximate; FilmCraft's own AppImage size may change over time."
+  },
+  "icon": [
+    { "file": "filmcraft-id-1.png" }
+  ],
+  "vars": {
+    "preflight": "",
+    "latest_version": "",
+    "installed_version": ""
+  },
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Install FilmCraft",
+      "tone": "info",
+      "message": [
+        "FilmCraft is a filmmaking app from the ArtCraft suite.",
+        "",
+        "This add-on downloads the official Linux AppImage from GitHub, builds a small native package from it (pacman), and installs it with its icon and a menu shortcut.",
+        "",
+        "Nothing is modified inside FilmCraft itself — only how it's packaged for your system."
+      ],
+      "buttons": [
+        { "label": "Continue", "style": "primary", "goto": "preflight" },
+        { "label": "Cancel", "exit": true }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-requirements.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_result",
+      "on_failure": "error_generic"
+    },
+    "preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "detect_version"
+    },
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "detect_version": {
+      "type": "check",
+      "command": {
+        "label": "Checking the latest FilmCraft version…",
+        "script": "latest-version.sh"
+      },
+      "capture": "latest_version",
+      "on_success": "confirm",
+      "on_failure": "error_generic"
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Install FilmCraft ${latest_version}",
+      "tone": "info",
+      "message": [
+        "Ready to download and install FilmCraft ${latest_version}.",
+        "",
+        "This will download the AppImage, package it for pacman, and ask for your password once to install it."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "download_step"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "download_step": {
+      "type": "run",
+      "title": "Downloading FilmCraft…",
+      "message": "Please wait.",
+      "commands": [
+        {
+          "label": "Downloading the AppImage",
+          "script": "download-appimage.sh",
+          "progress": "percent",
+          "percent": 40,
+          "expected_secs": 60
+        }
+      ],
+      "on_success": "build_step",
+      "on_failure": "install_failed"
+    },
+    "build_step": {
+      "type": "run",
+      "title": "Packaging FilmCraft…",
+      "message": "Building a pacman package from the AppImage.",
+      "commands": [
+        {
+          "label": "Building the package",
+          "script": "build-package.sh",
+          "percent": 70,
+          "expected_secs": 30
+        }
+      ],
+      "on_success": "install_step",
+      "on_failure": "install_failed"
+    },
+    "install_step": {
+      "type": "run",
+      "title": "Installing FilmCraft…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing the package (admin password required)",
+          "script": "install-package.sh",
+          "root": true,
+          "percent": 95
+        },
+        {
+          "label": "Cleaning up temporary files",
+          "script": "cleanup-after-install.sh",
+          "ignore_failure": true,
+          "percent": 100
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Verifying the installation…",
+        "script": "reading-installed-version.sh"
+      },
+      "capture": "installed_version",
+      "on_success": "verify_result",
+      "on_failure": "install_failed"
+    },
+    "verify_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "installed_version",
+            "eq": ""
+          },
+          "goto": "install_failed"
+        }
+      ],
+      "default": "record_install"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_version": "${installed_version}"
+      },
+      "packages": [
+        "filmcraft"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "success": true,
+      "title": "FilmCraft installed",
+      "button": "Close",
+      "mark": "installed",
+      "message": [
+        "FilmCraft ${installed_version} is installed.",
+        "",
+        "Open it from your applications menu, or run “filmcraft” from a terminal."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "“${last_failed}” did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "dialog",
+      "title": "Remove FilmCraft?",
+      "tone": "warning",
+      "message": [
+        "This removes the filmcraft package (and dependencies nothing else needs).",
+        "Your project files are not touched — only the app itself is removed."
+      ],
+      "buttons": [
+        {
+          "label": "Remove FilmCraft",
+          "style": "danger",
+          "goto": "un_run"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing FilmCraft…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing the package (admin password required)",
+          "script": "removing-filmcraft.sh",
+          "root": true,
+          "percent": 100
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "FilmCraft removed",
+      "message": "FilmCraft was removed from your computer."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "FilmCraft could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    }
+  }
+}
