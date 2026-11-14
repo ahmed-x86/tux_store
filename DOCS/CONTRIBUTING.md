@@ -35,8 +35,11 @@ Release: `cargo build --release`, or `make`. Install: `sudo make install`.
 | a new field on the details page | `PackageDetails` → `convert::details` → `UiPackageDetails` in `types.slint` → `details_view.slint` |
 | screenshots for a package | a folder in `data/screenshots/` ([SCREENSHOTS.md](SCREENSHOTS.md)) |
 | an interactive add-on package (install / uninstall guide) | a JSON file in `data/scripts/` ([SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md)) |
+| an add-on package in a Categories page | `"category"` in its `data/scripts/*.json` ([TAXONOMY.md](TAXONOMY.md)) |
+| a package to hide from the store | `data/hidden_packages.json` or `~/.config/tux-store/hidden_packages.json` ([HIDDEN_PACKAGES.md](HIDDEN_PACKAGES.md)) |
 | a Home category or app | `data/categories.json` |
-| an add-on / language-pack set | a JSON file in `data/special_case_packages/` |
+| which groups collapse into one family | `data/group-families.json` ([TAXONOMY.md](TAXONOMY.md)) |
+| an add-on / language-pack set attached to a parent package | a JSON file in `data/special_case_packages/` ([ADDONS_SYSTEM.md](ADDONS_SYSTEM.md)) |
 | a theme change | `ui/theme.slint` |
 | a whole new capability | a new module crate (see [ARCHITECTURE.md](ARCHITECTURE.md#adding-a-module)) |
 
