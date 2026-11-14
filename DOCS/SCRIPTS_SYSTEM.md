@@ -79,6 +79,7 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 | `keywords` | no | extra search words (any language: `"فلاشة"` works) |
 | `show_on_home` | no | list it in the Home “Tools & Scripts” shelf |
 | `category` | no | AppStream category id or title (`utilities`, `developer-tools`, `games`, …). Lists it in that **Categories** page too |
+| `categories` | no | every category it belongs to, as a list: AppStream ids/titles and/or custom add-on category ids (`["artcraft", "graphics"]`). Merged with `category` |
 | `info` | no | `download_mb`, `extracted_mb`, `installed_mb`, `note` (numbers, or command objects) |
 | `icon` | no | one source or a list tried in order: `{"file": "x.svg"}`, `{"theme": "nvidia"}`, `{"url": "https://…png"}` |
 | `vars` | no | initial variables (`{"gpu_model": "unknown"}`) |
@@ -90,16 +91,36 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 
 ### Home and Categories
 
-`show_on_home` and `category` are independent:
+`show_on_home` and the categories are independent:
 
 - `show_on_home: true` adds the add-on to the Home **Add-on packages** shelf.
 - `category: "utilities"` adds it to the **Categories → Utilities** page, even
   when `show_on_home` is `false`.
-- With neither key the add-on is still found by search and reachable through
+- `categories: ["artcraft", "graphics"]` adds it to **every** listed page at
+  once. The singular `category` still works and is merged with the list, so
+  both keys may be used in the same file.
+- With none of them the add-on is still found by search and reachable through
   its own page.
 
-`category` accepts the category **id** shown by AppStream or its display
-**title**; case, spaces, `&`, `_` and `-` are ignored. Common ids:
+```json
+{
+  "category": "graphics",
+  "categories": ["artcraft"]
+}
+```
+
+The example above lists the add-on in **Graphics & Photography** (AppStream) and
+in **ArtCraft** (the custom category in `data/addon_categories/artcraft/`). The
+order of the names is kept, repeated names are ignored, at most 16 are allowed.
+
+`category` / `categories` accept:
+
+- an AppStream category **id** or display **title** — case, spaces, `&`, `_`
+  and `-` are ignored (`graphics`, `Graphics & Photography`, `raw:Graphics`);
+- a **custom add-on category id or title** — the folder name below
+  `data/addon_categories/` or its `title` (`artcraft`, `ArtCraft`).
+
+Common AppStream ids:
 
 | Id | Category |
 |---|---|
@@ -113,15 +134,19 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 | `communication` | Communication & News |
 | `utilities` | Utilities |
 
-The category must exist on the user's machine. The store logs a warning when
-it does not (for example on a system where AppStream is missing) and the add-on
-stays available through Home and search. The Categories page shows the add-on
-like any package, with its real title, description, version and installed
-state; clicking it opens the add-on page. See
-[TAXONOMY.md](TAXONOMY.md#add-on-packages-in-categories).
+An unknown name is logged as a warning and skipped; the add-on still appears in
+the other categories it named, in Home and in search. An AppStream category
+must exist on the user's machine (for example it is missing when AppStream
+itself is missing), while a custom add-on category ships with the store. A
+custom category wins when it has the same id or title as an AppStream one.
 
-Stores older than 0.15.0 reject the unknown `category` key, like every other
-key added after their release.
+The Categories page shows the add-on like any package, with its real title,
+description, version and installed state; clicking it opens the add-on page.
+See [TAXONOMY.md](TAXONOMY.md#add-on-packages-in-categories) and
+[TAXONOMY.md](TAXONOMY.md#custom-add-on-categories).
+
+Stores older than 0.15.0 reject the unknown `category` / `categories` keys, like
+every other key added after their release.
 
 ## 4. Variables
 
@@ -306,7 +331,7 @@ Uses the store's own loader, so *valid* here means the store will load it. On a 
 4. Shell variables are used as `"$TUX_VAR_X"` (quoted), never pasted into the command.
 5. Every failure path ends in a `dialog` with `"tone": "error"` and a `Close` button.
 6. Run it: `TUX_LOG=debug ./target/debug/tux-store`, open the page, install, uninstall, check `~/.local/share/tux-store/addons/`.
-7. If it should appear in Categories, add a valid `category` and check that page; it appears there even when `show_on_home` is `false`.
+7. If it should appear in Categories, add a valid `category` or `categories` and check that page; it appears there even when `show_on_home` is `false`.
 8. The shipped files are good templates: `multimedia-codecs-id-1.json` (a choice, "only what is missing" detection, record of just the new packages, safe per-package uninstall), `hello-test-id-2.json` (all step types), `ventoy-installer-id-1.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).
 
 ## Screenshots (0.10.0)
