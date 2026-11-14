@@ -35,7 +35,8 @@ Release: `cargo build --release`, or `make`. Install: `sudo make install`.
 | a new field on the details page | `PackageDetails` → `convert::details` → `UiPackageDetails` in `types.slint` → `details_view.slint` |
 | screenshots for a package | a folder in `data/screenshots/` ([SCREENSHOTS.md](SCREENSHOTS.md)) |
 | an interactive add-on package (install / uninstall guide) | a JSON file in `data/scripts/` ([SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md)) |
-| an add-on package in a Categories page | `"category"` in its `data/scripts/*.json` ([TAXONOMY.md](TAXONOMY.md)) |
+| an add-on package in a Categories page | `"category"` / `"categories"` in its `data/scripts/*.json` ([TAXONOMY.md](TAXONOMY.md)) |
+| a new custom add-on category | a folder in `data/addon_categories/` ([TAXONOMY.md](TAXONOMY.md#custom-add-on-categories)) |
 | a package to hide from the store | `data/hidden_packages.json` or `~/.config/tux-store/hidden_packages.json` ([HIDDEN_PACKAGES.md](HIDDEN_PACKAGES.md)) |
 | a Home category or app | `data/categories.json` |
 | which groups collapse into one family | `data/group-families.json` ([TAXONOMY.md](TAXONOMY.md)) |
