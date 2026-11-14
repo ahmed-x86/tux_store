@@ -2,7 +2,7 @@
 
 Files: `data/scripts/*.json`, `crates/tux-abi/src/script.rs` (format + validation), `crates/tux-abi/src/receipt.rs` (install records), `crates/tux-script/` (engine)
 
-A **script** is a package that is not in pacman: Tux Store shows it like any other app (search, Home shelf, its own page), but pressing **Install** runs a small guided flow described by **one JSON file**. The same file can describe how to **uninstall** it later.
+A **script** is a package that is not in pacman: Tux Store shows it like any other app (search, Home shelf, the Categories pages it opts into, its own page), but pressing **Install** runs a small guided flow described by **one JSON file**. The same file can describe how to **uninstall** it later.
 
 > Nothing is hard-coded: to add a new add-on package you only drop a JSON file in a folder. No Rust, no rebuild.
 
@@ -37,6 +37,7 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
   "author": "You",
   "keywords": ["hello", "demo"],
   "show_on_home": true,
+  "category": "utilities",
   "start": "welcome",
   "uninstall": "un_done",
   "steps": {
@@ -77,6 +78,7 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 | `author` | no | shown in “About this add-on package” |
 | `keywords` | no | extra search words (any language: `"فلاشة"` works) |
 | `show_on_home` | no | list it in the Home “Tools & Scripts” shelf |
+| `category` | no | AppStream category id or title (`utilities`, `developer-tools`, `games`, …). Lists it in that **Categories** page too |
 | `info` | no | `download_mb`, `extracted_mb`, `installed_mb`, `note` (numbers, or command objects) |
 | `icon` | no | one source or a list tried in order: `{"file": "x.svg"}`, `{"theme": "nvidia"}`, `{"url": "https://…png"}` |
 | `vars` | no | initial variables (`{"gpu_model": "unknown"}`) |
@@ -85,6 +87,41 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 | `steps` | yes | the state machine: `{ "step_name": { "type": …, … } }` |
 
 **Unknown keys are errors.** A typo such as `on_succes` is rejected instead of silently changing behaviour. Every `goto` / `next` / `on_success` / `on_failure` must name an existing step.
+
+### Home and Categories
+
+`show_on_home` and `category` are independent:
+
+- `show_on_home: true` adds the add-on to the Home **Add-on packages** shelf.
+- `category: "utilities"` adds it to the **Categories → Utilities** page, even
+  when `show_on_home` is `false`.
+- With neither key the add-on is still found by search and reachable through
+  its own page.
+
+`category` accepts the category **id** shown by AppStream or its display
+**title**; case, spaces, `&`, `_` and `-` are ignored. Common ids:
+
+| Id | Category |
+|---|---|
+| `audio-video` | Audio & Video |
+| `developer-tools` | Developer Tools |
+| `education` | Education |
+| `games` | Games |
+| `graphics` | Graphics & Photography |
+| `office` | Office |
+| `science` | Science |
+| `communication` | Communication & News |
+| `utilities` | Utilities |
+
+The category must exist on the user's machine. The store logs a warning when
+it does not (for example on a system where AppStream is missing) and the add-on
+stays available through Home and search. The Categories page shows the add-on
+like any package, with its real title, description, version and installed
+state; clicking it opens the add-on page. See
+[TAXONOMY.md](TAXONOMY.md#add-on-packages-in-categories).
+
+Stores older than 0.15.0 reject the unknown `category` key, like every other
+key added after their release.
 
 ## 4. Variables
 
@@ -269,7 +306,8 @@ Uses the store's own loader, so *valid* here means the store will load it. On a 
 4. Shell variables are used as `"$TUX_VAR_X"` (quoted), never pasted into the command.
 5. Every failure path ends in a `dialog` with `"tone": "error"` and a `Close` button.
 6. Run it: `TUX_LOG=debug ./target/debug/tux-store`, open the page, install, uninstall, check `~/.local/share/tux-store/addons/`.
-7. The shipped files are good templates: `multimedia-codecs-id-1.json` (a choice, "only what is missing" detection, record of just the new packages, safe per-package uninstall), `hello-test-id-2.json` (all step types), `ventoy-installer-id-1.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).
+7. If it should appear in Categories, add a valid `category` and check that page; it appears there even when `show_on_home` is `false`.
+8. The shipped files are good templates: `multimedia-codecs-id-1.json` (a choice, "only what is missing" detection, record of just the new packages, safe per-package uninstall), `hello-test-id-2.json` (all step types), `ventoy-installer-id-1.json` (Ventoy: download + extract + shortcut + file-based uninstall), `nvidia-drivers-id-1.json` (checks, choices, root, package-based uninstall).
 
 ## Screenshots (0.10.0)
 
