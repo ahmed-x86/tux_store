@@ -574,7 +574,12 @@ impl State {
         if let Some(ui) = self.ui.upgrade() {
             let status = match self.browse_section {
                 BrowseSection::Categories => {
-                    format!("{top} categories · {deep} subcategories · from AppStream")
+                    let custom = self.browse_all.iter().filter(|e| e.id.starts_with("addon:")).count();
+                    if custom == 0 {
+                        format!("{top} categories · {deep} subcategories · from AppStream")
+                    } else {
+                        format!("{top} categories · {deep} subcategories · {custom} add-on categories")
+                    }
                 }
                 BrowseSection::Groups => format!("{top} entries · {} groups · from pacman", top + deep),
                 BrowseSection::Repositories => format!("{top} repositories · from pacman.conf"),
