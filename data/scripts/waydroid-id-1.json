@@ -30,6 +30,7 @@
     "كرت شاشة"
   ],
   "show_on_home": true,
+  "category": "utilities",
   "info": {
     "download_mb": {
       "label": "Download size (Waydroid package)",
