@@ -49,6 +49,13 @@ pub fn flathub_app_id(raw: &str) -> Option<String> {
     ok.then(|| id.to_string())
 }
 
+/// The download link of a Flathub app's icon: the id alone is enough
+/// (`org.mozilla.firefox` → `https://dl.flathub.org/media/icons/128x128/…png`).
+pub fn flathub_icon_url(raw: &str) -> Option<String> {
+    let id = flathub_app_id(raw)?;
+    Some(format!("https://dl.flathub.org/media/icons/128x128/{id}.png"))
+}
+
 /// A plain `https://` link (no credentials, no port, no spaces) on a trusted host.
 pub fn is_trusted_image_url(u: &str) -> bool {
     let Some(rest) = u.strip_prefix("https://") else {
