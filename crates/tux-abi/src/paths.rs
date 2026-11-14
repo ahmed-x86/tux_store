@@ -100,6 +100,18 @@ pub fn user_scripts_dir() -> PathBuf {
     config_dir().join("scripts")
 }
 
+/// Custom add-on categories shipped with the store
+/// (`<data>/addon_categories/<id>/<id>.json`).
+pub fn system_addon_categories_dir() -> PathBuf {
+    data_dir().join("addon_categories")
+}
+
+/// Custom add-on categories written by the user
+/// (`~/.config/tux-store/addon_categories/<id>/<id>.json`).
+pub fn user_addon_categories_dir() -> PathBuf {
+    config_dir().join("addon_categories")
+}
+
 /// Screenshots shipped with the store (`<data>/screenshots/<package>/…`).
 pub fn system_screenshots_dir() -> PathBuf {
     data_dir().join("screenshots")
