@@ -2,6 +2,12 @@
 
 Files: `data/special_case_packages/*.json`, `crates/tux-search/src/catalog.rs`
 
+This page covers add-ons that belong to a **parent package** (LibreOffice
+language packs, VLC plugins, Tesseract data…). They appear on the parent's page
+and on an “Addons” view, not as standalone category entries. Interactive
+**add-on packages** (a script with its own page, Install button and optional
+`category`) are documented in [SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md).
+
 Some applications have an ecosystem of official add-ons or language packs (LibreOffice, aspell, …). Instead of hard-coding those relationships, Tux Store reads one JSON file per parent package.
 
 ## File format
