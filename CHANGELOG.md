@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.0
+
+- **Add-on packages in Categories.** An interactive add-on (`data/scripts/*.json`) can now declare `"category": "games"` (AppStream id or title). The add-on then appears in that Categories page with its real title, description, version and installed state — even when `show_on_home` is `false` — and clicking it opens its add-on page. The JSON key is the only metadata needed; unknown categories are logged and leave the add-on available through Home and search. See `DOCS/TAXONOMY.md#add-on-packages-in-categories` and `DOCS/SCRIPTS_SYSTEM.md`.
+- **Hiding packages is documented.** New `DOCS/HIDDEN_PACKAGES.md` explains `data/hidden_packages.json` and `~/.config/tux-store/hidden_packages.json`: the format, `hide_in_installed`, exact/case-insensitive matching, every surface that filters the package, and what hiding does not do. Hidden filtering now also covers add-on scripts in search, Home, the Installed tab and category lists.
+- **Taxonomy is documented.** New `DOCS/TAXONOMY.md` explains how Repositories, Groups (and group families) and AppStream Categories are discovered, the `group-families.json` keys, the message flow, caching, and `tux-store --dump-taxonomy`. A user copy of `group-families.json` now really overrides the shipped one, as the code comment and docs already said.
+- **Documentation index and links.** New `DOCS/README.md`; the documentation list, contributing table and Home-categorization page now point to the taxonomy and hidden-packages pages. The Arabic README and scripts summary mention `category` and hidden packages.
+
 ## 0.10.0
 
 - **Remote thumbnails and covers.** `data/images/remote_images.json` (and the user's `~/.config/tux-store/remote_images.json`, which wins) maps a package to an `icon` link and/or up to 3 `covers` links. Only `https://` links on trusted hosts (`raw.githubusercontent.com`, `github.com`, `gitlab.com`, `upload.wikimedia.org`, `flathub.org`, `dl.flathub.org`, `cdn.jsdelivr.net`, `invent.kde.org`, `user-images.githubusercontent.com`) are ever followed; PNG/SVG/JPEG only; everything is downloaded once and cached. An installed theme icon or a local file still wins; a declared link is tried exactly (no shortened-name guesses such as `base-devel` → `base`) and overrides an old "not found" verdict. New module `tux_abi::remote`.
