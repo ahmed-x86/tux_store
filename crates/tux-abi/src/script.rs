@@ -15,6 +15,7 @@
 //! * `check` steps run silently and therefore can never use `root`.
 
 use crate::text::is_valid_package_name;
+use crate::Package;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
 use std::fs;
@@ -592,6 +593,10 @@ pub struct Script {
     /// List it on the Home page ("Tools & Scripts" shelf).
     #[serde(default)]
     pub show_on_home: bool,
+    /// AppStream category id this add-on belongs to (`audio-video`,
+    /// `developer-tools`, `utilities`…). Empty = not listed in Categories.
+    #[serde(default)]
+    pub category: String,
     /// Download / disk-space estimate for the page (format version 2).
     #[serde(default)]
     pub info: Option<StorageInfo>,
@@ -690,6 +695,27 @@ fn is_valid_env_name(n: &str) -> bool {
 }
 
 impl Script {
+    /// The row shown wherever an add-on package is listed as a package
+    /// (search, Home and the Categories page).
+    pub fn package(&self) -> Package {
+        let receipt = crate::receipt::load(&self.id);
+        let installed = receipt.as_ref().is_some_and(|r| r.complete);
+        let version = receipt
+            .as_ref()
+            .map(|r| r.installed_version.trim())
+            .filter(|v| !v.is_empty())
+            .map(str::to_string)
+            .unwrap_or_else(|| self.version.fixed());
+        Package {
+            name: self.id.clone(),
+            title: self.title.clone(),
+            repo: "script".into(),
+            version,
+            description: self.description.clone(),
+            installed,
+        }
+    }
+
     pub fn validate(&self) -> Result<(), String> {
         if !(MIN_SCHEMA..=SCHEMA).contains(&self.schema) {
             return Err(format!("unsupported schema {} (supported: {MIN_SCHEMA}..={SCHEMA})", self.schema));
@@ -1149,6 +1175,17 @@ mod tests {
             Step::Dialog(d) => assert_eq!(d.message.joined(), "l1\nl2"),
             _ => panic!(),
         }
+    }
+
+    #[test]
+    fn category_is_optional_and_parsed() {
+        assert_eq!(sample().category, "");
+        let s: Script = serde_json::from_str(
+            r#"{"schema":1,"id":"x","title":"t","category":"utilities","start":"a",
+                "steps":{"a":{"type":"finish","title":"t"}}}"#,
+        )
+        .unwrap();
+        assert_eq!(s.category, "utilities");
     }
 
     #[test]
