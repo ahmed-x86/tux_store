@@ -32,7 +32,7 @@ what you are changing.
 | Document | What it covers |
 |---|---|
 | [ADDONS_SYSTEM.md](ADDONS_SYSTEM.md) | add-ons / language packs attached to a parent package |
-| [SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md) ([عربي](SCRIPTS_SYSTEM_AR.md)) | interactive add-on packages: JSON format, `category`, install/uninstall, receipts |
+| [SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md) ([عربي](SCRIPTS_SYSTEM_AR.md)) | interactive add-on packages: JSON format, `category` / `categories`, install/uninstall, receipts |
 
 ## Project
 
