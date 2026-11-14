@@ -360,7 +360,7 @@ impl FamilyConfig {
     /// `data/group-families.json`, overridden by the user's own copy in
     /// `~/.config/tux-store/group-families.json` when it exists.
     pub fn load() -> Self {
-        for file in [paths::data_dir().join("group-families.json"), paths::config_dir().join("group-families.json")] {
+        for file in [paths::config_dir().join("group-families.json"), paths::data_dir().join("group-families.json")] {
             if let Ok(text) = std::fs::read_to_string(&file) {
                 match serde_json::from_str::<FamilyConfig>(&text) {
                     Ok(cfg) => return cfg,
