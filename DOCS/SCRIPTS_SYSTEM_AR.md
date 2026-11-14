@@ -3,7 +3,7 @@
 الشرح الكامل بالإنجليزية في [SCRIPTS_SYSTEM.md](SCRIPTS_SYSTEM.md). هذا ملخص سريع لإنشاء إضافة جديدة.
 
 ## الفكرة
-الإضافة (Script) هي **ملف JSON واحد** يصف خطوات التثبيت وخطوات الإزالة. يظهر في المتجر مثل أي برنامج (بحث، الصفحة الرئيسية، صفحة خاصة به). ويمكن أن تظهر أيضًا في صفحة **التصنيفات** بإضافة `"category"` كما في المثال أدناه. لا تحتاج لكتابة Rust ولا لإعادة بناء المشروع.
+الإضافة (Script) هي **ملف JSON واحد** يصف خطوات التثبيت وخطوات الإزالة. يظهر في المتجر مثل أي برنامج (بحث، الصفحة الرئيسية، صفحة خاصة به). ويمكن أن تظهر أيضًا في صفحة **التصنيفات** بإضافة `"categories"` (أو `"category"` القديم) كما في المثال أدناه. لا تحتاج لكتابة Rust ولا لإعادة بناء المشروع.
 
 ## 1) أين أضع الملف؟
 - `data/scripts/اسم-الاضافة-id-1.json` — إضافات تأتي مع المتجر (موثوقة).
@@ -18,7 +18,7 @@
   "schema": 2, "id": "my-tool-id-1", "title": "My Tool",
   "description": "وصف قصير", "version": "1.0", "author": "me",
   "keywords": ["tool", "أداة"], "show_on_home": true,
-  "category": "utilities",     // تصنيف AppStream: utilities / games / developer-tools ...
+  "categories": ["graphics", "artcraft"],  // تصنيفات AppStream و/أو تصنيفات إضافية من data/addon_categories/
   "start": "welcome",          // أول خطوة في التثبيت
   "uninstall": "un_confirm",   // أول خطوة في الإزالة (بدونها لا يظهر زر Uninstall)
   "steps": { ... }
@@ -27,7 +27,28 @@
 
 أنواع الخطوات (`type`): `dialog` رسالة وأزرار · `choice` اختيار · `check` أمر صامت (لا يعمل بصلاحيات root أبدًا) · `run` أوامر ظاهرة مع شريط تقدم (`"root": true` تشغّله عبر pkexec) · `branch` تفرّع حسب شرط · `set` تعيين متغيرات · `print` طباعة في الترمنال · `record` حفظ البصمة · `finish` إنهاء.
 
-`show_on_home` و `category` مستقلان: الأول يضع الإضافة في رفّ الصفحة الرئيسية، والثاني يضعها في صفحة التصنيفات حتى لو كان `show_on_home` مساويًا `false`. يقبل `category` معرّف AppStream (`utilities`, `developer-tools`, `games` …) أو عنوانه (`Utilities`)، ويتجاهل حالة الأحرف والفراغات و `& _ -`. إذا لم يوجد التصنيف على الجهاز يُسجَّل تحذير وتبقى الإضافة متاحة في البحث والرئيسية.
+`show_on_home` والتصنيفات مستقلة: الأول يضع الإضافة في رفّ الصفحة الرئيسية، والتصنيفات تضعها في صفحة التصنيفات حتى لو كان `show_on_home` مساويًا `false`. يقبل `categories` قائمة أسماء، كل اسم إما معرّف AppStream (`utilities`, `developer-tools`, `games` …) أو عنوانه (`Utilities`)، أو معرّف تصنيف إضافي من `data/addon_categories/` (`artcraft`) أو عنوانه (`ArtCraft`). يتجاهل حالة الأحرف والفراغات و `& _ -`، ويمكن الجمع بين `category` المفرد و`categories` في نفس الملف. التصنيف الإضافي يُعرض قبل تصنيفات AppStream. إذا لم يوجد اسم على الجهاز يُسجَّل تحذير وتبقى الإضافة في بقية تصنيفاتها وفي البحث والرئيسية.
+
+### تصنيفات إضافية (Add-on categories)
+
+مجلد باسم التصنيف داخل `data/addon_categories/` (أو `~/.config/tux-store/addon_categories/`)، بداخله JSON بنفس الاسم وصورة اختيارية:
+
+```
+data/addon_categories/artcraft/artcraft.json
+data/addon_categories/artcraft/artcraft.svg
+```
+
+```json
+{
+  "schema": 1,
+  "id": "artcraft",
+  "title": "ArtCraft",
+  "description": "تطبيقات عائلة ArtCraft.",
+  "icon": { "file": "artcraft.svg" }
+}
+```
+
+`icon` يحدد **مصدرًا واحدًا** فقط: `{"file": "x.svg"}` صورة بجانب الـ JSON، أو `{"url": "https://…"}` رابط على مضيف موثوق، أو `{"flathub": "org.gnome.Builder"}` معرّف تطبيق في Flathub فقط والمتجر يبني الرابط بنفسه. التفاصيل الكاملة في [TAXONOMY.md](TAXONOMY.md#custom-add-on-categories).
 
 المتغيرات: في النصوص `${name}`، وفي أوامر الـ shell تُقرأ من `"$TUX_VAR_NAME"` (بين علامتي تنصيص دائمًا).
 
