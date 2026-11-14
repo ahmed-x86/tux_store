@@ -29,6 +29,7 @@
     "تشغيل الفيديو"
   ],
   "show_on_home": true,
+  "category": "audio-video",
   "vars": {
     "new_pkgs": "",
     "skipped_pkgs": "",
