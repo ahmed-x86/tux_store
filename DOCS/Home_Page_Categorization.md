@@ -2,6 +2,10 @@
 
 The Home tab shows horizontally scrolling shelves, one per category — a data-driven version of the original hard-coded model-per-category design.
 
+These are **Home shelves**, defined by hand in `categories.json`. They are not
+the **Categories** page of the side menu, which is discovered from AppStream;
+see [TAXONOMY.md](TAXONOMY.md).
+
 ## Data: `data/categories.json`
 
 ```json
