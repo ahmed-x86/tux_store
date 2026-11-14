@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "id": "artcraft",
+  "title": "ArtCraft",
+  "description": "Apps and add-ons from the ArtCraft suite: FilmCraft, PhotoCraft and their companions.",
+  "icon": { "file": "artcraft.svg" }
+}
