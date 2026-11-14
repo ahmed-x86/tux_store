@@ -122,14 +122,7 @@ impl Catalog {
     }
 
     fn script_package(l: &LoadedScript) -> Package {
-        Package {
-            name: l.script.id.clone(),
-            title: l.script.title.clone(),
-            repo: "script".into(),
-            version: l.script.version.fixed(),
-            description: l.script.description.clone(),
-            installed: tux_abi::receipt::load(&l.script.id).is_some_and(|r| r.complete),
-        }
+        l.script.package()
     }
 
     /// Scripts whose id, title or keywords match `query`.
@@ -141,18 +134,20 @@ impl Catalog {
         if needle.is_empty() {
             return Vec::new();
         }
-        self.scripts
-            .iter()
-            .filter(|l| l.script.matches(&needle, norm))
-            .map(Self::script_package)
-            .collect()
+        self.filter_visible(
+            self.scripts
+                .iter()
+                .filter(|l| l.script.matches(&needle, norm))
+                .map(Self::script_package)
+                .collect(),
+        )
     }
 
     /// Add-on packages that were installed (they have an install record),
     /// for the *Installed* tab. Records whose script file is gone still show,
     /// so nothing installed can become invisible.
     pub fn installed_addons(&self) -> Vec<Package> {
-        tux_abi::receipt::list()
+        let packages = tux_abi::receipt::list()
             .into_iter()
             .filter(|r| r.complete)
             .map(|r| Package {
@@ -163,12 +158,19 @@ impl Catalog {
                 description: String::new(),
                 installed: true,
             })
-            .collect()
+            .collect();
+        self.filter_installed(packages)
     }
 
     /// Scripts for the Home shelf.
     pub fn home_scripts(&self) -> Vec<Package> {
-        self.scripts.iter().filter(|l| l.script.show_on_home).map(Self::script_package).collect()
+        self.filter_visible(
+            self.scripts
+                .iter()
+                .filter(|l| l.script.show_on_home)
+                .map(Self::script_package)
+                .collect(),
+        )
     }
 
     /// Every curated package name once, in display order.
