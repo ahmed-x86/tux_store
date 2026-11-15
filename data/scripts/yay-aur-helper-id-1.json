@@ -3,7 +3,7 @@
   "id": "yay-aur-helper-id-1",
   "title": "AUR helper (yay)",
   "description": "Build and install yay, a helper for the Arch User Repository. Needs base-devel and git, which are installed first.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "yay",
     "aur",
