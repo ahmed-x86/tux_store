@@ -7,7 +7,7 @@
     "label": "Installed PeaZip version",
     "shell": "pacman -Si peazip 2>/dev/null | awk '/^Version/ {print $3; exit}'"
   },
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "peazip",
     "rar",
