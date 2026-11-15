@@ -3,7 +3,7 @@
   "id": "gaming-setup-id-1",
   "title": "Gaming setup",
   "description": "Steam plus optional performance tools (GameMode and MangoHud). Needs the [multilib] repository enabled in /etc/pacman.conf.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "gaming",
     "game",
