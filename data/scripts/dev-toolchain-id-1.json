@@ -3,7 +3,7 @@
   "id": "dev-toolchain-id-1",
   "title": "Developer toolchain",
   "description": "Compilers and build tools: base-devel (gcc, make, binutils…) and git, optionally with CMake, Ninja, GDB and Clang. Needed to build AUR packages.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "developer",
     "toolchain",
