@@ -36,7 +36,7 @@ cat > PKGBUILD <<EOF
 pkgname=${PKGNAME}
 pkgver=${PKGVER}
 pkgrel=1
-pkgdesc="FigCraft — app from the ArtCraft suite"
+pkgdesc="FigCraft — filmmaking app from the ArtCraft suite"
 arch=('x86_64')
 license=('custom')
 depends=('fuse2')
