@@ -2,7 +2,7 @@
   "schema": 2,
   "id": "gridcraft-id-1",
   "title": "Install GridCraft",
-  "description": "GridCraft is a fast open-source spreadsheet and data analysis app — an Excel-style tool. This downloads the latest Linux AppImage from GitHub, packages it into a native pacman package (icon + desktop entry + a gridcraft command), and installs it — no manual extracting or building needed.",
+  "description": "GridCraft is a fast open-source spreadsheet and data analysis app — an Excel-style tool. This downloads the latest Linux AppImage from GitHub, You choose how to install it: wrap the official AppImage into a local pacman package (icon + desktop entry + a gridcraft command), or install the official native Arch package (.pkg.tar.zst) directly. The latest version is detected automatically.",
   "version": {
     "label": "Latest GridCraft version",
     "script": "latest-version.sh"
@@ -32,7 +32,7 @@
     "download_mb": 48,
     "installed_mb": 49,
     "extracted_mb": 0,
-    "note": "Sizes are approximate; GridCraft's own AppImage size may change over time."
+    "note": "Sizes are for the AppImage method; the native package may differ slightly. GridCraft's release size may change over time."
   },
   "icon": [
     {
@@ -42,7 +42,10 @@
   "vars": {
     "preflight": "",
     "latest_version": "",
-    "installed_version": ""
+    "installed_version": "",
+    "method": "appimage",
+    "method_label": "",
+    "native_pkg": ""
   },
   "start": "welcome",
   "uninstall": "un_start",
@@ -54,19 +57,51 @@
       "message": [
         "GridCraft is part of the ArtCraft suite — a fast open-source spreadsheet and data analysis app — an Excel-style tool.",
         "",
-        "This add-on downloads the official Linux AppImage from GitHub, builds a small native package from it (pacman), and installs it with its icon and a menu shortcut.",
+        "On the next screen you choose how to install it: wrap the official AppImage into a local pacman package, or install the official native Arch package directly.",
         "",
-        "Nothing is modified inside GridCraft itself — only how it's packaged for your system."
+        "Either way you get the official release from GitHub — nothing inside GridCraft is modified."
       ],
       "buttons": [
         {
           "label": "Continue",
           "style": "primary",
-          "goto": "preflight"
+          "goto": "choose_method"
         },
         {
           "label": "Cancel",
           "exit": true
+        }
+      ]
+    },
+    "choose_method": {
+      "type": "choice",
+      "title": "Choose the installation method",
+      "store_as": "method",
+      "default": "appimage",
+      "next": "preflight",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "appimage",
+          "label": "AppImage, wrapped as a pacman package",
+          "hint": "Downloads the official AppImage and packages it locally with makepkg (icon, menu entry and a command). Needs base-devel and fuse2.",
+          "set": {
+            "method_label": "AppImage wrapped as a pacman package"
+          }
+        },
+        {
+          "value": "native",
+          "label": "Native Arch package",
+          "hint": "Downloads the official ready-made .pkg.tar.zst from GitHub and installs it directly with pacman. No local build; dependencies come from your repositories.",
+          "set": {
+            "method_label": "Native Arch package (.pkg.tar.zst)"
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "welcome"
         }
       ]
     },
@@ -121,21 +156,36 @@
       "title": "Install GridCraft ${latest_version}",
       "tone": "info",
       "message": [
-        "Ready to download and install GridCraft ${latest_version}.",
+        "Ready to install GridCraft ${latest_version}.",
         "",
-        "This will download the AppImage, package it for pacman, and ask for your password once to install it."
+        "Method: ${method_label}",
+        "",
+        "You will be asked for your password once to install the package."
       ],
       "buttons": [
         {
           "label": "Install",
           "style": "primary",
-          "goto": "download_step"
+          "goto": "route"
         },
         {
           "label": "Cancel",
           "exit": true
         }
       ]
+    },
+    "route": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "method",
+            "eq": "native"
+          },
+          "goto": "native_download_step"
+        }
+      ],
+      "default": "download_step"
     },
     "download_step": {
       "type": "run",
@@ -189,6 +239,53 @@
       "on_success": "verify",
       "on_failure": "install_failed"
     },
+    "native_download_step": {
+      "type": "run",
+      "title": "Downloading GridCraft…",
+      "message": "Downloading the official Arch package.",
+      "commands": [
+        {
+          "label": "Downloading the native package",
+          "script": "download-native.sh",
+          "progress": "percent",
+          "percent": 70,
+          "expected_secs": 40
+        }
+      ],
+      "on_success": "native_name_step",
+      "on_failure": "install_failed"
+    },
+    "native_name_step": {
+      "type": "check",
+      "command": {
+        "label": "Reading the package info…",
+        "script": "reading-native-package-name.sh"
+      },
+      "capture": "native_pkg",
+      "on_success": "native_install_step",
+      "on_failure": "install_failed"
+    },
+    "native_install_step": {
+      "type": "run",
+      "title": "Installing GridCraft…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing the package (admin password required)",
+          "script": "install-native-package.sh",
+          "root": true,
+          "percent": 95
+        },
+        {
+          "label": "Cleaning up temporary files",
+          "script": "cleanup-after-install.sh",
+          "ignore_failure": true,
+          "percent": 100
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
     "verify": {
       "type": "check",
       "command": {
@@ -208,6 +305,13 @@
             "eq": ""
           },
           "goto": "install_failed"
+        },
+        {
+          "when": {
+            "var": "method",
+            "eq": "native"
+          },
+          "goto": "record_install_native"
         }
       ],
       "default": "record_install"
@@ -222,6 +326,16 @@
       ],
       "next": "done"
     },
+    "record_install_native": {
+      "type": "record",
+      "set": {
+        "installed_version": "${installed_version}"
+      },
+      "packages": [
+        "${native_pkg}"
+      ],
+      "next": "done"
+    },
     "done": {
       "type": "finish",
       "success": true,
@@ -231,7 +345,9 @@
       "message": [
         "GridCraft ${installed_version} is installed.",
         "",
-        "Open it from your applications menu, or run “gridcraft” from a terminal."
+        "Open it from your applications menu, or run “gridcraft” from a terminal.",
+        "",
+        "Installed as: ${method_label}"
       ]
     },
     "install_failed": {
