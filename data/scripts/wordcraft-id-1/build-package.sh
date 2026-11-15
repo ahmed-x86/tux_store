@@ -36,7 +36,7 @@ cat > PKGBUILD <<EOF
 pkgname=${PKGNAME}
 pkgver=${PKGVER}
 pkgrel=1
-pkgdesc="WordCraft — app from the ArtCraft suite"
+pkgdesc="WordCraft — filmmaking app from the ArtCraft suite"
 arch=('x86_64')
 license=('custom')
 depends=('fuse2')
