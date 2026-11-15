@@ -3,7 +3,7 @@
   "id": "docker-setup-id-1",
   "title": "Docker",
   "description": "Install Docker with Compose and Buildx, start the service and let your user run it without sudo.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "docker",
     "container",
