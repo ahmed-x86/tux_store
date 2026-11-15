@@ -3,7 +3,7 @@
   "id": "fast-mirrors-id-1",
   "title": "Faster mirrors",
   "description": "Rank the 20 most recently updated HTTPS mirrors by speed with reflector and save them as your pacman mirrorlist. Your old list is backed up and can be restored.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "mirror",
     "mirrors",
