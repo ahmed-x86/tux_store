@@ -7,7 +7,7 @@
     "label": "Latest driver version",
     "script": "latest-driver-version.sh"
   },
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "nvidia",
     "geforce",
@@ -23,6 +23,7 @@
   ],
   "show_on_home": true,
   "category": "utilities",
+  "categories": ["drivers"],
   "vars": {
     "gpu_model": "unknown",
     "gpu_branch": "unknown"
