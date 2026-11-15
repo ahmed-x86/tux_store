@@ -7,7 +7,7 @@
     "label": "Latest Ventoy version",
     "script": "latest-ventoy-version.sh"
   },
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "ventoy",
     "usb",
