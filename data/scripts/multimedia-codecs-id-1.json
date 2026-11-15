@@ -3,7 +3,7 @@
   "id": "multimedia-codecs-id-1",
   "title": "Install multimedia codecs",
   "description": "Play MP3, AAC, FLAC, H.264 and more. Installs the audio and video codec packages from the official repositories, and can remove them again.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "codec",
     "codecs",
