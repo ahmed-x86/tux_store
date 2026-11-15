@@ -3,7 +3,7 @@
   "id": "system-cleanup-id-1",
   "title": "System cleanup",
   "description": "Free disk space: trim the pacman cache, remove orphaned packages and old system logs. Shows what will be removed first.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "cleanup",
     "clean",
