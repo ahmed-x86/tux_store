@@ -7,7 +7,7 @@
     "label": "Latest Waydroid version",
     "script": "latest-waydroid-version.sh"
   },
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "waydroid",
     "android",
