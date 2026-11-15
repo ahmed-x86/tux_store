@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Drivers">
+  <title>Drivers</title>
+  <path fill="#2fb37a" fill-rule="evenodd" d="M21 16h22a5 5 0 0 1 5 5v22a5 5 0 0 1-5 5H21a5 5 0 0 1-5-5V21a5 5 0 0 1 5-5zM26 26v12h12V26z"/>
+  <g fill="#2fb37a">
+    <rect x="22" y="6" width="4" height="10" rx="1.5"/><rect x="30" y="6" width="4" height="10" rx="1.5"/><rect x="38" y="6" width="4" height="10" rx="1.5"/>
+    <rect x="22" y="48" width="4" height="10" rx="1.5"/><rect x="30" y="48" width="4" height="10" rx="1.5"/><rect x="38" y="48" width="4" height="10" rx="1.5"/>
+    <rect x="6" y="22" width="10" height="4" rx="1.5"/><rect x="6" y="30" width="10" height="4" rx="1.5"/><rect x="6" y="38" width="10" height="4" rx="1.5"/>
+    <rect x="48" y="22" width="10" height="4" rx="1.5"/><rect x="48" y="30" width="10" height="4" rx="1.5"/><rect x="48" y="38" width="10" height="4" rx="1.5"/>
+  </g>
+</svg>

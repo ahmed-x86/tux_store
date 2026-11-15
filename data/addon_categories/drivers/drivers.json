@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "id": "drivers",
+  "title": "Drivers",
+  "description": "Hardware drivers and the guided add-ons that install them, such as NVIDIA graphics drivers.",
+  "icon": { "file": "drivers.svg" }
+}
