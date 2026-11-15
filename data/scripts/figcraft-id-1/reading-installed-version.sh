@@ -1,3 +1,5 @@
 #!/bin/bash
-pacman -Q figcraft 2>/dev/null | awk '{print $2}'
+# After a native install, TUX_VAR_NATIVE_PKG holds the real package name;
+# for the AppImage method the package is simply called "figcraft".
+pacman -Q "${TUX_VAR_NATIVE_PKG:-figcraft}" 2>/dev/null | awk '{print $2}'
 exit 0
