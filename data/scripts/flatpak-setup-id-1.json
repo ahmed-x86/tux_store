@@ -3,7 +3,7 @@
   "id": "flatpak-setup-id-1",
   "title": "Flatpak and Flathub",
   "description": "Install Flatpak and add the Flathub store, so Flatpak apps can be installed. Can remove Flatpak again.",
-  "author": "Tux Store",
+  "author": "Tux Store Team",
   "keywords": [
     "flatpak",
     "flathub",
