@@ -32,7 +32,8 @@ pub struct SearchModule {
     details_cache: Arc<Mutex<HashMap<String, (Instant, PackageDetails)>>>,
     /// Newest search wins: older ones skip publishing their (stale) results.
     search_gen: Arc<AtomicU64>,
-    taxonomy: Arc<Mutex<Option<Arc<TaxonomyState>>>>,
+    /// One cache per side-menu section, filled only when that page is opened.
+    taxonomy: Arc<Mutex<HashMap<TaxonomyKind, Arc<TaxonomyState>>>>,
 }
 
 impl Module for SearchModule {
@@ -53,14 +54,19 @@ impl Module for SearchModule {
                 tux_libalpm::set_active(engine);
                 *lock(&self.home_cache) = None;
                 lock(&self.details_cache).clear();
-                *lock(&self.taxonomy) = None;
+                lock(&self.taxonomy).clear();
                 self.search_gen.fetch_add(1, Ordering::SeqCst);
             }
             Message::HomeRequested => self.home(),
             Message::SearchRequested { query } => self.search(query),
             Message::DetailsRequested { name } => self.details(name),
             Message::ScriptInfoRequested { id } => {
-                let info = self.catalog.scripts.iter().find(|l| l.script.id == id).map(script_info);
+                let info = self
+                    .catalog
+                    .scripts
+                    .iter()
+                    .find(|l| l.script.id == id)
+                    .map(script_info);
                 self.bus.publish(&Message::ScriptInfoReady { id, info });
             }
             Message::ExactRequested { name } => self.exact(name),
@@ -68,11 +74,14 @@ impl Module for SearchModule {
             Message::InstalledRequested => self.installed(),
             Message::UpdatesRequested => self.updates(),
             Message::TaxonomyRequested => self.taxonomy(),
+            Message::TaxonomySectionRequested { kind } => self.taxonomy_section(kind),
             Message::TaxonomyPackagesRequested { kind, id } => self.taxonomy_packages(kind, id),
-            Message::OperationFinished { .. } | Message::ScriptEnded { .. } | Message::ClearIconCache => {
+            Message::OperationFinished { .. }
+            | Message::ScriptEnded { .. }
+            | Message::ClearIconCache => {
                 *lock(&self.home_cache) = None;
                 lock(&self.details_cache).clear();
-                *lock(&self.taxonomy) = None;
+                lock(&self.taxonomy).clear();
             }
             _ => {}
         }
@@ -139,7 +148,11 @@ impl SearchModule {
                 d
             });
             let special = catalog.special_for(&name);
-            bus.publish(&Message::DetailsReady { name, details, special });
+            bus.publish(&Message::DetailsReady {
+                name,
+                details,
+                special,
+            });
         });
     }
 
@@ -149,7 +162,9 @@ impl SearchModule {
         }
         let bus = self.bus;
         thread::spawn(move || {
-            bus.publish(&Message::ExactReady { package: tux_libalpm::exact(&name) });
+            bus.publish(&Message::ExactReady {
+                package: tux_libalpm::exact(&name),
+            });
         });
     }
 
@@ -178,8 +193,14 @@ impl SearchModule {
         let bus = self.bus;
         thread::spawn(move || {
             let msg = match tux_libalpm::updates() {
-                Ok(updates) => Message::UpdatesReady { updates, error: None },
-                Err(e) => Message::UpdatesReady { updates: Vec::new(), error: Some(e) },
+                Ok(updates) => Message::UpdatesReady {
+                    updates,
+                    error: None,
+                },
+                Err(e) => Message::UpdatesReady {
+                    updates: Vec::new(),
+                    error: Some(e),
+                },
             };
             bus.publish(&msg);
         });
@@ -187,21 +208,45 @@ impl SearchModule {
 
     // ── the side menu: repositories, groups, categories ──
 
+    /// Every section at once; kept for `TaxonomyRequested` callers.
     fn taxonomy(&self) {
-        if let Some(state) = lock(&self.taxonomy).clone() {
-            self.bus.publish(&Message::TaxonomyReady { taxonomy: state.message.clone() });
+        let (bus, slot) = (self.bus, self.taxonomy.clone());
+        thread::spawn(move || {
+            let state = Arc::new(tux_taxonomy::build());
+            {
+                let mut map = lock(&slot);
+                map.insert(TaxonomyKind::Category, state.clone());
+                map.insert(TaxonomyKind::Group, state.clone());
+                map.insert(TaxonomyKind::Repository, state.clone());
+            }
+            bus.publish(&Message::TaxonomyReady {
+                taxonomy: state.message.clone(),
+            });
+        });
+    }
+
+    /// Discover just one section (the page the user opened).
+    fn taxonomy_section(&self, kind: TaxonomyKind) {
+        if let Some(state) = lock(&self.taxonomy).get(&kind).cloned() {
+            self.bus.publish(&Message::TaxonomySectionReady {
+                kind,
+                entries: section_entries(&state, kind),
+            });
             return;
         }
         let (bus, slot) = (self.bus, self.taxonomy.clone());
         thread::spawn(move || {
-            let state = Arc::new(tux_taxonomy::build());
-            *lock(&slot) = Some(state.clone());
-            bus.publish(&Message::TaxonomyReady { taxonomy: state.message.clone() });
+            let state = Arc::new(tux_taxonomy::build_section(kind));
+            lock(&slot).insert(kind, state.clone());
+            bus.publish(&Message::TaxonomySectionReady {
+                kind,
+                entries: section_entries(&state, kind),
+            });
         });
     }
 
     fn taxonomy_packages(&self, kind: TaxonomyKind, id: String) {
-        let cached = lock(&self.taxonomy).clone();
+        let cached = lock(&self.taxonomy).get(&kind).cloned();
         let bus = self.bus;
         match cached {
             Some(state) => {
@@ -210,14 +255,22 @@ impl SearchModule {
             None => {
                 let slot = self.taxonomy.clone();
                 thread::spawn(move || {
-                    let state = Arc::new(tux_taxonomy::build());
+                    let state = Arc::new(tux_taxonomy::build_section(kind));
                     let answer = packages_for(&state, kind, &id);
-                    *lock(&slot) = Some(state.clone());
-                    bus.publish(&Message::TaxonomyReady { taxonomy: state.message.clone() });
+                    lock(&slot).insert(kind, state);
                     bus.publish(&answer);
                 });
             }
         }
+    }
+}
+
+/// The rows of one section, from a state that may hold only that section.
+fn section_entries(state: &TaxonomyState, kind: TaxonomyKind) -> Vec<tux_abi::TaxonomyEntry> {
+    match kind {
+        TaxonomyKind::Category => state.message.categories.clone(),
+        TaxonomyKind::Group => state.message.groups.clone(),
+        TaxonomyKind::Repository => state.message.repositories.clone(),
     }
 }
 
@@ -243,7 +296,11 @@ fn build_home(catalog: &Catalog) -> Vec<Section> {
         .collect();
     let scripts = catalog.home_scripts();
     if !scripts.is_empty() {
-        sections.push(Section { id: "scripts".into(), title: "Add-on packages".into(), packages: scripts });
+        sections.push(Section {
+            id: "scripts".into(),
+            title: "Add-on packages".into(),
+            packages: scripts,
+        });
     }
     sections
 }
@@ -277,13 +334,25 @@ fn script_info(l: &tux_abi::script::LoadedScript) -> ScriptInfo {
         note: storage.note.clone(),
         version: s.version.fixed(),
         version_dynamic: s.version.command().is_some(),
-        download_dynamic: storage.download_mb.as_ref().is_some_and(|d| d.command().is_some()),
-        extracted_dynamic: storage.extracted_mb.as_ref().is_some_and(|d| d.command().is_some()),
-        installed_dynamic: storage.installed_mb.as_ref().is_some_and(|d| d.command().is_some()),
+        download_dynamic: storage
+            .download_mb
+            .as_ref()
+            .is_some_and(|d| d.command().is_some()),
+        extracted_dynamic: storage
+            .extracted_mb
+            .as_ref()
+            .is_some_and(|d| d.command().is_some()),
+        installed_dynamic: storage
+            .installed_mb
+            .as_ref()
+            .is_some_and(|d| d.command().is_some()),
         needs_confirm: user && s.has_dynamic_values(),
         free_bytes: free_bytes_on_root(),
         installed: rc.is_some(),
-        installed_version: rc.as_ref().map(|r| r.installed_version.clone()).unwrap_or_default(),
+        installed_version: rc
+            .as_ref()
+            .map(|r| r.installed_version.clone())
+            .unwrap_or_default(),
         installed_at: rc.as_ref().map_or(0, |r| r.installed_at),
         can_uninstall: rc.is_some() && s.uninstall.is_some(),
     }
