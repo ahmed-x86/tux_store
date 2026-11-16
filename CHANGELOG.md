@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.16.0
+
+- **Lazy loading end to end.** Only what is on screen is loaded. Grids and Home shelves report their visible index range and the UI asks for exactly those icons (side-menu rows ask for their own icon key); the side menu discovers a section only when its page is opened (`TaxonomySectionRequested` / `TaxonomySectionReady`); remote cover pictures are downloaded only for the cover currently displayed (`CoverImagesRequested` / `CoverImagesReady`); big lists stay paged (search 35+20, installed 60+60, browse entry 60+40). The start-up screenshot prefetch and the icon-theme warm-up on `UiReady` were removed, along with the `ScreenshotsPrefetch` message and `TUX_NO_PREFETCH`. Set `TUX_LAZY_STATS=1` to log counters on exit. See `DOCS/LAZY_LOADING.md`.
+
 ## 0.15.0
 
 - **Add-ons can be in several categories.** A script may now use `"categories": ["artcraft", "graphics"]` next to (or instead of) the singular `"category"`. Every name is an AppStream id/title or a custom add-on category; the add-on is listed on all of those Categories pages at once, with its real title, description, version and installed state. Repeated names are ignored, unknown ones are logged and skipped. See `DOCS/SCRIPTS_SYSTEM.md#home-and-categories`.
