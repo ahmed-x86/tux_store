@@ -1,0 +1,9 @@
+{
+  "package": "zsh",
+  "addons": {
+    "Completions": "zsh-completions",
+    "Syntax highlighting": "zsh-syntax-highlighting",
+    "Autosuggestions": "zsh-autosuggestions",
+    "History substring search": "zsh-history-substring-search"
+  }
+}
