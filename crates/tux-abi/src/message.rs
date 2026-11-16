@@ -112,7 +112,7 @@ pub struct TaxonomyEntry {
 }
 
 /// Which discovery a package list belongs to.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum TaxonomyKind {
     Category,
     Group,
@@ -279,44 +279,84 @@ pub struct ScriptViewData {
 #[serde(tag = "type")]
 pub enum Message {
     // ── lifecycle ──
-    /// UI window exists; backends may warm up.
+    /// UI window exists. A lifecycle signal only: backends must not start
+    /// expensive work (icon theme indexes, taxonomy, prefetch) at this point.
     UiReady,
     /// The user picked another package-manager engine. Everything that talks
     /// to pacman must switch to it and drop its caches.
-    EngineChanged { engine: Engine },
+    EngineChanged {
+        engine: Engine,
+    },
 
     // ── requests (UI → backends) ──
     HomeRequested,
-    SearchRequested { query: String },
-    DetailsRequested { name: String },
-    ExactRequested { name: String },
-    AddonsRequested { package: String },
+    SearchRequested {
+        query: String,
+    },
+    DetailsRequested {
+        name: String,
+    },
+    ExactRequested {
+        name: String,
+    },
+    AddonsRequested {
+        package: String,
+    },
     InstalledRequested,
     UpdatesRequested,
     CoversRequested,
+    /// Download the remote pictures of *one* cover that is on screen now.
+    CoverImagesRequested {
+        name: String,
+    },
     /// Discover repositories, groups and AppStream categories (side menu).
+    /// Kept for callers that really want every section at once; the UI asks
+    /// for one section with `TaxonomySectionRequested` instead.
     TaxonomyRequested,
+    /// Discover one section only (the page the user just opened).
+    TaxonomySectionRequested {
+        kind: TaxonomyKind,
+    },
     /// List every package of one repo / group / category, installed or not.
-    TaxonomyPackagesRequested { kind: TaxonomyKind, id: String },
-    IconRequested { name: String, size: u32 },
+    TaxonomyPackagesRequested {
+        kind: TaxonomyKind,
+        id: String,
+    },
+    IconRequested {
+        name: String,
+        size: u32,
+    },
     ClearIconCache,
     /// Ask for the screenshots of a package (`data/screenshots/<name>/`).
-    ScreenshotsRequested { name: String },
-    /// Idle-time hint: these packages will probably be opened soon, so their
-    /// screenshots may be downloaded quietly now (nothing is answered).
-    ScreenshotsPrefetch { names: Vec<String> },
-    InstallRequested { name: String },
-    RemoveRequested { name: String, mode: RemoveMode },
+    ScreenshotsRequested {
+        name: String,
+    },
+    InstallRequested {
+        name: String,
+    },
+    RemoveRequested {
+        name: String,
+        mode: RemoveMode,
+    },
     SystemUpgradeRequested,
     /// Ask for the details of a script (its page).
-    ScriptInfoRequested { id: String },
+    ScriptInfoRequested {
+        id: String,
+    },
     /// Run the commands that compute the version and sizes of a script.
     /// `confirmed`: the user asked (required for scripts from the user's own folder).
-    ScriptEvalRequested { id: String, confirmed: bool },
+    ScriptEvalRequested {
+        id: String,
+        confirmed: bool,
+    },
     /// Start the uninstall flow of an installed add-on package.
-    ScriptUninstallRequested { id: String },
+    ScriptUninstallRequested {
+        id: String,
+    },
     /// Start the interactive script with this id.
-    ScriptStartRequested { id: String },
+    ScriptStartRequested {
+        id: String,
+    },
     /// A button was pressed on screen `seq` (`selected` = the chosen option of
     /// a radio list, `checked` = the ticked options of a check-box list).
     ScriptAction {
@@ -328,15 +368,48 @@ pub enum Message {
     },
 
     // ── answers (backends → UI) ──
-    HomeReady { sections: Vec<Section> },
-    SearchResults { query: String, packages: Vec<Package> },
-    DetailsReady { name: String, details: PackageDetails, special: Option<SpecialCase> },
-    ExactReady { package: Package },
-    AddonsReady { package: String, packages: Vec<Package> },
-    InstalledReady { packages: Vec<Package> },
-    UpdatesReady { updates: Vec<UpdateEntry>, error: Option<String> },
-    CoversReady { covers: Vec<Cover> },
-    TaxonomyReady { taxonomy: Taxonomy },
+    HomeReady {
+        sections: Vec<Section>,
+    },
+    SearchResults {
+        query: String,
+        packages: Vec<Package>,
+    },
+    DetailsReady {
+        name: String,
+        details: PackageDetails,
+        special: Option<SpecialCase>,
+    },
+    ExactReady {
+        package: Package,
+    },
+    AddonsReady {
+        package: String,
+        packages: Vec<Package>,
+    },
+    InstalledReady {
+        packages: Vec<Package>,
+    },
+    UpdatesReady {
+        updates: Vec<UpdateEntry>,
+        error: Option<String>,
+    },
+    CoversReady {
+        covers: Vec<Cover>,
+    },
+    /// Remote pictures of one cover, after a `CoverImagesRequested`.
+    CoverImagesReady {
+        name: String,
+        images: Vec<String>,
+    },
+    TaxonomyReady {
+        taxonomy: Taxonomy,
+    },
+    /// One section of the side menu (empty `entries` when nothing was found).
+    TaxonomySectionReady {
+        kind: TaxonomyKind,
+        entries: Vec<TaxonomyEntry>,
+    },
     /// The complete list of one entry (no filtering, installed or not).
     TaxonomyPackagesReady {
         kind: TaxonomyKind,
@@ -345,28 +418,64 @@ pub enum Message {
         subtitle: String,
         packages: Vec<Package>,
     },
-    IconReady { name: String, path: String },
-    IconFailed { name: String },
-    IconCacheCleared { removed: u32 },
+    IconReady {
+        name: String,
+        path: String,
+    },
+    IconFailed {
+        name: String,
+    },
+    IconCacheCleared {
+        removed: u32,
+    },
     /// Image files (absolute paths, in display order). May be sent several
     /// times for one package while Flathub downloads are still running; each
     /// message holds the complete list so far.
-    ScreenshotsReady { name: String, images: Vec<String> },
+    ScreenshotsReady {
+        name: String,
+        images: Vec<String>,
+    },
 
     // ── transaction progress (installer → everyone) ──
-    OperationStarted { op: Operation },
-    OperationOutput { text: String },
-    OperationProgress { fraction: f64 },
-    OperationFinished { op: Operation, success: bool, exit_code: i32 },
+    OperationStarted {
+        op: Operation,
+    },
+    OperationOutput {
+        text: String,
+    },
+    OperationProgress {
+        fraction: f64,
+    },
+    OperationFinished {
+        op: Operation,
+        success: bool,
+        exit_code: i32,
+    },
 
-    ScriptInfoReady { id: String, info: Option<ScriptInfo> },
-    ScriptValuesReady { id: String, values: ScriptValues },
+    ScriptInfoReady {
+        id: String,
+        info: Option<ScriptInfo>,
+    },
+    ScriptValuesReady {
+        id: String,
+        values: ScriptValues,
+    },
 
     // ── interactive scripts (script engine → UI) ──
-    ScriptView { view: ScriptViewData },
-    ScriptOutput { text: String },
-    ScriptProgress { fraction: f64, label: String },
-    ScriptEnded { id: String, success: bool },
+    ScriptView {
+        view: ScriptViewData,
+    },
+    ScriptOutput {
+        text: String,
+    },
+    ScriptProgress {
+        fraction: f64,
+        label: String,
+    },
+    ScriptEnded {
+        id: String,
+        success: bool,
+    },
 }
 
 impl Message {
@@ -385,7 +494,10 @@ mod tests {
 
     #[test]
     fn roundtrip() {
-        let m = Message::RemoveRequested { name: "vlc".into(), mode: RemoveMode::Complete };
+        let m = Message::RemoveRequested {
+            name: "vlc".into(),
+            mode: RemoveMode::Complete,
+        };
         let bytes = m.encode().unwrap();
         match Message::decode(&bytes).unwrap() {
             Message::RemoveRequested { name, mode } => {
@@ -404,7 +516,13 @@ mod tests {
 
     #[test]
     fn flags() {
-        for m in [RemoveMode::Basic, RemoveMode::Reset, RemoveMode::Clean, RemoveMode::Force, RemoveMode::Complete] {
+        for m in [
+            RemoveMode::Basic,
+            RemoveMode::Reset,
+            RemoveMode::Clean,
+            RemoveMode::Force,
+            RemoveMode::Complete,
+        ] {
             assert_eq!(RemoveMode::from_flag(m.flag()), Some(m));
         }
         assert_eq!(RemoveMode::from_flag("-Syu"), None);
