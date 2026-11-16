@@ -6,10 +6,12 @@ export component HomeTab inherits Flickable {
     in property <image> cover-image;
     in property <int> cover-count;
     in property <[UiSection]> sections;
+    in property <int> refresh-tick: 0;
     callback app-clicked(UiPackage);
     callback cover-prev();
     callback cover-next();
     callback cover-clicked();
+    callback icons-needed(int, int, int);
 
     // Without this the content only gets its *preferred* width and stops short
     // of the window edge on wide screens.
@@ -35,7 +37,11 @@ export component HomeTab inherits Flickable {
             title: section.title;
             pkgs: section.packages;
             row-idx: i;
+            view-y: root.content-y;
+            view-h: root.height;
+            refresh-tick: root.refresh-tick;
             clicked(pkg) => { root.app-clicked(pkg); }
+            icons-needed(row, first, last) => { root.icons-needed(row, first, last); }
         }
     }
 }
