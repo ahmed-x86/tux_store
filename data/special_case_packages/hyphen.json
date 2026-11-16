@@ -1,0 +1,12 @@
+{
+  "package": "hyphen",
+  "language_packs": {
+    "Dutch": "hyphen-nl",
+    "English": "hyphen-en",
+    "French": "hyphen-fr",
+    "German": "hyphen-de",
+    "Hungarian": "hyphen-hu",
+    "Italian": "hyphen-it",
+    "Spanish": "hyphen-es"
+  }
+}
