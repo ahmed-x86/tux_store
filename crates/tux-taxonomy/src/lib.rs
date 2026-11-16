@@ -10,7 +10,9 @@ use tux_abi::{paths, Message, Package, Taxonomy, TaxonomyEntry, TaxonomyKind};
 use tux_pacman::taxonomy::{self, SyncIndex};
 
 /// Everything the side menu needs, discovered once and kept until the system
-/// changes (install/remove, engine switch).
+/// changes (install/remove, engine switch). A section built on its own leaves
+/// the fields of the other sections empty.
+#[derive(Default)]
 pub struct TaxonomyState {
     pub message: Taxonomy,
     pub index: SyncIndex,
@@ -22,18 +24,103 @@ pub struct TaxonomyState {
     pub scripts: HashMap<String, Package>,
 }
 
-/// Discover every section of the side menu. Blocking; runs on a worker thread.
+/// Discover only the section the user just opened. This is what keeps the
+/// Categories page from paying for groups / repositories (and the other way
+/// around): no page cost is paid until it is on screen.
+pub fn build_section(kind: TaxonomyKind) -> TaxonomyState {
+    match kind {
+        TaxonomyKind::Repository => {
+            let index = SyncIndex::load();
+            let message = Taxonomy {
+                repositories: index.repository_entries(),
+                ..Default::default()
+            };
+            TaxonomyState {
+                message,
+                index,
+                ..Default::default()
+            }
+        }
+        TaxonomyKind::Group => {
+            let index = SyncIndex::load();
+            let (groups, entries) = build_groups(&index);
+            TaxonomyState {
+                message: Taxonomy {
+                    groups: entries,
+                    ..Default::default()
+                },
+                index,
+                groups,
+                ..Default::default()
+            }
+        }
+        TaxonomyKind::Category => {
+            let index = SyncIndex::load();
+            let cat = build_categories(&index);
+            let message = Taxonomy {
+                categories: cat.entries,
+                raw_categories: cat.raw,
+                category_source: cat.source,
+                ..Default::default()
+            };
+            TaxonomyState {
+                message,
+                index,
+                category_packages: cat.packages,
+                names: cat.names,
+                scripts: cat.scripts,
+                ..Default::default()
+            }
+        }
+    }
+}
+
+/// Discover every section at once (`--dump-taxonomy` and callers that really
+/// need the whole side menu). The UI asks for one section at a time.
 pub fn build() -> TaxonomyState {
     let index = SyncIndex::load();
-    let repositories = index.repository_entries();
+    let (groups, group_entries) = build_groups(&index);
+    let categories = build_categories(&index);
+    let message = Taxonomy {
+        repositories: index.repository_entries(),
+        groups: group_entries,
+        categories: categories.entries,
+        raw_categories: categories.raw,
+        category_source: categories.source,
+    };
+    TaxonomyState {
+        message,
+        index,
+        groups,
+        category_packages: categories.packages,
+        names: categories.names,
+        scripts: categories.scripts,
+    }
+}
 
-    // Groups: sync databases UNION installed packages (local/AUR-only groups).
+/// Groups: sync databases UNION installed packages (local/AUR-only groups).
+fn build_groups(index: &SyncIndex) -> (BTreeMap<String, Vec<String>>, Vec<TaxonomyEntry>) {
     let group_list = taxonomy::discover_groups();
-    let groups: BTreeMap<String, Vec<String>> =
-        group_list.iter().map(|g| (g.name.clone(), g.members.clone())).collect();
-    let group_entries = taxonomy::group_entries(&group_list, &index);
+    let groups: BTreeMap<String, Vec<String>> = group_list
+        .iter()
+        .map(|g| (g.name.clone(), g.members.clone()))
+        .collect();
+    let entries = taxonomy::group_entries(&group_list, index);
+    (groups, entries)
+}
 
-    // Categories: AppStream catalogs joined with the system category tree.
+#[derive(Default)]
+struct Categories {
+    entries: Vec<TaxonomyEntry>,
+    raw: Vec<(String, usize)>,
+    source: String,
+    packages: HashMap<String, Vec<String>>,
+    names: HashMap<String, (String, String)>,
+    scripts: HashMap<String, Package>,
+}
+
+/// Categories: AppStream catalogs joined with the system category tree.
+fn build_categories(index: &SyncIndex) -> Categories {
     let (mut discovered, components) = tux_appstream::discover_with_components(&paths::cache_dir());
     let names: HashMap<String, (String, String)> = components
         .iter()
@@ -72,11 +159,17 @@ pub fn build() -> TaxonomyState {
     discovered.buckets = buckets;
 
     let loaded_scripts = tux_abi::script::load_all();
-    let scripts: HashMap<String, Package> =
-        loaded_scripts.iter().map(|l| (l.script.id.clone(), l.script.package())).collect();
+    let scripts: HashMap<String, Package> = loaded_scripts
+        .iter()
+        .map(|l| (l.script.id.clone(), l.script.package()))
+        .collect();
     for loaded in &loaded_scripts {
-        let Some(pkg) = scripts.get(&loaded.script.id) else { continue };
-        if is_pkg_hidden(&pkg.name) || (!pkg.title.is_empty() && tux_abi::hidden::is_hidden(&pkg.title)) {
+        let Some(pkg) = scripts.get(&loaded.script.id) else {
+            continue;
+        };
+        if is_pkg_hidden(&pkg.name)
+            || (!pkg.title.is_empty() && tux_abi::hidden::is_hidden(&pkg.title))
+        {
             continue;
         }
         for target in loaded.script.category_list() {
@@ -136,14 +229,14 @@ pub fn build() -> TaxonomyState {
         });
     }
 
-    let message = Taxonomy {
-        repositories,
-        groups: group_entries,
-        categories,
-        raw_categories: discovered.raw,
-        category_source: discovered.source,
-    };
-    TaxonomyState { message, index, groups, category_packages, names, scripts }
+    Categories {
+        entries: categories,
+        raw: discovered.raw,
+        source: discovered.source,
+        packages: category_packages,
+        names,
+        scripts,
+    }
 }
 
 /// AppStream ids and titles both work, in any case; spaces, `&`, `_`, `-`
@@ -181,7 +274,10 @@ fn find_bucket(
     addon: &[tux_abi::addon_category::LoadedCategory],
     target: &str,
 ) -> Option<usize> {
-    if let Some(i) = addon.iter().position(|l| custom_category_matches(l, target)) {
+    if let Some(i) = addon
+        .iter()
+        .position(|l| custom_category_matches(l, target))
+    {
         return Some(i);
     }
     buckets[addon.len()..]
@@ -191,7 +287,10 @@ fn find_bucket(
 }
 
 fn category_key(s: &str) -> String {
-    s.chars().filter(|c| c.is_ascii_alphanumeric()).flat_map(char::to_lowercase).collect()
+    s.chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .flat_map(char::to_lowercase)
+        .collect()
 }
 
 pub fn display_name(p: &Package) -> &str {
@@ -207,7 +306,11 @@ pub fn sort_by_display(list: &mut [Package]) {
     list.sort_by(|a, b| {
         b.installed
             .cmp(&a.installed)
-            .then_with(|| display_name(a).to_lowercase().cmp(&display_name(b).to_lowercase()))
+            .then_with(|| {
+                display_name(a)
+                    .to_lowercase()
+                    .cmp(&display_name(b).to_lowercase())
+            })
             .then_with(|| a.name.cmp(&b.name))
     });
 }
@@ -279,12 +382,36 @@ mod tests {
 
     #[test]
     fn categories_match_ids_and_titles() {
-        assert!(category_matches("audio-video", "Audio & Video", "audio-video"));
-        assert!(category_matches("audio-video", "Audio & Video", "Audio & Video"));
-        assert!(category_matches("audio-video", "Audio & Video", "Audio Video"));
-        assert!(category_matches("raw:AudioVideo", "Audio Video", "audio-video"));
-        assert!(category_matches("communication", "Communication & News", "communication"));
-        assert!(category_matches("developer-tools", "Developer Tools", "developer-tools"));
+        assert!(category_matches(
+            "audio-video",
+            "Audio & Video",
+            "audio-video"
+        ));
+        assert!(category_matches(
+            "audio-video",
+            "Audio & Video",
+            "Audio & Video"
+        ));
+        assert!(category_matches(
+            "audio-video",
+            "Audio & Video",
+            "Audio Video"
+        ));
+        assert!(category_matches(
+            "raw:AudioVideo",
+            "Audio Video",
+            "audio-video"
+        ));
+        assert!(category_matches(
+            "communication",
+            "Communication & News",
+            "communication"
+        ));
+        assert!(category_matches(
+            "developer-tools",
+            "Developer Tools",
+            "developer-tools"
+        ));
         assert!(!category_matches("audio-video", "Audio & Video", "games"));
         assert!(!category_matches("audio-video", "Audio & Video", ""));
     }
@@ -317,7 +444,10 @@ mod tests {
             bucket("graphics", "Graphics & Photography"),
             bucket("games", "Games"),
         ];
-        assert_eq!(find_bucket(&buckets, &[loaded.clone()], "artcraft"), Some(0));
+        assert_eq!(
+            find_bucket(&buckets, &[loaded.clone()], "artcraft"),
+            Some(0)
+        );
         assert_eq!(find_bucket(&buckets, &[loaded], "graphics"), Some(1));
 
         // Without custom categories the buckets are the AppStream ones only.
@@ -325,7 +455,10 @@ mod tests {
             bucket("graphics", "Graphics & Photography"),
             bucket("games", "Games"),
         ];
-        assert_eq!(find_bucket(&appstream, &[], "Graphics & Photography"), Some(0));
+        assert_eq!(
+            find_bucket(&appstream, &[], "Graphics & Photography"),
+            Some(0)
+        );
         assert_eq!(find_bucket(&appstream, &[], "artcraft"), None);
     }
 
@@ -340,21 +473,35 @@ mod tests {
         for cat in &state.message.categories {
             if let Some(pkgs) = state.category_packages.get(&cat.id) {
                 for p in pkgs {
-                    assert!(!tux_abi::hidden::is_hidden(p), "Category {} contains hidden pkg {}", cat.id, p);
+                    assert!(
+                        !tux_abi::hidden::is_hidden(p),
+                        "Category {} contains hidden pkg {}",
+                        cat.id,
+                        p
+                    );
                 }
             }
         }
 
         for (grp_name, members) in &state.groups {
             for m in members {
-                assert!(!tux_abi::hidden::is_hidden(m), "Group {} contains hidden pkg {}", grp_name, m);
+                assert!(
+                    !tux_abi::hidden::is_hidden(m),
+                    "Group {} contains hidden pkg {}",
+                    grp_name,
+                    m
+                );
             }
         }
 
         let repo_msg = packages_for(&state, TaxonomyKind::Repository, "extra");
         if let Message::TaxonomyPackagesReady { packages, .. } = repo_msg {
             for p in &packages {
-                assert!(!tux_abi::hidden::is_hidden(&p.name), "Repo extra contains hidden package {}", p.name);
+                assert!(
+                    !tux_abi::hidden::is_hidden(&p.name),
+                    "Repo extra contains hidden package {}",
+                    p.name
+                );
             }
         }
     }
