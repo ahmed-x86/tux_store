@@ -54,12 +54,14 @@ struct Manifest {
     count: usize,
 }
 
-/// `bus` is `None` while prefetching: the pictures are only stored, nobody is told.
 fn publish(bus: Option<&Bus>, name: &str, files: &[PathBuf]) {
     if let Some(bus) = bus {
         bus.publish(&Message::ScreenshotsReady {
             name: name.to_string(),
-            images: files.iter().map(|p| p.to_string_lossy().into_owned()).collect(),
+            images: files
+                .iter()
+                .map(|p| p.to_string_lossy().into_owned())
+                .collect(),
         });
     }
 }
@@ -83,7 +85,10 @@ pub fn numbered_images(dir: &Path, name: &str) -> Vec<PathBuf> {
         let Some(stem) = p.file_stem().and_then(|s| s.to_str()) else {
             continue;
         };
-        let Some(n) = stem.strip_prefix(prefix.as_str()).and_then(|n| n.parse::<u32>().ok()) else {
+        let Some(n) = stem
+            .strip_prefix(prefix.as_str())
+            .and_then(|n| n.parse::<u32>().ok())
+        else {
             continue;
         };
         if n >= 1 {
@@ -111,11 +116,17 @@ fn read_manifest(dir: &Path, name: &str) -> Option<Manifest> {
     };
     if let Some(p) = v.get("package").and_then(Value::as_str) {
         if p != name {
-            log::warn!("screenshots {}: \"package\" is {p:?}, expected {name:?}", path.display());
+            log::warn!(
+                "screenshots {}: \"package\" is {p:?}, expected {name:?}",
+                path.display()
+            );
             return None;
         }
     }
-    let flathub = v.get("flathub").and_then(Value::as_str).and_then(flathub_app_id);
+    let flathub = v
+        .get("flathub")
+        .and_then(Value::as_str)
+        .and_then(flathub_app_id);
     let count = v
         .get("count")
         .and_then(Value::as_u64)
@@ -131,46 +142,14 @@ pub fn serve(bus: &Bus, inflight: &Inflight, name: &str) {
     run(Some(bus), inflight, name);
 }
 
-/// Packages already prefetched in this run (each is tried once).
-static PREFETCHED: Mutex<Vec<String>> = Mutex::new(Vec::new());
-/// At most this many packages are prefetched per request (data and politeness).
-const PREFETCH_MAX: usize = 8;
-/// Quiet time before prefetching starts, and between two packages.
-const PREFETCH_DELAY: Duration = Duration::from_secs(4);
-const PREFETCH_GAP: Duration = Duration::from_millis(1500);
-
-/// Idle-time download of the screenshots of packages the user will probably
-/// open (the Home shelves). Only packages whose manifest has a `flathub` key
-/// and that are not cached yet cost anything; set `TUX_NO_PREFETCH=1` to turn
-/// it off. Runs on its own thread; nothing is published.
-pub fn prefetch(inflight: &Inflight, names: &[String]) {
-    if std::env::var_os("TUX_NO_PREFETCH").is_some() {
-        return;
-    }
-    std::thread::sleep(PREFETCH_DELAY);
-    let mut done = 0;
-    for name in names {
-        if done >= PREFETCH_MAX {
-            break;
-        }
-        {
-            let mut seen = lock(&PREFETCHED);
-            if seen.contains(name) {
-                continue;
-            }
-            seen.push(name.clone());
-        }
-        done += 1;
-        run(None, inflight, name);
-        std::thread::sleep(PREFETCH_GAP);
-    }
-}
-
 fn run(bus: Option<&Bus>, inflight: &Inflight, name: &str) {
     if !is_valid_package_name(name) {
         return;
     }
-    for root in [paths::user_screenshots_dir(), paths::system_screenshots_dir()] {
+    for root in [
+        paths::user_screenshots_dir(),
+        paths::system_screenshots_dir(),
+    ] {
         let dir = root.join(name);
         if !dir.is_dir() {
             continue;
@@ -206,12 +185,22 @@ enum Slot {
 fn script_slots(dirs: &[PathBuf], shots: &[tux_abi::script::ShotSource]) -> Vec<Slot> {
     let mut out = Vec::new();
     for (i, s) in shots.iter().enumerate() {
-        if let Some(f) = s.file.as_deref().filter(|f| tux_abi::script::is_valid_shot_file_name(f)) {
+        if let Some(f) = s
+            .file
+            .as_deref()
+            .filter(|f| tux_abi::script::is_valid_shot_file_name(f))
+        {
             match dirs.iter().map(|d| d.join(f)).find(|p| local_image_ok(p)) {
                 Some(p) => out.push(Slot::File(p)),
-                None => log::warn!("screenshot {f:?} not found (or too large / not PNG/JPEG) in {dirs:?}"),
+                None => log::warn!(
+                    "screenshot {f:?} not found (or too large / not PNG/JPEG) in {dirs:?}"
+                ),
             }
-        } else if let Some(u) = s.url.as_deref().filter(|u| tux_abi::remote::is_trusted_image_url(u)) {
+        } else if let Some(u) = s
+            .url
+            .as_deref()
+            .filter(|u| tux_abi::remote::is_trusted_image_url(u))
+        {
             out.push(Slot::Url(i + 1, u.to_string()));
         }
     }
@@ -220,12 +209,17 @@ fn script_slots(dirs: &[PathBuf], shots: &[tux_abi::script::ShotSource]) -> Vec<
 
 fn local_image_ok(p: &Path) -> bool {
     use std::io::Read;
-    let Ok(meta) = fs::metadata(p) else { return false };
+    let Ok(meta) = fs::metadata(p) else {
+        return false;
+    };
     if !meta.is_file() || meta.len() > MAX_IMAGE_BYTES {
         return false;
     }
     let mut head = [0u8; 8];
-    fs::File::open(p).and_then(|mut f| f.read_exact(&mut head)).is_ok() && sniff_ext(&head).is_some()
+    fs::File::open(p)
+        .and_then(|mut f| f.read_exact(&mut head))
+        .is_ok()
+        && sniff_ext(&head).is_some()
 }
 
 /// The pictures of `slots` that are available right now, in order.
@@ -234,22 +228,39 @@ fn ready_slots(slots: &[Slot], cache: &Path, name: &str) -> Vec<PathBuf> {
         .iter()
         .filter_map(|s| match s {
             Slot::File(p) => Some(p.clone()),
-            Slot::Url(n, _) => ["png", "jpg"].iter().map(|e| cache.join(format!("{name}-{n}.{e}"))).find(|p| p.is_file()),
+            Slot::Url(n, _) => ["png", "jpg"]
+                .iter()
+                .map(|e| cache.join(format!("{name}-{n}.{e}")))
+                .find(|p| p.is_file()),
         })
         .collect()
 }
 
 fn from_script(bus: Option<&Bus>, inflight: &Inflight, name: &str) {
-    let Some(loaded) = tux_abi::script::load_all().into_iter().find(|l| l.script.id == name) else {
+    let Some(loaded) = tux_abi::script::load_all()
+        .into_iter()
+        .find(|l| l.script.id == name)
+    else {
         return;
     };
     // A Flathub source stands alone: same download and cache as for packages.
-    if let Some(id) = loaded.script.screenshots.first().and_then(|s| s.flathub.as_deref()).and_then(flathub_app_id) {
+    if let Some(id) = loaded
+        .script
+        .screenshots
+        .first()
+        .and_then(|s| s.flathub.as_deref())
+        .and_then(flathub_app_id)
+    {
         from_flathub(bus, inflight, name, &id, DEFAULT_REMOTE);
         return;
     }
     // Names are looked up next to the JSON, then in screenshots/<id>/ (user's, shipped).
-    let mut dirs: Vec<PathBuf> = loaded.path.parent().map(Path::to_path_buf).into_iter().collect();
+    let mut dirs: Vec<PathBuf> = loaded
+        .path
+        .parent()
+        .map(Path::to_path_buf)
+        .into_iter()
+        .collect();
     dirs.push(paths::user_screenshots_dir().join(name));
     dirs.push(paths::system_screenshots_dir().join(name));
     let slots = script_slots(&dirs, &loaded.script.screenshots);
@@ -257,15 +268,27 @@ fn from_script(bus: Option<&Bus>, inflight: &Inflight, name: &str) {
         return;
     }
     let cache = paths::cache_dir().join("screenshots").join(name);
-    let urls: Vec<&str> = slots.iter().filter_map(|s| if let Slot::Url(_, u) = s { Some(u.as_str()) } else { None }).collect();
+    let urls: Vec<&str> = slots
+        .iter()
+        .filter_map(|s| {
+            if let Slot::Url(_, u) = s {
+                Some(u.as_str())
+            } else {
+                None
+            }
+        })
+        .collect();
 
     // The cached pictures belong to the links in the JSON; a changed link starts afresh.
     let fingerprint = urls.join("\n");
-    if !urls.is_empty() && fs::read_to_string(cache.join(".sources")).ok().as_deref() != Some(fingerprint.as_str()) {
+    if !urls.is_empty()
+        && fs::read_to_string(cache.join(".sources")).ok().as_deref() != Some(fingerprint.as_str())
+    {
         let _ = fs::remove_dir_all(&cache);
     }
     let have = ready_slots(&slots, &cache, name);
-    let all_cached = have.len() == slots.len() || (cache.join(".complete").is_file() && !urls.is_empty());
+    let all_cached =
+        have.len() == slots.len() || (cache.join(".complete").is_file() && !urls.is_empty());
     if !have.is_empty() {
         publish(bus, name, &have);
     }
@@ -286,7 +309,10 @@ fn from_script(bus: Option<&Bus>, inflight: &Inflight, name: &str) {
         match fetch(url, MAX_IMAGE_BYTES, 20) {
             Fetch::Ok(bytes) => match sniff_ext(&bytes) {
                 Some(ext) => {
-                    let (path, tmp) = (cache.join(format!("{name}-{n}.{ext}")), cache.join(format!("{name}-{n}.{ext}.tmp")));
+                    let (path, tmp) = (
+                        cache.join(format!("{name}-{n}.{ext}")),
+                        cache.join(format!("{name}-{n}.{ext}.tmp")),
+                    );
                     if fs::write(&tmp, &bytes).is_ok() && fs::rename(&tmp, &path).is_ok() {
                         publish(bus, name, &ready_slots(&slots, &cache, name));
                     }
@@ -325,8 +351,8 @@ fn from_flathub(bus: Option<&Bus>, inflight: &Inflight, name: &str, id: &str, co
     }
     // One download per package at a time (the running one keeps publishing).
     if !lock(inflight).insert(name.to_string()) {
-        // Someone else (often the idle prefetch, which tells nobody) is
-        // downloading it: follow the cache folder and show what arrives.
+        // Another page already started this download: follow the cache folder
+        // and show the pictures as they arrive.
         if bus.is_some() {
             follow_download(bus, name, &cache);
         }
@@ -383,7 +409,9 @@ fn download_all(bus: Option<&Bus>, name: &str, id: &str, count: usize, cache: &P
     for url in urls {
         match fetch(&url, MAX_IMAGE_BYTES, 20) {
             Fetch::Ok(bytes) => {
-                let Some(ext) = sniff_ext(&bytes) else { continue };
+                let Some(ext) = sniff_ext(&bytes) else {
+                    continue;
+                };
                 // Numbered by what was really saved, so there are no gaps.
                 let path = cache.join(format!("{name}-{}.{ext}", saved.len() + 1));
                 if fs::write(&path, &bytes).is_ok() {
@@ -463,7 +491,9 @@ fn is_flathub_url(u: &str) -> bool {
 }
 
 fn num(v: &Value) -> u64 {
-    v.as_u64().or_else(|| v.as_str().and_then(|s| s.parse().ok())).unwrap_or(0)
+    v.as_u64()
+        .or_else(|| v.as_str().and_then(|s| s.parse().ok()))
+        .unwrap_or(0)
 }
 
 /// The best picture of one screenshot entry: the widest not wider than
@@ -475,13 +505,25 @@ fn best_size(shot: &Value) -> Option<String> {
     if let Some(sizes) = shot.get("sizes").and_then(Value::as_array) {
         let mut cands: Vec<(u64, &str)> = sizes
             .iter()
-            .filter_map(|s| Some((s.get("width").map(num).unwrap_or(0), s.get("src")?.as_str()?)))
+            .filter_map(|s| {
+                Some((
+                    s.get("width").map(num).unwrap_or(0),
+                    s.get("src")?.as_str()?,
+                ))
+            })
             .collect();
         cands.sort_by_key(|(w, _)| *w);
-        let pick = cands.iter().rev().find(|(w, _)| *w > 0 && *w <= PREFERRED_WIDTH).or_else(|| cands.first())?;
+        let pick = cands
+            .iter()
+            .rev()
+            .find(|(w, _)| *w > 0 && *w <= PREFERRED_WIDTH)
+            .or_else(|| cands.first())?;
         return Some(pick.1.to_string());
     }
-    shot.get("src").or_else(|| shot.get("url")).and_then(Value::as_str).map(str::to_string)
+    shot.get("src")
+        .or_else(|| shot.get("url"))
+        .and_then(Value::as_str)
+        .map(str::to_string)
 }
 
 /// Picture links from Flathub's appstream JSON (`"screenshots": [...]`).
@@ -512,12 +554,18 @@ mod tests {
 
     #[test]
     fn app_ids() {
-        assert_eq!(flathub_app_id("org.mozilla.firefox").as_deref(), Some("org.mozilla.firefox"));
+        assert_eq!(
+            flathub_app_id("org.mozilla.firefox").as_deref(),
+            Some("org.mozilla.firefox")
+        );
         assert_eq!(
             flathub_app_id("https://flathub.org/en/apps/com.brave.Browser/").as_deref(),
             Some("com.brave.Browser")
         );
-        assert_eq!(flathub_app_id("https://flathub.org/apps/x.y?z=1#a").as_deref(), Some("x.y"));
+        assert_eq!(
+            flathub_app_id("https://flathub.org/apps/x.y?z=1#a").as_deref(),
+            Some("x.y")
+        );
         assert_eq!(flathub_app_id("../evil/.."), None);
         assert_eq!(flathub_app_id(""), None);
     }
@@ -540,7 +588,10 @@ mod tests {
             {"sizes":[{"src":"https://dl.flathub.org/c.png","width":"2000"}]}]}"#;
         assert_eq!(
             screenshot_urls(j, 5),
-            vec!["https://dl.flathub.org/a-mid.png".to_string(), "https://dl.flathub.org/c.png".to_string()]
+            vec![
+                "https://dl.flathub.org/a-mid.png".to_string(),
+                "https://dl.flathub.org/c.png".to_string()
+            ]
         );
         assert_eq!(screenshot_urls(j, 1).len(), 1);
     }
@@ -550,7 +601,15 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("tux-shots-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
-        for f in ["foo-2.png", "foo-10.png", "foo-1.png", "foo-x.png", "bar-1.png", "foo.json", "foo-3.txt"] {
+        for f in [
+            "foo-2.png",
+            "foo-10.png",
+            "foo-1.png",
+            "foo-x.png",
+            "bar-1.png",
+            "foo.json",
+            "foo-3.txt",
+        ] {
             fs::write(dir.join(f), b"x").unwrap();
         }
         let names: Vec<String> = numbered_images(&dir, "foo")
@@ -570,20 +629,44 @@ mod tests {
         fs::write(tmp.join("fake.png"), b"<html>not an image</html>").unwrap();
         use tux_abi::script::ShotSource as S;
         let shots = [
-            S { url: Some("https://raw.githubusercontent.com/a/b/c.png".into()), ..Default::default() },
-            S { file: Some("good.png".into()), ..Default::default() },
-            S { file: Some("fake.png".into()), ..Default::default() },
-            S { file: Some("absent.png".into()), ..Default::default() },
-            S { url: Some("https://evil.example/x.png".into()), ..Default::default() },
+            S {
+                url: Some("https://raw.githubusercontent.com/a/b/c.png".into()),
+                ..Default::default()
+            },
+            S {
+                file: Some("good.png".into()),
+                ..Default::default()
+            },
+            S {
+                file: Some("fake.png".into()),
+                ..Default::default()
+            },
+            S {
+                file: Some("absent.png".into()),
+                ..Default::default()
+            },
+            S {
+                url: Some("https://evil.example/x.png".into()),
+                ..Default::default()
+            },
         ];
         let slots = script_slots(&[tmp.join("nothing-here"), tmp.clone()], &shots);
-        assert_eq!(slots, vec![Slot::Url(1, "https://raw.githubusercontent.com/a/b/c.png".into()), Slot::File(tmp.join("good.png"))]);
+        assert_eq!(
+            slots,
+            vec![
+                Slot::Url(1, "https://raw.githubusercontent.com/a/b/c.png".into()),
+                Slot::File(tmp.join("good.png"))
+            ]
+        );
         // nothing cached yet → only the local file is ready; once cached, order is kept
         let cache = tmp.join("cache");
         fs::create_dir_all(&cache).unwrap();
         assert_eq!(ready_slots(&slots, &cache, "x"), vec![tmp.join("good.png")]);
         fs::write(cache.join("x-1.jpg"), b"\xFF\xD8\xFF\xE0").unwrap();
-        assert_eq!(ready_slots(&slots, &cache, "x"), vec![cache.join("x-1.jpg"), tmp.join("good.png")]);
+        assert_eq!(
+            ready_slots(&slots, &cache, "x"),
+            vec![cache.join("x-1.jpg"), tmp.join("good.png")]
+        );
         let _ = fs::remove_dir_all(&tmp);
     }
 
