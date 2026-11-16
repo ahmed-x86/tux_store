@@ -9,8 +9,8 @@
 use crate::console::ConsoleBuffer;
 use crate::convert;
 use crate::{
-    AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails, UiScriptInfo, UiScriptOption,
-    UiSection, UiTaxonomyEntry,
+    AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails,
+    UiScriptInfo, UiScriptOption, UiSection, UiTaxonomyEntry,
 };
 use slint::{Image, Model, ModelRc, VecModel, Weak};
 use std::cell::RefCell;
@@ -19,8 +19,8 @@ use std::path::Path;
 use std::rc::Rc;
 use tux_abi::text::prettify_name;
 use tux_abi::{
-    Bus, Cover, Engine, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo, ScriptValues, ScriptViewData,
-    Section, SpecialCase, Taxonomy, TaxonomyEntry, TaxonomyKind,
+    Bus, Cover, Engine, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo,
+    ScriptValues, ScriptViewData, Section, SpecialCase, Taxonomy, TaxonomyEntry, TaxonomyKind,
     UpdateEntry,
 };
 
@@ -55,6 +55,20 @@ pub fn dispatch(msg: Message) {
     let _ = slint::invoke_from_event_loop(move || {
         with_state(|st| st.handle(msg));
     });
+}
+
+/// Counters for the lazy-loading system. They make it easy to prove that a
+/// screen only loaded what it showed (`TUX_LAZY_STATS=1` prints them on exit).
+#[derive(Default)]
+struct LazyStats {
+    icons_requested: u64,
+    icons_loaded: u64,
+    packages_materialized: u64,
+    screenshots_loaded: u64,
+    covers_shown: u64,
+    cover_images_loaded: u64,
+    taxonomy_sections: u64,
+    operations_started: u64,
 }
 
 /// Growing window over a list: show a page, reveal more on demand.
@@ -92,16 +106,21 @@ fn normalize(s: &str) -> String {
         .collect()
 }
 
-/// Move the next page of `paged` into `model`; returns names that still lack an icon.
-fn push_page(paged: &mut Paged, model: &VecModel<UiPackage>, icons: &HashMap<String, Image>, n: usize) -> Vec<String> {
-    let mut missing = Vec::new();
-    for p in paged.next(n) {
-        if !icons.contains_key(&p.name) {
-            missing.push(p.name.clone());
-        }
+/// Move the next page of `paged` into `model`. Icons are *not* requested here:
+/// the grid tells the UI which cards are on screen (see `visible_icons`).
+/// Returns how many cards were materialized (for the lazy stats).
+fn push_page(
+    paged: &mut Paged,
+    model: &VecModel<UiPackage>,
+    icons: &HashMap<String, Image>,
+    n: usize,
+) -> usize {
+    let page = paged.next(n);
+    let count = page.len();
+    for p in page {
         model.push(convert::to_ui(&p, icons.get(&p.name)));
     }
-    missing
+    count
 }
 
 fn patch_rows(model: &VecModel<UiPackage>, name: &str, mut patch: impl FnMut(&mut UiPackage)) {
@@ -116,7 +135,26 @@ fn patch_rows(model: &VecModel<UiPackage>, name: &str, mut patch: impl FnMut(&mu
 }
 
 fn rows(model: &VecModel<UiPackage>) -> Vec<UiPackage> {
-    (0..model.row_count()).filter_map(|i| model.row_data(i)).collect()
+    (0..model.row_count())
+        .filter_map(|i| model.row_data(i))
+        .collect()
+}
+
+/// Names of the rows in a visible index range (inclusive, clamped).
+fn names_in_range(model: &VecModel<UiPackage>, first: i32, last: i32) -> Vec<String> {
+    let len = model.row_count();
+    if len == 0 {
+        return Vec::new();
+    }
+    let start = first.max(0) as usize;
+    let end = (last.max(0) as usize).min(len - 1);
+    if start > end {
+        return Vec::new();
+    }
+    (start..=end)
+        .filter_map(|i| model.row_data(i))
+        .map(|r| r.name.to_string())
+        .collect()
 }
 
 /// Cover folders that are not package names.
@@ -128,7 +166,9 @@ fn cover_package(cover: &str) -> &str {
 }
 
 fn accent_for(name: &str) -> i32 {
-    name.bytes().fold(7i32, |a, b| a.wrapping_mul(31).wrapping_add(i32::from(b))).rem_euclid(14)
+    name.bytes()
+        .fold(7i32, |a, b| a.wrapping_mul(31).wrapping_add(i32::from(b)))
+        .rem_euclid(14)
 }
 
 /// Which page of the side menu is on screen.
@@ -206,8 +246,9 @@ pub struct State {
     last_details: PackageDetails,
 
     // ── side menu ──
-    taxonomy: Option<Taxonomy>,
-    taxonomy_pending: bool,
+    /// Each section is fetched only when its page is opened.
+    taxonomy_sections: HashMap<TaxonomyKind, Vec<TaxonomyEntry>>,
+    taxonomy_pending: HashSet<TaxonomyKind>,
     browse_section: BrowseSection,
     /// Every row of the current section, families included (members are hidden
     /// until their family is expanded).
@@ -229,6 +270,30 @@ pub struct State {
     script_page: Option<ScriptPage>,
     /// Options of the script screen on display (to tick boxes / add pictures).
     script_options: Option<Rc<VecModel<UiScriptOption>>>,
+
+    /// Counters for `TUX_LAZY_STATS`; no behavioural effect.
+    stats: LazyStats,
+}
+
+impl Drop for State {
+    fn drop(&mut self) {
+        if std::env::var_os("TUX_LAZY_STATS").is_none() {
+            return;
+        }
+        let s = &self.stats;
+        log::info!(
+            "[lazy] icons {}/{} loaded/requested · {} packages materialized · {} screenshots · \
+             {} covers shown ({} remote picture sets) · {} taxonomy sections · {} operations",
+            s.icons_loaded,
+            s.icons_requested,
+            s.packages_materialized,
+            s.screenshots_loaded,
+            s.covers_shown,
+            s.cover_images_loaded,
+            s.taxonomy_sections,
+            s.operations_started,
+        );
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -275,8 +340,8 @@ impl State {
             forward: Vec::new(),
             return_view: None,
             last_details: PackageDetails::default(),
-            taxonomy: None,
-            taxonomy_pending: false,
+            taxonomy_sections: HashMap::new(),
+            taxonomy_pending: HashSet::new(),
             browse_section: BrowseSection::Categories,
             browse_all: Vec::new(),
             expanded: HashSet::new(),
@@ -290,6 +355,7 @@ impl State {
             script_running: false,
             script_page: None,
             script_options: None,
+            stats: LazyStats::default(),
         }
     }
 
@@ -312,7 +378,11 @@ impl State {
         match msg {
             Message::HomeReady { sections } => self.on_home(sections),
             Message::SearchResults { query, packages } => self.on_search_results(query, packages),
-            Message::DetailsReady { name, details, special } => self.on_details(name, details, special),
+            Message::DetailsReady {
+                name,
+                details,
+                special,
+            } => self.on_details(name, details, special),
             Message::ExactReady { package } => self.open_package(package, false),
             Message::ScreenshotsReady { name, images } => self.on_screenshots(name, images),
             Message::AddonsReady { package, packages } => self.on_addons(package, packages),
@@ -322,28 +392,47 @@ impl State {
             }
             Message::UpdatesReady { updates, error } => self.on_updates(updates, error),
             Message::TaxonomyReady { taxonomy } => self.on_taxonomy(taxonomy),
-            Message::TaxonomyPackagesReady { kind, id, title, subtitle, packages } => {
+            Message::TaxonomySectionReady { kind, entries } => {
+                self.on_taxonomy_section(kind, entries)
+            }
+            Message::TaxonomyPackagesReady {
+                kind,
+                id,
+                title,
+                subtitle,
+                packages,
+            } => {
                 self.on_taxonomy_packages(kind, id, title, subtitle, packages);
             }
             Message::CoversReady { covers } => {
-                // Remote covers arrive in later, longer lists: stay on the cover that is
-                // showing instead of jumping to another one.
+                // Stay on the cover that is showing when the list is refreshed.
                 let showing = self.covers.get(self.cover_idx).map(|c| c.name.clone());
                 self.covers = covers;
                 let kept = showing.and_then(|n| self.covers.iter().position(|c| c.name == n));
-                match kept {
-                    Some(i) => {
-                        self.cover_idx = i;
-                        if let Some(ui) = self.ui.upgrade() {
-                            ui.set_cover_count(self.covers.len() as i32);
+                self.cover_idx = match kept {
+                    Some(i) => i,
+                    None => {
+                        // Prefer a cover whose pictures are already on disk.
+                        let ready: Vec<usize> = self
+                            .covers
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, c)| !c.images.is_empty())
+                            .map(|(i, _)| i)
+                            .collect();
+                        if ready.is_empty() {
+                            0
+                        } else {
+                            ready[fastrand::usize(..ready.len())]
                         }
                     }
-                    None => {
-                        self.cover_idx = if self.covers.is_empty() { 0 } else { fastrand::usize(..self.covers.len()) };
-                        self.show_cover();
-                    }
+                };
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_cover_count(self.covers.len() as i32);
                 }
+                self.show_cover();
             }
+            Message::CoverImagesReady { name, images } => self.on_cover_images(name, images),
             Message::IconReady { name, path } => self.on_icon(name, path),
             Message::IconCacheCleared { removed } => {
                 self.reload_icons();
@@ -391,35 +480,34 @@ impl State {
     fn on_home(&mut self, sections: Vec<Section>) {
         let mut ui_sections = Vec::with_capacity(sections.len());
         let mut models = Vec::with_capacity(sections.len());
-        let mut missing = Vec::new();
         for s in &sections {
-            let mut rows = Vec::with_capacity(s.packages.len());
-            for p in &s.packages {
-                if !self.icons.contains_key(&p.name) {
-                    missing.push(p.name.clone());
-                }
-                rows.push(convert::to_ui(p, self.icons.get(&p.name)));
-            }
+            self.stats.packages_materialized += s.packages.len() as u64;
+            let rows: Vec<UiPackage> = s
+                .packages
+                .iter()
+                .map(|p| convert::to_ui(p, self.icons.get(&p.name)))
+                .collect();
             let model = Rc::new(VecModel::from(rows));
-            ui_sections.push(UiSection { title: s.title.as_str().into(), packages: ModelRc::from(model.clone()) });
+            ui_sections.push(UiSection {
+                title: s.title.as_str().into(),
+                packages: ModelRc::from(model.clone()),
+            });
             models.push(model);
         }
         self.section_models = models;
         self.sections.set_vec(ui_sections);
-        self.request_icons(missing);
+        // No icons and no screenshots are requested here: the shelves ask for
+        // the icons of the cards they actually show, and a package page asks
+        // for its screenshots when it is opened.
+    }
 
-        // The first apps of the first shelves are the likeliest to be opened:
-        // let the thumbnail module fetch their screenshots while the user looks around.
-        let likely: Vec<String> = sections
-            .iter()
-            .take(4)
-            .flat_map(|s| s.packages.iter().take(3))
-            .filter(|p| p.repo != "script")
-            .map(|p| p.name.clone())
-            .collect();
-        if !likely.is_empty() {
-            self.bus.publish(&Message::ScreenshotsPrefetch { names: likely });
-        }
+    /// The Home shelves on screen ask for the icons of their visible cards.
+    pub fn home_icons_needed(&mut self, row: i32, first: i32, last: i32) {
+        let Some(model) = self.section_models.get(row.max(0) as usize) else {
+            return;
+        };
+        let names = names_in_range(model, first, last);
+        self.request_icons(names);
     }
 
     fn on_search_results(&mut self, query: String, packages: Vec<Package>) {
@@ -428,8 +516,12 @@ impl State {
         }
         self.search_paged.reset(packages);
         self.search.set_vec(Vec::new());
-        let missing = push_page(&mut self.search_paged, &self.search, &self.icons, FIRST_PAGE);
-        self.request_icons(missing);
+        self.stats.packages_materialized += push_page(
+            &mut self.search_paged,
+            &self.search,
+            &self.icons,
+            FIRST_PAGE,
+        ) as u64;
         if let Some(ui) = self.ui.upgrade() {
             ui.set_search_busy(false);
             ui.set_has_more_results(self.search_paged.has_more());
@@ -453,7 +545,11 @@ impl State {
         if self.current.as_ref().map(|c| c.name.as_str()) != Some(name.as_str()) {
             return; // user already navigated elsewhere
         }
-        let loaded: Vec<Image> = images.iter().filter_map(|p| Image::load_from_path(Path::new(p)).ok()).collect();
+        let loaded: Vec<Image> = images
+            .iter()
+            .filter_map(|p| Image::load_from_path(Path::new(p)).ok())
+            .collect();
+        self.stats.screenshots_loaded += loaded.len() as u64;
         self.screenshots.set_vec(loaded);
     }
 
@@ -461,22 +557,41 @@ impl State {
         if self.current.as_ref().map(|c| c.name.as_str()) != Some(package.as_str()) {
             return;
         }
-        let mut missing = Vec::new();
         let rows: Vec<UiPackage> = packages
             .iter()
-            .map(|p| {
-                if !self.icons.contains_key(&p.name) {
-                    missing.push(p.name.clone());
-                }
-                convert::to_ui(p, self.icons.get(&p.name))
-            })
+            .map(|p| convert::to_ui(p, self.icons.get(&p.name)))
             .collect();
+        self.stats.packages_materialized += rows.len() as u64;
         self.addons.set_vec(rows);
-        self.request_icons(missing);
+    }
+
+    /// The remote pictures of one cover arrived (only ever for a cover that
+    /// was on screen). Merge them and refresh the banner if it still shows it.
+    fn on_cover_images(&mut self, name: String, images: Vec<String>) {
+        if images.is_empty() {
+            return;
+        }
+        self.stats.cover_images_loaded += images.len() as u64;
+        if let Some(cover) = self.covers.iter_mut().find(|c| c.name == name) {
+            cover.images = images;
+        } else {
+            self.covers.push(Cover {
+                name: name.clone(),
+                images,
+            });
+        }
+        if self
+            .covers
+            .get(self.cover_idx)
+            .is_some_and(|c| c.name == name)
+        {
+            self.show_cover();
+        }
     }
 
     fn on_updates(&mut self, updates: Vec<UpdateEntry>, error: Option<String>) {
-        self.updates.set_vec(updates.iter().map(convert::update).collect::<Vec<_>>());
+        self.updates
+            .set_vec(updates.iter().map(convert::update).collect::<Vec<_>>());
         if let Some(ui) = self.ui.upgrade() {
             ui.set_updates_loading(false);
             ui.set_updates_status(error.unwrap_or_default().into());
@@ -486,14 +601,39 @@ impl State {
     // ───────────────────────── side menu ─────────────────────────
 
     fn on_taxonomy(&mut self, taxonomy: Taxonomy) {
-        self.taxonomy = Some(taxonomy);
-        self.taxonomy_pending = false;
-        if self.ui.upgrade().is_some_and(|ui| ui.get_view() == AppView::Browse) {
+        self.stats.taxonomy_sections += 3;
+        self.taxonomy_sections
+            .insert(TaxonomyKind::Category, taxonomy.categories);
+        self.taxonomy_sections
+            .insert(TaxonomyKind::Group, taxonomy.groups);
+        self.taxonomy_sections
+            .insert(TaxonomyKind::Repository, taxonomy.repositories);
+        self.taxonomy_pending.clear();
+        if self
+            .ui
+            .upgrade()
+            .is_some_and(|ui| ui.get_view() == AppView::Browse)
+        {
             self.rebuild_browse();
             // The counts may have changed (install / remove): refresh the open list.
             if let Some((kind, id)) = self.browse_open.clone() {
-                self.bus.publish(&Message::TaxonomyPackagesRequested { kind, id });
+                self.bus
+                    .publish(&Message::TaxonomyPackagesRequested { kind, id });
             }
+        }
+    }
+
+    fn on_taxonomy_section(&mut self, kind: TaxonomyKind, entries: Vec<TaxonomyEntry>) {
+        self.stats.taxonomy_sections += 1;
+        self.taxonomy_sections.insert(kind, entries);
+        self.taxonomy_pending.remove(&kind);
+        if self.browse_section.kind() == kind
+            && self
+                .ui
+                .upgrade()
+                .is_some_and(|ui| ui.get_view() == AppView::Browse)
+        {
+            self.rebuild_browse();
         }
     }
 
@@ -505,13 +645,21 @@ impl State {
         subtitle: String,
         packages: Vec<Package>,
     ) {
-        if !self.browse_open.as_ref().is_some_and(|(k, i)| *k == kind && *i == id) {
+        if !self
+            .browse_open
+            .as_ref()
+            .is_some_and(|(k, i)| *k == kind && *i == id)
+        {
             return; // the user already opened something else
         }
         self.browse_paged.reset(packages);
         self.browse_packages.set_vec(Vec::new());
-        let missing = push_page(&mut self.browse_paged, &self.browse_packages, &self.icons, FIRST_PAGE + 25);
-        self.request_icons(missing);
+        self.stats.packages_materialized += push_page(
+            &mut self.browse_paged,
+            &self.browse_packages,
+            &self.icons,
+            FIRST_PAGE + 25,
+        ) as u64;
         if let Some(ui) = self.ui.upgrade() {
             ui.set_browse_loading(false);
             ui.set_browse_has_more(self.browse_paged.has_more());
@@ -520,37 +668,32 @@ impl State {
         }
     }
 
-    /// Ask the search module for the whole side menu (once per system change).
-    fn request_taxonomy(&mut self) {
-        if self.taxonomy.is_some() {
+    /// Ask the search module for one side-menu section (the page being opened).
+    fn request_taxonomy(&mut self, kind: TaxonomyKind) {
+        if self.taxonomy_sections.contains_key(&kind) {
             self.rebuild_browse();
             return;
         }
-        if self.taxonomy_pending {
+        if !self.taxonomy_pending.insert(kind) {
             return;
         }
-        self.taxonomy_pending = true;
         if let Some(ui) = self.ui.upgrade() {
             ui.set_browse_loading(true);
         }
-        self.bus.publish(&Message::TaxonomyRequested);
+        self.bus
+            .publish(&Message::TaxonomySectionRequested { kind });
     }
 
     /// Put the rows of the current section on screen (families collapsed).
     fn rebuild_browse(&mut self) {
-        let Some(taxonomy) = self.taxonomy.clone() else {
-            self.request_taxonomy();
+        let kind = self.browse_section.kind();
+        let Some(all) = self.taxonomy_sections.get(&kind).cloned() else {
+            self.request_taxonomy(kind);
             return;
-        };
-        let all = match self.browse_section {
-            BrowseSection::Categories => taxonomy.categories.clone(),
-            BrowseSection::Groups => taxonomy.groups.clone(),
-            BrowseSection::Repositories => taxonomy.repositories.clone(),
         };
         self.browse_all = all;
 
         let mut rows = Vec::with_capacity(self.browse_all.len());
-        let mut missing = Vec::new();
         let (mut top, mut deep) = (0usize, 0usize);
         for entry in &self.browse_all {
             // Member groups stay hidden until their family row is expanded.
@@ -562,26 +705,36 @@ impl State {
             } else {
                 deep += 1;
             }
-            if !entry.icon.is_empty() && !self.icons.contains_key(&entry.icon) {
-                missing.push(entry.icon.clone());
-            }
             let expanded = entry.expandable && self.expanded.contains(&entry.id);
-            rows.push(convert::taxonomy(entry, self.icons.get(&entry.icon), expanded));
+            rows.push(convert::taxonomy(
+                entry,
+                self.icons.get(&entry.icon),
+                expanded,
+            ));
         }
         self.browse_entries.set_vec(rows);
-        self.request_icons(missing);
+        // Icon-theme pictures are requested by the rows that are actually on
+        // screen (`browse_icon_needed`), not for the whole list.
 
         if let Some(ui) = self.ui.upgrade() {
             let status = match self.browse_section {
                 BrowseSection::Categories => {
-                    let custom = self.browse_all.iter().filter(|e| e.id.starts_with("addon:")).count();
+                    let custom = self
+                        .browse_all
+                        .iter()
+                        .filter(|e| e.id.starts_with("addon:"))
+                        .count();
                     if custom == 0 {
                         format!("{top} categories · {deep} subcategories · from AppStream")
                     } else {
-                        format!("{top} categories · {deep} subcategories · {custom} add-on categories")
+                        format!(
+                            "{top} categories · {deep} subcategories · {custom} add-on categories"
+                        )
                     }
                 }
-                BrowseSection::Groups => format!("{top} entries · {} groups · from pacman", top + deep),
+                BrowseSection::Groups => {
+                    format!("{top} entries · {} groups · from pacman", top + deep)
+                }
                 BrowseSection::Repositories => format!("{top} repositories · from pacman.conf"),
             };
             ui.set_browse_section(match self.browse_section {
@@ -612,7 +765,7 @@ impl State {
         ui.set_browse_has_more(false);
         self.browse_packages.set_vec(Vec::new());
         ui.set_view(AppView::Browse);
-        self.request_taxonomy();
+        self.request_taxonomy(next.kind());
     }
 
     /// A row of the browse page was clicked.
@@ -626,7 +779,9 @@ impl State {
             self.rebuild_browse();
             return;
         }
-        let Some(found) = self.browse_all.iter().find(|e| e.id == id).cloned() else { return };
+        let Some(found) = self.browse_all.iter().find(|e| e.id == id).cloned() else {
+            return;
+        };
         let kind = self.browse_section.kind();
         self.browse_open = Some((kind, id.clone()));
         let Some(ui) = self.ui.upgrade() else { return };
@@ -636,7 +791,8 @@ impl State {
         ui.set_browse_loading(true);
         ui.set_browse_has_more(false);
         self.browse_packages.set_vec(Vec::new());
-        self.bus.publish(&Message::TaxonomyPackagesRequested { kind, id });
+        self.bus
+            .publish(&Message::TaxonomyPackagesRequested { kind, id });
     }
 
     /// Back of the browse page: close the open entry, then the page itself.
@@ -655,8 +811,12 @@ impl State {
     }
 
     pub fn browse_more(&mut self) {
-        let missing = push_page(&mut self.browse_paged, &self.browse_packages, &self.icons, PAGE * 2);
-        self.request_icons(missing);
+        self.stats.packages_materialized += push_page(
+            &mut self.browse_paged,
+            &self.browse_packages,
+            &self.icons,
+            PAGE * 2,
+        ) as u64;
         if let Some(ui) = self.ui.upgrade() {
             ui.set_browse_has_more(self.browse_paged.has_more());
         }
@@ -676,10 +836,15 @@ impl State {
         let Ok(img) = Image::load_from_path(Path::new(&path)) else {
             return;
         };
+        self.stats.icons_loaded += 1;
         self.each_model(|m| patch_rows(m, &name, |r| r.icon = img.clone()));
         // Side-menu rows ask for their icon-theme picture by icon name.
         for i in 0..self.browse_entries.row_count() {
-            if let Some(mut row) = self.browse_entries.row_data(i).filter(|r| r.icon_key.as_str() == name) {
+            if let Some(mut row) = self
+                .browse_entries
+                .row_data(i)
+                .filter(|r| r.icon_key.as_str() == name)
+            {
                 row.icon = img.clone();
                 self.browse_entries.set_row_data(i, row);
             }
@@ -722,11 +887,16 @@ impl State {
         if self.ui.upgrade().is_some_and(|ui| ui.get_active_tab() == 2) {
             self.refresh_installed();
         }
-        // Installed counts in the side menu changed.
-        self.taxonomy = None;
-        self.taxonomy_pending = false;
-        if self.ui.upgrade().is_some_and(|ui| ui.get_view() == AppView::Browse) {
-            self.request_taxonomy();
+        // Installed counts in the side menu changed. Only the section on screen
+        // (if any) is discovered again.
+        self.taxonomy_sections.clear();
+        self.taxonomy_pending.clear();
+        if self
+            .ui
+            .upgrade()
+            .is_some_and(|ui| ui.get_view() == AppView::Browse)
+        {
+            self.request_taxonomy(self.browse_section.kind());
         }
     }
 
@@ -740,7 +910,12 @@ impl State {
         let (ui_view, options) = convert::script_view(&view, &self.icons);
         self.script_options = Some(options);
         ui.set_script_view(ui_view);
-        let missing: Vec<String> = view.options.iter().filter(|o| !o.icon.is_empty()).map(|o| o.icon.clone()).collect();
+        let missing: Vec<String> = view
+            .options
+            .iter()
+            .filter(|o| !o.icon.is_empty())
+            .map(|o| o.icon.clone())
+            .collect();
         if !view.busy {
             // a screen that needs the user always comes back to the front
             ui.set_script_minimized(false);
@@ -751,12 +926,16 @@ impl State {
 
     /// A check box was clicked.
     pub fn script_option_toggled(&mut self, i: usize) {
-        let Some(m) = self.script_options.as_ref() else { return };
+        let Some(m) = self.script_options.as_ref() else {
+            return;
+        };
         if let Some(mut row) = m.row_data(i) {
             row.checked = !row.checked;
             m.set_row_data(i, row);
         }
-        let n = (0..m.row_count()).filter(|&j| m.row_data(j).is_some_and(|r| r.checked)).count();
+        let n = (0..m.row_count())
+            .filter(|&j| m.row_data(j).is_some_and(|r| r.checked))
+            .count();
         if let Some(ui) = self.ui.upgrade() {
             ui.set_script_checked_count(n as i32);
         }
@@ -770,7 +949,8 @@ impl State {
         ui.set_script_running_id("".into());
         // The install record may have changed: refresh the open add-on page.
         if let Some(cur) = self.current.clone().filter(|c| c.repo == "script") {
-            self.bus.publish(&Message::ScriptInfoRequested { id: cur.name });
+            self.bus
+                .publish(&Message::ScriptInfoRequested { id: cur.name });
         }
         if success {
             // A script may have installed or removed packages.
@@ -801,29 +981,50 @@ impl State {
         let Some(info) = info else {
             self.script_page = None;
             if let Some(ui) = self.ui.upgrade() {
-                ui.set_current_script_info(UiScriptInfo { loaded: true, author: "—".into(), source: "File not found".into(), ..Default::default() });
+                ui.set_current_script_info(UiScriptInfo {
+                    loaded: true,
+                    author: "—".into(),
+                    source: "File not found".into(),
+                    ..Default::default()
+                });
             }
             return;
         };
-        let dynamic = info.version_dynamic || info.download_dynamic || info.extracted_dynamic || info.installed_dynamic;
+        let dynamic = info.version_dynamic
+            || info.download_dynamic
+            || info.extracted_dynamic
+            || info.installed_dynamic;
         // Keep values already computed for this add-on (e.g. when the page is refreshed after a run).
-        let keep = self.script_page.take().filter(|p| p.id == id && p.state == ValuesState::Done);
+        let keep = self
+            .script_page
+            .take()
+            .filter(|p| p.id == id && p.state == ValuesState::Done);
         let (values, state) = match keep {
             Some(p) => (p.values, ValuesState::Done),
             None if !dynamic => (ScriptValues::default(), ValuesState::Static),
             None if info.needs_confirm => (ScriptValues::default(), ValuesState::NeedsConfirm),
             None => {
                 // Shipped with the store: safe to compute right away.
-                self.bus.publish(&Message::ScriptEvalRequested { id: id.clone(), confirmed: false });
+                self.bus.publish(&Message::ScriptEvalRequested {
+                    id: id.clone(),
+                    confirmed: false,
+                });
                 (ScriptValues::default(), ValuesState::Calculating)
             }
         };
-        self.script_page = Some(ScriptPage { id, info, values, state });
+        self.script_page = Some(ScriptPage {
+            id,
+            info,
+            values,
+            state,
+        });
         self.show_script_page();
     }
 
     fn on_script_values(&mut self, id: String, values: ScriptValues) {
-        let Some(page) = self.script_page.as_mut().filter(|p| p.id == id) else { return };
+        let Some(page) = self.script_page.as_mut().filter(|p| p.id == id) else {
+            return;
+        };
         page.values = values;
         page.state = ValuesState::Done;
         self.show_script_page();
@@ -831,34 +1032,46 @@ impl State {
 
     /// "Calculate size and version" on a script from the user's own folder.
     pub fn eval_current_script(&mut self) {
-        let Some(page) = self.script_page.as_mut() else { return };
+        let Some(page) = self.script_page.as_mut() else {
+            return;
+        };
         page.state = ValuesState::Calculating;
         let id = page.id.clone();
-        self.bus.publish(&Message::ScriptEvalRequested { id, confirmed: true });
+        self.bus.publish(&Message::ScriptEvalRequested {
+            id,
+            confirmed: true,
+        });
         self.show_script_page();
     }
 
     /// Put the page's facts on screen: sizes, version, installed state.
     fn show_script_page(&mut self) {
         let Some(ui) = self.ui.upgrade() else { return };
-        let Some(page) = self.script_page.as_ref() else { return };
+        let Some(page) = self.script_page.as_ref() else {
+            return;
+        };
         let (i, v, st) = (&page.info, &page.values, page.state);
 
         let mb = |m: u64| -> String {
-            if m >= 1024 { format!("{:.1} GB", m as f64 / 1024.0) } else { format!("{m} MB") }
+            if m >= 1024 {
+                format!("{:.1} GB", m as f64 / 1024.0)
+            } else {
+                format!("{m} MB")
+            }
         };
         // written value, or the computed one with a status text while it is missing
-        let field = |written: Option<u64>, dynamic: bool, computed: Option<u64>| -> (String, Option<u64>) {
-            if !dynamic {
-                return (written.map_or("Not specified".into(), mb), written);
-            }
-            match (st, computed) {
-                (ValuesState::Done, Some(m)) => (mb(m), Some(m)),
-                (ValuesState::Done, None) => ("Unavailable".into(), None),
-                (ValuesState::NeedsConfirm, _) => ("Not calculated".into(), None),
-                _ => ("Calculating…".into(), None),
-            }
-        };
+        let field =
+            |written: Option<u64>, dynamic: bool, computed: Option<u64>| -> (String, Option<u64>) {
+                if !dynamic {
+                    return (written.map_or("Not specified".into(), mb), written);
+                }
+                match (st, computed) {
+                    (ValuesState::Done, Some(m)) => (mb(m), Some(m)),
+                    (ValuesState::Done, None) => ("Unavailable".into(), None),
+                    (ValuesState::NeedsConfirm, _) => ("Not calculated".into(), None),
+                    _ => ("Calculating…".into(), None),
+                }
+            };
         let (download, dl) = field(i.download_mb, i.download_dynamic, v.download_mb);
         let (extracted, ex) = field(i.extracted_mb, i.extracted_dynamic, v.extracted_mb);
         let (installed, ins) = field(i.installed_mb, i.installed_dynamic, v.installed_mb);
@@ -878,27 +1091,56 @@ impl State {
 
         let installed_text = if i.installed {
             let date = ymd(i.installed_at);
-            if i.installed_version.is_empty() { date } else { format!("{} · {date}", i.installed_version) }
+            if i.installed_version.is_empty() {
+                date
+            } else {
+                format!("{} · {date}", i.installed_version)
+            }
         } else {
             String::new()
         };
 
         ui.set_current_script_info(UiScriptInfo {
             loaded: true,
-            author: if i.author.is_empty() { "Unknown".into() } else { i.author.as_str().into() },
-            source: if i.user_script { "Your own add-on package".into() } else { "Included with Tux Store".into() },
+            author: if i.author.is_empty() {
+                "Unknown".into()
+            } else {
+                i.author.as_str().into()
+            },
+            source: if i.user_script {
+                "Your own add-on package".into()
+            } else {
+                "Included with Tux Store".into()
+            },
             admin: if i.root_commands == 0 {
                 "Not required".into()
             } else {
-                format!("Required ({} command{})", i.root_commands, if i.root_commands == 1 { "" } else { "s" }).into()
+                format!(
+                    "Required ({} command{})",
+                    i.root_commands,
+                    if i.root_commands == 1 { "" } else { "s" }
+                )
+                .into()
             },
-            path: if i.user_script { i.path.as_str().into() } else { "".into() },
+            path: if i.user_script {
+                i.path.as_str().into()
+            } else {
+                "".into()
+            },
             download: download.into(),
             extracted: extracted.into(),
             installed_size: installed.into(),
-            free: if i.free_bytes == 0 { "Unknown".into() } else { mb(free_mb).into() },
+            free: if i.free_bytes == 0 {
+                "Unknown".into()
+            } else {
+                mb(free_mb).into()
+            },
             low_space: i.free_bytes != 0 && needed > 0 && free_mb < needed,
-            space_ratio: if free_mb == 0 { 0.0 } else { (needed as f32 / free_mb as f32).min(1.0) },
+            space_ratio: if free_mb == 0 {
+                0.0
+            } else {
+                (needed as f32 / free_mb as f32).min(1.0)
+            },
             note: i.note.as_str().into(),
             installed: i.installed,
             installed_text: installed_text.into(),
@@ -929,6 +1171,7 @@ impl State {
         if self.script_running || ui.get_current_install().phase == OpPhase::Running {
             return;
         }
+        self.stats.operations_started += 1;
         self.script_running = true;
         ui.set_script_minimized(false);
         ui.set_script_running_id(id.as_str().into());
@@ -952,19 +1195,30 @@ impl State {
         let checked: Vec<usize> = self
             .script_options
             .as_ref()
-            .map(|m| (0..m.row_count()).filter(|&j| m.row_data(j).is_some_and(|r| r.checked)).collect())
+            .map(|m| {
+                (0..m.row_count())
+                    .filter(|&j| m.row_data(j).is_some_and(|r| r.checked))
+                    .collect()
+            })
             .unwrap_or_default();
-        self.bus.publish(&Message::ScriptAction { seq: self.script_seq, button, selected, checked });
+        self.bus.publish(&Message::ScriptAction {
+            seq: self.script_seq,
+            button,
+            selected,
+            checked,
+        });
     }
 
     // ───────────────────────── helpers ─────────────────────────
 
     fn each_model(&self, mut f: impl FnMut(&VecModel<UiPackage>)) {
-        for m in self
-            .section_models
-            .iter()
-            .chain([&self.search, &self.installed, &self.addons, &self.suggestions, &self.browse_packages])
-        {
+        for m in self.section_models.iter().chain([
+            &self.search,
+            &self.installed,
+            &self.addons,
+            &self.suggestions,
+            &self.browse_packages,
+        ]) {
             f(m);
         }
     }
@@ -975,11 +1229,9 @@ impl State {
         self.icons.clear();
         self.icon_requested.clear();
 
-        let mut names: Vec<String> = Vec::new();
         self.each_model(|m| {
             for i in 0..m.row_count() {
                 if let Some(mut row) = m.row_data(i) {
-                    names.push(row.name.to_string());
                     row.icon = Image::default();
                     m.set_row_data(i, row);
                 }
@@ -989,31 +1241,64 @@ impl State {
         // name, not a package name.
         for i in 0..self.browse_entries.row_count() {
             if let Some(mut row) = self.browse_entries.row_data(i) {
-                if !row.icon_key.is_empty() {
-                    names.push(row.icon_key.to_string());
-                }
                 row.icon = Image::default();
                 self.browse_entries.set_row_data(i, row);
             }
         }
+        let mut current = String::new();
         if let Some(ui) = self.ui.upgrade() {
             let mut cur = ui.get_current_package();
             if !cur.name.is_empty() {
-                names.push(cur.name.to_string());
+                current = cur.name.to_string();
                 cur.icon = Image::default();
                 ui.set_current_package(cur);
             }
+            // Cards on screen ask again; off-screen cards stay without a
+            // picture until they are actually shown.
+            ui.set_icon_refresh_tick(ui.get_icon_refresh_tick().wrapping_add(1));
         }
-        names.sort();
-        names.dedup();
-        self.request_icons(names);
+        if !current.is_empty() {
+            self.request_icons(vec![current]);
+        }
     }
 
     fn request_icons(&mut self, names: Vec<String>) {
         for name in names {
             if self.icon_requested.insert(name.clone()) {
+                self.stats.icons_requested += 1;
                 self.bus.publish(&Message::IconRequested { name, size: 64 });
             }
+        }
+    }
+
+    /// Visible rows of the search grid.
+    pub fn search_icons_needed(&mut self, first: i32, last: i32) {
+        let names = names_in_range(&self.search, first, last);
+        self.request_icons(names);
+    }
+
+    /// Visible rows of the Installed grid.
+    pub fn installed_icons_needed(&mut self, first: i32, last: i32) {
+        let names = names_in_range(&self.installed, first, last);
+        self.request_icons(names);
+    }
+
+    /// Visible cards of the packages of one side-menu entry.
+    pub fn browse_icons_needed(&mut self, first: i32, last: i32) {
+        let names = names_in_range(&self.browse_packages, first, last);
+        self.request_icons(names);
+    }
+
+    /// Visible cards of the add-ons list.
+    pub fn addons_icons_needed(&mut self, first: i32, last: i32) {
+        let names = names_in_range(&self.addons, first, last);
+        self.request_icons(names);
+    }
+
+    /// One visible side-menu row asked for its icon-theme picture.
+    pub fn browse_icon_needed(&mut self, key: String) {
+        if !key.is_empty() {
+            self.request_icons(vec![key]);
         }
     }
 
@@ -1054,19 +1339,23 @@ impl State {
 
     pub fn startup(&mut self) {
         // Before anything asks a question, tell every module which backend to use.
-        self.bus.publish(&Message::EngineChanged { engine: self.engine });
+        self.bus.publish(&Message::EngineChanged {
+            engine: self.engine,
+        });
         self.bus.publish(&Message::UiReady);
+        // Home (visible at start-up) and the cover already on screen. Nothing
+        // else: the side menu, search, tabs and package pages ask for their
+        // data when they are opened.
         self.bus.publish(&Message::HomeRequested);
         self.bus.publish(&Message::CoversRequested);
-        // Discover the side menu right away, on a worker thread, so the drawer
-        // opens instantly.
-        self.request_taxonomy();
     }
 
     /// The Engine setting changed: persist it, tell the backends, and refresh
     /// everything that was answered by the old engine.
     pub fn set_engine(&mut self, key: &str) {
-        let Some(engine) = Engine::from_key(key) else { return };
+        let Some(engine) = Engine::from_key(key) else {
+            return;
+        };
         if engine == self.engine {
             return;
         }
@@ -1080,13 +1369,18 @@ impl State {
         self.refresh_installed();
         self.request_updates();
         // Different backend = different repositories / groups / categories.
-        self.taxonomy = None;
-        self.taxonomy_pending = false;
-        if self.ui.upgrade().is_some_and(|ui| ui.get_view() == AppView::Browse) {
-            self.request_taxonomy();
+        self.taxonomy_sections.clear();
+        self.taxonomy_pending.clear();
+        if self
+            .ui
+            .upgrade()
+            .is_some_and(|ui| ui.get_view() == AppView::Browse)
+        {
+            self.request_taxonomy(self.browse_section.kind());
         }
         if let Some(current) = self.current.clone() {
-            self.bus.publish(&Message::DetailsRequested { name: current.name });
+            self.bus
+                .publish(&Message::DetailsRequested { name: current.name });
         }
     }
 
@@ -1114,8 +1408,8 @@ impl State {
     }
 
     pub fn more_search(&mut self) {
-        let missing = push_page(&mut self.search_paged, &self.search, &self.icons, PAGE);
-        self.request_icons(missing);
+        self.stats.packages_materialized +=
+            push_page(&mut self.search_paged, &self.search, &self.icons, PAGE) as u64;
         if let Some(ui) = self.ui.upgrade() {
             ui.set_has_more_results(self.search_paged.has_more());
         }
@@ -1140,15 +1434,21 @@ impl State {
             .installed_all
             .iter()
             .filter(|p| {
-                needle.is_empty() || normalize(&p.name).contains(&needle) || p.description.to_lowercase().contains(&lower)
+                needle.is_empty()
+                    || normalize(&p.name).contains(&needle)
+                    || p.description.to_lowercase().contains(&lower)
             })
             .cloned()
             .collect();
         let total = list.len();
         self.installed_paged.reset(list);
         self.installed.set_vec(Vec::new());
-        let missing = push_page(&mut self.installed_paged, &self.installed, &self.icons, FIRST_PAGE + 25);
-        self.request_icons(missing);
+        self.stats.packages_materialized += push_page(
+            &mut self.installed_paged,
+            &self.installed,
+            &self.icons,
+            FIRST_PAGE + 25,
+        ) as u64;
         if let Some(ui) = self.ui.upgrade() {
             ui.set_installed_total(total as i32);
             ui.set_installed_has_more(self.installed_paged.has_more());
@@ -1157,8 +1457,12 @@ impl State {
     }
 
     pub fn more_installed(&mut self) {
-        let missing = push_page(&mut self.installed_paged, &self.installed, &self.icons, PAGE * 3);
-        self.request_icons(missing);
+        self.stats.packages_materialized += push_page(
+            &mut self.installed_paged,
+            &self.installed,
+            &self.icons,
+            PAGE * 3,
+        ) as u64;
         if let Some(ui) = self.ui.upgrade() {
             ui.set_installed_has_more(self.installed_paged.has_more());
         }
@@ -1197,7 +1501,10 @@ impl State {
         }
 
         ui.set_current_package(convert::to_ui(&pkg, self.icons.get(&pkg.name)));
-        ui.set_current_details(UiPackageDetails { is_loading: true, ..Default::default() });
+        ui.set_current_details(UiPackageDetails {
+            is_loading: true,
+            ..Default::default()
+        });
         ui.set_current_special_case(Default::default());
         ui.set_accent_idx(accent_for(&pkg.name));
         if ui.get_current_install().phase != OpPhase::Running {
@@ -1213,15 +1520,25 @@ impl State {
             self.build_suggestions(&pkg);
         }
         // Add-on packages can have screenshots too (declared in their JSON).
-        self.bus.publish(&Message::ScreenshotsRequested { name: pkg.name.clone() });
+        self.bus.publish(&Message::ScreenshotsRequested {
+            name: pkg.name.clone(),
+        });
         ui.set_view(AppView::Details);
 
-        let missing = if self.icons.contains_key(&pkg.name) { Vec::new() } else { vec![pkg.name.clone()] };
+        let missing = if self.icons.contains_key(&pkg.name) {
+            Vec::new()
+        } else {
+            vec![pkg.name.clone()]
+        };
         self.request_icons(missing);
         if is_script {
-            self.bus.publish(&Message::ScriptInfoRequested { id: pkg.name.clone() });
+            self.bus.publish(&Message::ScriptInfoRequested {
+                id: pkg.name.clone(),
+            });
         } else {
-            self.bus.publish(&Message::DetailsRequested { name: pkg.name.clone() });
+            self.bus.publish(&Message::DetailsRequested {
+                name: pkg.name.clone(),
+            });
         }
         self.current = Some(pkg);
         self.sync_nav();
@@ -1255,7 +1572,9 @@ impl State {
 
     /// Undo a Back: reopen the page that was left.
     pub fn forward(&mut self) {
-        let Some(next) = self.forward.pop() else { return };
+        let Some(next) = self.forward.pop() else {
+            return;
+        };
         if let Some(cur) = self.current.clone() {
             self.history.push(cur);
         }
@@ -1266,7 +1585,9 @@ impl State {
     pub fn show_addons(&mut self) {
         self.addons.set_vec(Vec::new());
         if let Some(cur) = &self.current {
-            self.bus.publish(&Message::AddonsRequested { package: cur.name.clone() });
+            self.bus.publish(&Message::AddonsRequested {
+                package: cur.name.clone(),
+            });
         }
     }
 
@@ -1297,16 +1618,27 @@ impl State {
             .filter(|x| x.name.as_str() != pkg.name)
             .take(SUGGESTION_COUNT)
             .collect();
+        self.stats.packages_materialized += picks.len() as u64;
+        let missing: Vec<String> = picks
+            .iter()
+            .filter(|p| !self.icons.contains_key(p.name.as_str()))
+            .map(|p| p.name.to_string())
+            .collect();
         self.suggestions.set_vec(picks);
+        // The whole strip is part of the visible page; it is at most 8 cards.
+        self.request_icons(missing);
     }
 
     // ── transactions ──
 
     fn begin_operation(&mut self, kind: OpKind, target: &str, deps_ratio: f32) -> bool {
-        let Some(ui) = self.ui.upgrade() else { return false };
+        let Some(ui) = self.ui.upgrade() else {
+            return false;
+        };
         if self.script_running || ui.get_current_install().phase == OpPhase::Running {
             return false;
         }
+        self.stats.operations_started += 1;
         ui.set_current_install(UiInstallState {
             phase: OpPhase::Running,
             kind,
@@ -1321,15 +1653,22 @@ impl State {
     }
 
     pub fn install_current(&mut self) {
-        let Some(pkg) = self.current.clone() else { return };
+        let Some(pkg) = self.current.clone() else {
+            return;
+        };
         if pkg.installed {
             return;
         }
         let d = &self.last_details;
         let denom = (d.new_deps + d.app_size) as f32;
-        let ratio = if denom > 0.0 { d.new_deps as f32 / denom } else { 0.0 };
+        let ratio = if denom > 0.0 {
+            d.new_deps as f32 / denom
+        } else {
+            0.0
+        };
         if self.begin_operation(OpKind::Install, &pkg.name, ratio) {
-            self.bus.publish(&Message::InstallRequested { name: pkg.name });
+            self.bus
+                .publish(&Message::InstallRequested { name: pkg.name });
         }
     }
 
@@ -1338,7 +1677,10 @@ impl State {
             return;
         };
         if self.begin_operation(OpKind::Remove, &pkg.name, 0.0) {
-            self.bus.publish(&Message::RemoveRequested { name: pkg.name, mode });
+            self.bus.publish(&Message::RemoveRequested {
+                name: pkg.name,
+                mode,
+            });
         }
     }
 
@@ -1360,9 +1702,24 @@ impl State {
             ui.set_cover_count(0);
             return;
         };
-        let pick = &cover.images[fastrand::usize(..cover.images.len())];
-        // Only the visible cover is ever decoded.
-        let image = Image::load_from_path(Path::new(pick)).unwrap_or_default();
+        // Only the visible cover is ever decoded. A remote cover that has not
+        // been downloaded yet shows a placeholder and asks for its pictures
+        // now that it is on screen.
+        let image = match cover
+            .images
+            .get(fastrand::usize(..cover.images.len().max(1)))
+        {
+            Some(pick) => {
+                self.stats.covers_shown += 1;
+                Image::load_from_path(Path::new(pick)).unwrap_or_default()
+            }
+            None => {
+                self.bus.publish(&Message::CoverImagesRequested {
+                    name: cover.name.clone(),
+                });
+                Image::default()
+            }
+        };
         ui.set_cover_name(prettify_name(&cover.name).as_str().into());
         ui.set_cover_image(image);
         ui.set_cover_count(self.covers.len() as i32);
@@ -1373,7 +1730,11 @@ impl State {
         if n == 0 {
             return;
         }
-        self.cover_idx = if forward { (self.cover_idx + 1) % n } else { (self.cover_idx + n - 1) % n };
+        self.cover_idx = if forward {
+            (self.cover_idx + 1) % n
+        } else {
+            (self.cover_idx + n - 1) % n
+        };
         self.show_cover();
     }
 
@@ -1397,6 +1758,34 @@ fn ymd(secs: u64) -> String {
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let y = yoe + era * 400 + i64::from(m <= 2);
     format!("{y:04}-{m:02}-{d:02}")
+}
+
+#[cfg(test)]
+mod lazy_tests {
+    use super::*;
+
+    fn model(names: &[&str]) -> VecModel<UiPackage> {
+        VecModel::from(
+            names
+                .iter()
+                .map(|n| UiPackage {
+                    name: (*n).into(),
+                    ..Default::default()
+                })
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    #[test]
+    fn visible_range_is_clamped_to_the_model() {
+        let m = model(&["a", "b", "c"]);
+        assert_eq!(names_in_range(&m, 1, 2), ["b", "c"]);
+        assert_eq!(names_in_range(&m, -5, 0), ["a"]);
+        assert_eq!(names_in_range(&m, 2, 99), ["c"]);
+        assert!(names_in_range(&m, 3, 4).is_empty());
+        assert!(names_in_range(&m, 2, 1).is_empty());
+        assert!(names_in_range(&model(&[]), 0, 10).is_empty());
+    }
 }
 
 #[cfg(test)]
