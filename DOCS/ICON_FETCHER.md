@@ -6,8 +6,10 @@ Resolves one icon file per package name and lists the Home cover images. Designe
 
 ## Messages
 
-Handles `IconRequested`, `CoversRequested`, `ClearIconCache`, `UiReady` (warm-up).
-Emits `IconReady{name, path}`, `IconFailed{name}`, `CoversReady`, `IconCacheCleared`.
+Handles `IconRequested`, `CoversRequested`, `CoverImagesRequested`, `ScreenshotsRequested`, `ClearIconCache`.
+Emits `IconReady{name, path}`, `IconFailed{name}`, `CoversReady`, `CoverImagesReady`, `ScreenshotsReady`, `IconCacheCleared`.
+
+Nothing is warmed up at start-up: `UiReady` is no longer handled here. Icons are resolved only when the UI reports a card on screen, screenshots only when a package page opens, and a remote cover's pictures only when that cover is displayed. See [LAZY_LOADING.md](LAZY_LOADING.md).
 
 `IconReady` carries a **file path** (cache file, bundled file or system theme file); the UI loads it. Nothing is copied or re-encoded.
 
