@@ -1330,6 +1330,7 @@ export component ScriptDialog inherits Rectangle {
     callback button-clicked(int);
     callback details-clicked();
     callback minimize-clicked();
+    callback link-clicked();
 
     property <color> tone-color: root.view.tone == 1 ? #f9e2af
         : (root.view.tone == 2 ? Theme.red
@@ -1352,12 +1353,42 @@ export component ScriptDialog inherits Rectangle {
         lay := VerticalLayout {
             Rectangle { height: 4px; background: root.tone-color; }
 
-            VerticalLayout {
+            HorizontalLayout {
                 padding: 22px;
                 padding-bottom: 6px;
-                spacing: 4px;
-                Text { text: root.view.script-title; color: Theme.overlay1; font-size: 11px; font-weight: 700; }
-                Text { text: root.view.title; color: Theme.text; font-size: 21px; font-weight: 800; wrap: word-wrap; }
+                spacing: 12px;
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    spacing: 4px;
+                    Text { text: root.view.script-title; color: Theme.overlay1; font-size: 11px; font-weight: 700; }
+                    Text { text: root.view.title; color: Theme.text; font-size: 21px; font-weight: 800; wrap: word-wrap; }
+                }
+                // The script's own `top_button`: a small link in the top-right corner.
+                if root.view.link-label != "" : Rectangle {
+                    y: 0px;
+                    width: min(220px, link-text.preferred-width + 28px);
+                    height: 30px;
+                    border-radius: 9px;
+                    border-width: 1px;
+                    border-color: link-ta.has-hover ? root.tone-color : Theme.surface1;
+                    background: link-ta.has-hover ? Theme.surface1 : Theme.surface0;
+                    animate background { duration: 150ms; }
+                    link-ta := TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => { root.link-clicked(); }
+                    }
+                    link-text := Text {
+                        x: 14px;
+                        width: parent.width - 28px;
+                        text: root.view.link-label + " ↗";
+                        color: Theme.text;
+                        font-size: 12px;
+                        font-weight: 700;
+                        overflow: elide;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
             }
 
             // Scrollable body

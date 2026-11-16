@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Top button for add-on scripts.** A script may declare `"top_button": {"label", "url", "icon", "position"}`; the run window then shows a link button in its top-right corner that opens the URL in the default browser (only `http(s)://` links are accepted). `ScriptViewData` gained `link_label` / `link_url` (`#[serde(default)]`). The NVIDIA drivers add-on ships with an "Arch Wiki - NVIDIA" button. See `DOCS/SCRIPTS_SYSTEM.md#top-button`.
+
 ## 0.16.0
 
 - **Lazy loading end to end.** Only what is on screen is loaded. Grids and Home shelves report their visible index range and the UI asks for exactly those icons (side-menu rows ask for their own icon key); the side menu discovers a section only when its page is opened (`TaxonomySectionRequested` / `TaxonomySectionReady`); remote cover pictures are downloaded only for the cover currently displayed (`CoverImagesRequested` / `CoverImagesReady`); big lists stay paged (search 35+20, installed 60+60, browse entry 60+40). The start-up screenshot prefetch and the icon-theme warm-up on `UiReady` were removed, along with the `ScreenshotsPrefetch` message and `TUX_NO_PREFETCH`. Set `TUX_LAZY_STATS=1` to log counters on exit. See `DOCS/LAZY_LOADING.md`.

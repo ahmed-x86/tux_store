@@ -192,6 +192,14 @@ fn wire(ui: &MainWindow) {
     ui.on_open_url(|repo, name| {
         links::open(&links::package_url(&repo, &name));
     });
+    ui.on_open_link(|url| {
+        // scripts are validated on load, but never hand anything but a web link to xdg-open
+        if tux_abi::script::is_valid_web_url(&url) {
+            links::open(&url);
+        } else {
+            log::warn!("refused to open a non-web link from a script");
+        }
+    });
 
     // ── home banner ──
     ui.on_cover_prev(|| {

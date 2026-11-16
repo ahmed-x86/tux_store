@@ -115,6 +115,8 @@ export struct UiScriptView {
     busy: bool,
     multi: bool,           // check boxes (any number) instead of radio buttons (one)
     min-select: int,       // check boxes: how many must be ticked to continue
+    link-label: string,    // top-right link button; empty = no button
+    link-url: string,
 }
 
 // Extra facts on an add-on package's own page.
