@@ -1,0 +1,6 @@
+{
+  "package": "krita",
+  "addons": {
+    "G'MIC plugin": "krita-plugin-gmic"
+  }
+}
