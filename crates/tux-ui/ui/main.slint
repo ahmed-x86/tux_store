@@ -94,6 +94,9 @@ export component MainWindow inherits Window {
     in property <[UiPackage]> browse-packages;
     in property <bool> browse-has-more: false;
 
+    // Bumped after the icon cache is cleared, so visible cards ask again.
+    in property <int> icon-refresh-tick: 0;
+
     // ── Slint → Rust ──
     callback search-edited(string);
     callback search-submitted(string);
@@ -130,6 +133,13 @@ export component MainWindow inherits Window {
     callback browse-entry-clicked(UiTaxonomyEntry);
     callback browse-app-clicked(UiPackage);
     callback browse-more-clicked();
+    // Lazy images: the card that is on screen reports its index range.
+    callback home-icons-needed(int, int, int);
+    callback search-icons-needed(int, int);
+    callback installed-icons-needed(int, int);
+    callback browse-icons-needed(int, int);
+    callback addons-icons-needed(int, int);
+    callback browse-icon-needed(string);
 
     // Copy via a hidden, read-only TextInput: Slint's own clipboard support
     // works on both X11 and Wayland without extra dependencies.
@@ -270,9 +280,11 @@ export component MainWindow inherits Window {
                 if root.search-query != "" : PackageGrid {
                     packages: root.search-results;
                     has-more: root.has-more-results;
+                    refresh-tick: root.icon-refresh-tick;
                     empty-text: root.search-busy ? "Searching…" : "No packages found";
                     app-clicked(p) => { root.app-clicked(p); }
                     more-clicked => { root.request-more-results(); }
+                    icons-needed(first, last) => { root.search-icons-needed(first, last); }
                 }
                 Rectangle {
                     visible: root.search-query == "";
@@ -283,10 +295,12 @@ export component MainWindow inherits Window {
                         cover-image: root.cover-image;
                         cover-count: root.cover-count;
                         sections: root.sections;
+                        refresh-tick: root.icon-refresh-tick;
                         app-clicked(p) => { root.app-clicked(p); }
                         cover-prev => { root.cover-prev(); }
                         cover-next => { root.cover-next(); }
                         cover-clicked => { root.cover-clicked(); }
+                        icons-needed(row, first, last) => { root.home-icons-needed(row, first, last); }
                     }
                     VScrollBar {
                         x: parent.width - self.width - 3px;
@@ -320,9 +334,11 @@ export component MainWindow inherits Window {
             loading: root.installed-loading;
             has-more: root.installed-has-more;
             filter <=> root.installed-filter;
+            refresh-tick: root.icon-refresh-tick;
             filter-edited(t) => { root.installed-filter-edited(t); }
             app-clicked(p) => { root.app-clicked(p); }
             more-clicked => { root.request-more-installed(); }
+            icons-needed(first, last) => { root.installed-icons-needed(first, last); }
         }
         }
       }
@@ -363,8 +379,10 @@ export component MainWindow inherits Window {
     if root.view == AppView.addons : AddonsStore {
         packages: root.addons-packages;
         store-title: root.current-special-case.type-name + " for " + root.current-package.pretty-name;
+        refresh-tick: root.icon-refresh-tick;
         back-clicked => { root.view = AppView.details; }
         app-clicked(p) => { root.app-clicked(p); }
+        icons-needed(first, last) => { root.addons-icons-needed(first, last); }
     }
 
     if root.view == AppView.settings : SettingsView {
@@ -398,11 +416,14 @@ export component MainWindow inherits Window {
         entry-subtitle: root.browse-entry-subtitle;
         packages: root.browse-packages;
         has-more: root.browse-has-more;
+        refresh-tick: root.icon-refresh-tick;
 
         back-clicked => { root.browse-back-clicked(); }
         entry-clicked(entry) => { root.browse-entry-clicked(entry); }
         app-clicked(p) => { root.browse-app-clicked(p); }
         more-clicked => { root.browse-more-clicked(); }
+        icons-needed(first, last) => { root.browse-icons-needed(first, last); }
+        icon-needed(key) => { root.browse-icon-needed(key); }
     }
 
     // ═════════════ hamburger drawer ═════════════
