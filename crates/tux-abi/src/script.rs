@@ -29,6 +29,8 @@ pub const MAX_COMMANDS: usize = 64;
 pub const MAX_OPTIONS: usize = 40;
 const MAX_FILE_BYTES: u64 = 512 * 1024;
 const MAX_TEXT: usize = 40_000;
+pub const MAX_TOP_BUTTON_LABEL: usize = 40;
+const MAX_URL_LEN: usize = 2048;
 
 // ───────────────────────────── small value types ─────────────────────────────
 
@@ -573,6 +575,52 @@ pub struct StorageInfo {
     pub note: String,
 }
 
+/// A link button drawn in the top-right corner of the add-on's run window
+/// (for example "Arch Wiki - NVIDIA"). Clicking it opens `url` in the
+/// desktop's default browser.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TopButton {
+    /// Text on the button (1..=[`MAX_TOP_BUTTON_LABEL`] characters).
+    pub label: String,
+    /// `http://` or `https://` link, no white space.
+    pub url: String,
+    /// Only `external-link` exists today; omit it for the same result.
+    #[serde(default)]
+    pub icon: Option<String>,
+    /// Only `top-right` exists today; omit it for the same result.
+    #[serde(default)]
+    pub position: Option<String>,
+}
+
+impl TopButton {
+    fn validate(&self) -> Result<(), String> {
+        let label = self.label.trim();
+        if label.is_empty() || self.label.chars().count() > MAX_TOP_BUTTON_LABEL || self.label.chars().any(char::is_control) {
+            return Err(format!("top_button label must be 1..={MAX_TOP_BUTTON_LABEL} characters without control characters"));
+        }
+        if !is_valid_web_url(&self.url) {
+            return Err("top_button url must be an http:// or https:// link without white space".into());
+        }
+        if self.icon.as_deref().is_some_and(|i| i != "external-link") {
+            return Err("top_button icon must be \"external-link\"".into());
+        }
+        if self.position.as_deref().is_some_and(|p| p != "top-right") {
+            return Err("top_button position must be \"top-right\"".into());
+        }
+        Ok(())
+    }
+}
+
+/// `http(s)://host…` with no white space or control characters (what
+/// `xdg-open` may safely be handed from a script's metadata).
+pub fn is_valid_web_url(url: &str) -> bool {
+    let rest = url.strip_prefix("https://").or_else(|| url.strip_prefix("http://"));
+    url.len() <= MAX_URL_LEN
+        && rest.is_some_and(|r| !r.is_empty() && !r.starts_with('/'))
+        && !url.chars().any(|c| c.is_whitespace() || c.is_control())
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Script {
@@ -611,6 +659,9 @@ pub struct Script {
     /// How to get the thumbnail (format version 2).
     #[serde(default)]
     pub icon: Option<IconSpec>,
+    /// A link button in the top-right corner of the run window (since 0.17.0).
+    #[serde(default)]
+    pub top_button: Option<TopButton>,
     /// Screenshots for the add-on's page (format version 2, since 0.10.0):
     /// files next to the JSON and/or links on trusted hosts, in display order.
     #[serde(default)]
@@ -770,6 +821,9 @@ impl Script {
         }
         if let Some(icon) = &self.icon {
             check_icon(icon)?;
+        }
+        if let Some(b) = &self.top_button {
+            b.validate()?;
         }
         if self.categories.len() > 16 {
             return Err("at most 16 categories".into());
@@ -1207,6 +1261,59 @@ mod tests {
               }}"#,
         )
         .unwrap()
+    }
+
+    #[test]
+    fn top_button_is_optional_and_validated() {
+        let mut s = sample();
+        assert!(s.top_button.is_none());
+        s.validate().unwrap();
+
+        let btn = |label: &str, url: &str, icon: Option<&str>, pos: Option<&str>| TopButton {
+            label: label.into(),
+            url: url.into(),
+            icon: icon.map(Into::into),
+            position: pos.map(Into::into),
+        };
+        s.top_button = Some(btn("Arch Wiki - NVIDIA", "https://wiki.archlinux.org/title/NVIDIA", Some("external-link"), Some("top-right")));
+        s.validate().unwrap();
+        s.top_button = Some(btn("Docs", "http://example.org/x", None, None));
+        s.validate().unwrap();
+
+        for bad in [
+            btn("", "https://example.org", None, None),
+            btn(&"x".repeat(MAX_TOP_BUTTON_LABEL + 1), "https://example.org", None, None),
+            btn("Docs", "javascript:alert(1)", None, None),
+            btn("Docs", "file:///etc/passwd", None, None),
+            btn("Docs", "https://", None, None),
+            btn("Docs", "https:///x", None, None),
+            btn("Docs", "https://a b", None, None),
+            btn("Docs", "https://example.org", Some("star"), None),
+            btn("Docs", "https://example.org", None, Some("bottom-left")),
+        ] {
+            s.top_button = Some(bad.clone());
+            assert!(s.validate().is_err(), "{bad:?} should be rejected");
+        }
+    }
+
+    #[test]
+    fn top_button_parses_from_json() {
+        let s: Script = serde_json::from_str(
+            r#"{ "schema": 2, "id": "demo-1", "title": "Demo", "start": "a",
+                 "top_button": {"label": "Arch Wiki - NVIDIA", "url": "https://wiki.archlinux.org/title/NVIDIA",
+                                "icon": "external-link", "position": "top-right"},
+                 "steps": {"a": {"type":"finish","title":"Done"}} }"#,
+        )
+        .unwrap();
+        s.validate().unwrap();
+        assert_eq!(s.top_button.unwrap().label, "Arch Wiki - NVIDIA");
+        // an unknown key inside top_button is a typo, not silently ignored
+        assert!(serde_json::from_str::<Script>(
+            r#"{ "schema": 2, "id": "d", "title": "D", "start": "a",
+                 "top_button": {"label": "x", "url": "https://x.org", "colour": "red"},
+                 "steps": {"a": {"type":"finish","title":"Done"}} }"#
+        )
+        .is_err());
     }
 
     #[test]

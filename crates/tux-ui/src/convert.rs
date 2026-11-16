@@ -166,6 +166,8 @@ pub fn script_view(v: &ScriptViewData, icons: &HashMap<String, Image>) -> (UiScr
         busy: v.busy,
         multi: v.multi,
         min_select: v.min_select as i32,
+        link_label: v.link_label.as_str().into(),
+        link_url: v.link_url.as_str().into(),
     };
     (view, options)
 }

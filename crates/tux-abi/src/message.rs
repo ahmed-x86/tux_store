@@ -271,6 +271,13 @@ pub struct ScriptViewData {
     pub buttons: Vec<ScriptButtonView>,
     /// A command is running: no buttons, progress bar instead.
     pub busy: bool,
+    /// The script's `top_button`: text of the link button in the window's
+    /// top-right corner. Empty = no button.
+    #[serde(default)]
+    pub link_label: String,
+    /// Where that button leads (`http(s)://` only; already validated).
+    #[serde(default)]
+    pub link_url: String,
 }
 
 // ───────────────────────────── the bus message ─────────────────────────────

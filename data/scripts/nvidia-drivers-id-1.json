@@ -22,6 +22,12 @@
     "كرت الشاشة"
   ],
   "show_on_home": true,
+  "top_button": {
+    "label": "Arch Wiki - NVIDIA",
+    "url": "https://wiki.archlinux.org/title/NVIDIA",
+    "icon": "external-link",
+    "position": "top-right"
+  },
   "category": "utilities",
   "categories": ["drivers"],
   "vars": {

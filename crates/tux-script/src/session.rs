@@ -185,6 +185,7 @@ impl Session {
     }
 
     fn base_view(&self, title: &str, message: &str, tone: Tone) -> ScriptViewData {
+        let top = self.loaded.script.top_button.as_ref();
         ScriptViewData {
             script_id: String::new(),
             script_title: String::new(),
@@ -198,6 +199,8 @@ impl Session {
             min_select: 0,
             buttons: Vec::new(),
             busy: false,
+            link_label: top.map(|b| b.label.clone()).unwrap_or_default(),
+            link_url: top.map(|b| b.url.clone()).unwrap_or_default(),
         }
     }
 
@@ -1051,6 +1054,23 @@ mod tests {
         assert!(text.contains("Result  : not completed"), "{text}");
         let shown = msgs.iter().find_map(|m| match m { Message::ScriptView { view } if view.title == "It failed" => Some(view.clone()), _ => None }).unwrap();
         assert!(shown.message.starts_with("exit 3") && shown.message.contains("Log: "), "{:?}", shown.message);
+    }
+
+    #[test]
+    fn the_top_button_rides_on_every_screen_and_is_absent_without_one() {
+        let with = r#"{"schema":2,"id":"top-btn-1","title":"Top","start":"hi",
+          "top_button":{"label":"Arch Wiki - NVIDIA","url":"https://wiki.archlinux.org/title/NVIDIA"},
+          "steps":{"hi":{"type":"dialog","title":"Hi","buttons":[{"label":"Go","goto":"end"}]},
+                   "end":{"type":"finish","title":"Done"}}}"#;
+        let (_, msgs) = play(with, Origin::System, |_| (0, None));
+        let views: Vec<_> = msgs.iter().filter_map(|m| match m { Message::ScriptView { view } => Some(view), _ => None }).collect();
+        assert!(views.len() >= 2);
+        assert!(views.iter().all(|v| v.link_label == "Arch Wiki - NVIDIA" && v.link_url == "https://wiki.archlinux.org/title/NVIDIA"));
+
+        let without = r#"{"schema":2,"id":"top-btn-2","title":"Top","start":"hi","steps":{
+          "hi":{"type":"dialog","title":"Hi","buttons":[{"label":"Cancel","exit":true}]}}}"#;
+        let (_, msgs) = play(without, Origin::System, |_| (0, None));
+        assert!(msgs.iter().all(|m| match m { Message::ScriptView { view } => view.link_label.is_empty() && view.link_url.is_empty(), _ => true }));
     }
 
     #[test]

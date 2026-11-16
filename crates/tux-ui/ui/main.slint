@@ -109,6 +109,7 @@ export component MainWindow inherits Window {
     callback install-clicked();
     callback remove-clicked(string);
     callback open-url(string, string);
+    callback open-link(string);
     callback addon-clicked(string);
     callback view-all-addons-clicked();
     callback request-more-results();
@@ -586,6 +587,7 @@ export component MainWindow inherits Window {
         button-clicked(i) => { root.script-button-clicked(i); }
         details-clicked => { root.show-console = true; }
         minimize-clicked => { root.script-minimized = true; }
+        link-clicked => { root.open-link(root.script-view.link-url); }
     }
 
     // While an add-on package works in the background: a small bar that brings the window back.

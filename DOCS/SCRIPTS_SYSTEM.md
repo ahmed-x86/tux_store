@@ -80,6 +80,7 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 | `show_on_home` | no | list it in the Home “Tools & Scripts” shelf |
 | `category` | no | AppStream category id or title (`utilities`, `developer-tools`, `games`, …). Lists it in that **Categories** page too |
 | `categories` | no | every category it belongs to, as a list: AppStream ids/titles and/or custom add-on category ids (`["artcraft", "graphics"]`). Merged with `category` |
+| `top_button` | no | a link button in the top-right corner of the run window, see *Top button* below |
 | `info` | no | `download_mb`, `extracted_mb`, `installed_mb`, `note` (numbers, or command objects) |
 | `icon` | no | one source or a list tried in order: `{"file": "x.svg"}`, `{"theme": "nvidia"}`, `{"url": "https://…png"}` |
 | `vars` | no | initial variables (`{"gpu_model": "unknown"}`) |
@@ -88,6 +89,26 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 | `steps` | yes | the state machine: `{ "step_name": { "type": …, … } }` |
 
 **Unknown keys are errors.** A typo such as `on_succes` is rejected instead of silently changing behaviour. Every `goto` / `next` / `on_success` / `on_failure` must name an existing step.
+
+### Top button
+
+`top_button` puts one small link button in the top-right corner of the add-on's run window, so the user can open documentation while the script runs. It is shown on every screen of the install and uninstall flows.
+
+```json
+"top_button": {
+  "label": "Arch Wiki - NVIDIA",
+  "url": "https://wiki.archlinux.org/title/NVIDIA",
+  "icon": "external-link",
+  "position": "top-right"
+}
+```
+
+- `label`: 1–40 characters, no control characters.
+- `url`: `http://` or `https://` only, no white space. Clicking opens it in the default browser (`xdg-open`); any other scheme makes the file fail validation.
+- `icon` and `position` are optional and, for now, accept only `"external-link"` and `"top-right"`.
+- Without `top_button` the window is drawn exactly as before.
+
+Stores older than 0.17.0 reject the unknown `top_button` key, like every other key added after their release.
 
 ### Home and Categories
 
