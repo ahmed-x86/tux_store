@@ -101,6 +101,25 @@ fn wire(ui: &MainWindow) {
     ui.on_browse_more_clicked(|| {
         with_state(|st| st.browse_more());
     });
+    // Lazy images: Slint reports only the cards / rows on screen.
+    ui.on_home_icons_needed(|row, first, last| {
+        with_state(|st| st.home_icons_needed(row, first, last));
+    });
+    ui.on_search_icons_needed(|first, last| {
+        with_state(|st| st.search_icons_needed(first, last));
+    });
+    ui.on_installed_icons_needed(|first, last| {
+        with_state(|st| st.installed_icons_needed(first, last));
+    });
+    ui.on_browse_icons_needed(|first, last| {
+        with_state(|st| st.browse_icons_needed(first, last));
+    });
+    ui.on_addons_icons_needed(|first, last| {
+        with_state(|st| st.addons_icons_needed(first, last));
+    });
+    ui.on_browse_icon_needed(|key| {
+        with_state(|st| st.browse_icon_needed(key.to_string()));
+    });
 
     // ── tabs ──
     ui.on_tab_changed(|tab| {
@@ -124,7 +143,9 @@ fn wire(ui: &MainWindow) {
     {
         let weak = ui.as_weak();
         ui.window().on_close_requested(move || {
-            let busy = weak.upgrade().is_some_and(|u| u.get_script_active() && u.get_script_view().busy);
+            let busy = weak
+                .upgrade()
+                .is_some_and(|u| u.get_script_active() && u.get_script_view().busy);
             if busy {
                 slint::CloseRequestResponse::KeepWindowShown
             } else {
@@ -195,5 +216,4 @@ fn wire(ui: &MainWindow) {
     ui.on_clear_icon_cache(|| {
         with_state(|st| st.clear_icon_cache());
     });
-
 }
