@@ -1,0 +1,10 @@
+{
+  "package": "pipewire",
+  "addons": {
+    "ALSA compatibility": "pipewire-alsa",
+    "PulseAudio compatibility": "pipewire-pulse",
+    "JACK compatibility": "pipewire-jack",
+    "Session manager (WirePlumber)": "wireplumber",
+    "Graphical patchbay": "helvum"
+  }
+}
