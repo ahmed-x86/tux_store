@@ -5,8 +5,10 @@ import { PackageGrid, PillButton, TopBar } from "components.slint";
 export component AddonsStore inherits Rectangle {
     in property <[UiPackage]> packages;
     in property <string> store-title: "Addons Store";
+    in property <int> refresh-tick: 0;
     callback back-clicked();
     callback app-clicked(UiPackage);
+    callback icons-needed(int, int);
 
     background: Theme.base;
 
@@ -27,8 +29,10 @@ export component AddonsStore inherits Rectangle {
         PackageGrid {
             vertical-stretch: 1;
             packages: root.packages;
+            refresh-tick: root.refresh-tick;
             empty-text: "Loading…";
             app-clicked(p) => { root.app-clicked(p); }
+            icons-needed(first, last) => { root.icons-needed(first, last); }
         }
     }
 }
