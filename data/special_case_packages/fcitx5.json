@@ -1,0 +1,28 @@
+{
+  "package": "fcitx5",
+  "addons": {
+    "Chinese add-ons": "fcitx5-chinese-addons",
+    "Chinese (Chewing)": "fcitx5-chewing",
+    "Chinese (Rime)": "fcitx5-rime",
+    "Chinese wiki dictionary": "fcitx5-pinyin-zhwiki",
+    "Japanese (Anthy)": "fcitx5-anthy",
+    "Japanese (Mozc)": "fcitx5-mozc",
+    "Japanese (Mozc UT)": "fcitx5-mozc-ut",
+    "Korean (Hangul)": "fcitx5-hangul",
+    "Korean (KKC)": "fcitx5-kkc",
+    "Vietnamese (Bamboo)": "fcitx5-bamboo",
+    "Vietnamese (Unikey)": "fcitx5-unikey",
+    "Thai (LibThai)": "fcitx5-libthai",
+    "Sinhala (Sayura)": "fcitx5-sayura",
+    "m17n languages": "fcitx5-m17n",
+    "Extra table engines": "fcitx5-table-extra",
+    "Other table engines": "fcitx5-table-other",
+    "Lua scripting": "fcitx5-lua",
+    "Configuration tool": "fcitx5-configtool",
+    "GTK module": "fcitx5-gtk",
+    "Qt module": "fcitx5-qt",
+    "Breeze theme": "fcitx5-breeze",
+    "Material theme": "fcitx5-material-color",
+    "Nord theme": "fcitx5-nord"
+  }
+}
