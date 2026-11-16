@@ -21,8 +21,8 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
-use tux_abi::remote::{RemoteEntry, RemoteMap};
 use tux_abi::paths;
+use tux_abi::remote::{RemoteEntry, RemoteMap};
 use tux_abi::script::{is_valid_icon_file_name, IconSource};
 
 /// How long a "no icon found" verdict is trusted.
@@ -69,11 +69,12 @@ pub struct Resolver {
 impl Resolver {
     pub fn new(cache_root: PathBuf) -> Self {
         let local_root = paths::data_dir().join("images/icons");
-        let custom: Vec<(String, String)> = fs::read_to_string(local_root.join("custom_icons.json"))
-            .ok()
-            .and_then(|t| serde_json::from_str::<HashMap<String, String>>(&t).ok())
-            .map(|m| m.into_iter().collect())
-            .unwrap_or_default();
+        let custom: Vec<(String, String)> =
+            fs::read_to_string(local_root.join("custom_icons.json"))
+                .ok()
+                .and_then(|t| serde_json::from_str::<HashMap<String, String>>(&t).ok())
+                .map(|m| m.into_iter().collect())
+                .unwrap_or_default();
         let cache_dir = cache_root.join("icons");
         Self {
             cache_root,
@@ -87,20 +88,19 @@ impl Resolver {
         }
     }
 
-    pub fn warm_up(&self) {
-        self.theme();
-    }
-
     /// Discovered lazily, once, and again after the cache is cleared (so a
     /// theme change takes effect without restarting the store).
     fn theme(&self) -> Arc<ThemeDirs> {
         let mut g = tux_abi::sync::lock(&self.theme);
-        g.get_or_insert_with(|| Arc::new(ThemeDirs::discover())).clone()
+        g.get_or_insert_with(|| Arc::new(ThemeDirs::discover()))
+            .clone()
     }
 
     /// What `remote_images.json` declares for this package's icon (theme names, file, link), if anything.
     fn declared_icon(&self, name: &str) -> Option<RemoteEntry> {
-        let map = tux_abi::sync::lock(&self.remote).get_or_insert_with(|| Arc::new(tux_abi::remote::load())).clone();
+        let map = tux_abi::sync::lock(&self.remote)
+            .get_or_insert_with(|| Arc::new(tux_abi::remote::load()))
+            .clone();
         map.get(name).filter(|e| e.has_icon_source()).cloned()
     }
 
@@ -144,7 +144,9 @@ impl Resolver {
         g.get_or_insert_with(|| {
             let mut list = Vec::new();
             for l in tux_abi::script::load_all() {
-                let Some(dir) = l.path.parent().map(Path::to_path_buf) else { continue };
+                let Some(dir) = l.path.parent().map(Path::to_path_buf) else {
+                    continue;
+                };
                 // the add-on's own icon is asked for by its id…
                 if let Some(icon) = l.script.icon.as_ref() {
                     list.push(ScriptIcon {
@@ -158,15 +160,23 @@ impl Resolver {
                 // Two options with the same picture share one entry.
                 for (key, _step, _idx, icon) in l.script.option_icons() {
                     if !list.iter().any(|s| s.id == key) {
-                        list.push(ScriptIcon { id: key, dir: dir.clone(), sources: icon.sources().into_iter().cloned().collect() });
+                        list.push(ScriptIcon {
+                            id: key,
+                            dir: dir.clone(),
+                            sources: icon.sources().into_iter().cloned().collect(),
+                        });
                     }
                 }
             }
             // Custom add-on categories (`data/addon_categories/…`) show their
             // own thumbnail under `addon-category-<id>`.
             for l in tux_abi::addon_category::load_all() {
-                let Some(icon) = &l.category.icon else { continue };
-                let Some(dir) = l.dir().map(Path::to_path_buf) else { continue };
+                let Some(icon) = &l.category.icon else {
+                    continue;
+                };
+                let Some(dir) = l.dir().map(Path::to_path_buf) else {
+                    continue;
+                };
                 let sources = icon.sources();
                 if sources.is_empty() {
                     continue;
@@ -183,7 +193,10 @@ impl Resolver {
     }
 
     fn script_icon(&self, name: &str) -> Option<(PathBuf, Vec<IconSource>)> {
-        self.script_icon_table().iter().find(|s| s.id == name).map(|s| (s.dir.clone(), s.sources.clone()))
+        self.script_icon_table()
+            .iter()
+            .find(|s| s.id == name)
+            .map(|s| (s.dir.clone(), s.sources.clone()))
     }
 
     /// `"file"` source: a picture next to the JSON. `.ico` files are unpacked
@@ -212,7 +225,9 @@ impl Resolver {
     fn script_theme_icon(&self, icon: &str) -> Option<PathBuf> {
         let cands = [icon.to_string()];
         let theme = self.theme();
-        theme.find_primary(&cands).or_else(|| theme.find_fallback(&cands))
+        theme
+            .find_primary(&cands)
+            .or_else(|| theme.find_fallback(&cands))
     }
 
     /// An icon shipped for exactly this package (or script id). Looked up by
@@ -223,7 +238,10 @@ impl Resolver {
         }
         // `images/icons/scripts/<id>.svg` (shipped) and
         // `~/.config/tux-store/scripts/icons/<id>.svg` (user scripts).
-        let dirs = [self.local_root.join("scripts"), paths::user_scripts_dir().join("icons")];
+        let dirs = [
+            self.local_root.join("scripts"),
+            paths::user_scripts_dir().join("icons"),
+        ];
         dirs.iter()
             .flat_map(|d| ["svg", "png"].map(|e| d.join(format!("{name}.{e}"))))
             .find(|p| p.is_file())
@@ -234,7 +252,11 @@ impl Resolver {
         // shortened guesses (`base-devel` → `base`, the LibreOffice icon) are not tried.
         let declared = self.declared_icon(name);
         let has_url = declared.as_ref().is_some_and(|e| e.icon.is_some());
-        let cands = if declared.is_some() { vec![name.to_string()] } else { candidates(name) };
+        let cands = if declared.is_some() {
+            vec![name.to_string()]
+        } else {
+            candidates(name)
+        };
 
         // 00. an add-on package says in its JSON where its icon comes from:
         //     file next to the JSON, icon theme, or a link — tried in that order.
@@ -285,14 +307,21 @@ impl Resolver {
         //     icon (e.g. `onlyoffice-desktopeditors`), then a file shipped with the store.
         if let Some(e) = &declared {
             if !e.theme.is_empty() {
-                if let Some(p) = theme.find_primary(&e.theme).or_else(|| theme.find_fallback(&e.theme)) {
+                if let Some(p) = theme
+                    .find_primary(&e.theme)
+                    .or_else(|| theme.find_fallback(&e.theme))
+                {
                     return Offline::Hit(p);
                 }
             }
             if let Some(f) = &e.file {
                 // next to the JSON that declared it first, then `data/images/icons/`
                 let beside = e.dir.as_ref().map(|d| d.join(f));
-                if let Some(p) = beside.into_iter().chain([self.local_root.join(f)]).find(|p| p.is_file()) {
+                if let Some(p) = beside
+                    .into_iter()
+                    .chain([self.local_root.join(f)])
+                    .find(|p| p.is_file())
+                {
                     return Offline::Hit(p);
                 }
             }
@@ -329,11 +358,18 @@ impl Resolver {
             .script_icon(name)
             .and_then(|(_, sources)| sources.into_iter().find_map(|s| s.url))
             .filter(|u| tux_abi::script::is_valid_icon_url(u))
-            .or_else(|| self.declared_icon(name).and_then(|e| e.icon).filter(|u| tux_abi::remote::is_trusted_image_url(u)));
+            .or_else(|| {
+                self.declared_icon(name)
+                    .and_then(|e| e.icon)
+                    .filter(|u| tux_abi::remote::is_trusted_image_url(u))
+            });
         let result = match declared {
             Some(url) => self.download_url(&url),
             None => {
-                let best = candidates(name).into_iter().next().unwrap_or_else(|| name.to_string());
+                let best = candidates(name)
+                    .into_iter()
+                    .next()
+                    .unwrap_or_else(|| name.to_string());
                 self.download(&best)
             }
         };
@@ -406,7 +442,11 @@ impl Resolver {
             }
         };
         if out.status.success() {
-            return if is_valid_image(&out.stdout) { Download::Ok(out.stdout) } else { Download::NotFound };
+            return if is_valid_image(&out.stdout) {
+                Download::Ok(out.stdout)
+            } else {
+                Download::NotFound
+            };
         }
         // curl exit code 22 = HTTP error status (404 …).
         if out.status.code() == Some(22) {
@@ -443,7 +483,9 @@ fn clear_dir_contents(root: &Path) -> u32 {
     let Ok(rd) = fs::read_dir(root) else { return 0 };
     for e in rd.flatten() {
         let p = e.path();
-        let is_dir = fs::symlink_metadata(&p).map(|m| m.is_dir()).unwrap_or(false);
+        let is_dir = fs::symlink_metadata(&p)
+            .map(|m| m.is_dir())
+            .unwrap_or(false);
         if is_dir {
             let n = count_files(&p);
             if fs::remove_dir_all(&p).is_ok() {
@@ -473,8 +515,16 @@ fn count_files(dir: &Path) -> u32 {
 /// The largest PNG image stored inside an `.ico` file (modern icons embed
 /// PNGs). Old BMP-only icons are not supported and give `None`.
 pub fn ico_to_png(bytes: &[u8]) -> Option<Vec<u8>> {
-    let u16le = |o: usize| bytes.get(o..o + 2).map(|b| u16::from_le_bytes([b[0], b[1]]) as usize);
-    let u32le = |o: usize| bytes.get(o..o + 4).map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]) as usize);
+    let u16le = |o: usize| {
+        bytes
+            .get(o..o + 2)
+            .map(|b| u16::from_le_bytes([b[0], b[1]]) as usize)
+    };
+    let u32le = |o: usize| {
+        bytes
+            .get(o..o + 4)
+            .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]) as usize)
+    };
     if u16le(0)? != 0 || u16le(2)? != 1 {
         return None;
     }
@@ -531,7 +581,10 @@ mod tests {
             script_icons: Mutex::new(None),
             remote: Mutex::new(None),
         };
-        assert_eq!(r.exact_bundled("libreoffice-fresh-ar"), Some(dir.join("libreoffice-fresh-ar.svg")));
+        assert_eq!(
+            r.exact_bundled("libreoffice-fresh-ar"),
+            Some(dir.join("libreoffice-fresh-ar.svg"))
+        );
         assert_eq!(r.exact_bundled("libreoffice-fresh-xx"), None);
         let _ = fs::remove_dir_all(&base);
     }
@@ -543,7 +596,10 @@ mod tests {
         let mut map = RemoteMap::new();
         map.insert(
             "zz-remote-test".into(),
-            RemoteEntry { icon: Some("https://raw.githubusercontent.com/a/b/c.svg".into()), ..Default::default() },
+            RemoteEntry {
+                icon: Some("https://raw.githubusercontent.com/a/b/c.svg".into()),
+                ..Default::default()
+            },
         );
         let r = Resolver {
             cache_root: base.clone(),
@@ -560,10 +616,16 @@ mod tests {
         assert!(matches!(r.resolve_offline("zz-remote-test"), Offline::Miss));
         // … but still honoured for packages without a declared link
         fs::write(r.negative_marker("zz-other-test"), b"").unwrap();
-        assert!(matches!(r.resolve_offline("zz-other-test"), Offline::KnownMissing));
+        assert!(matches!(
+            r.resolve_offline("zz-other-test"),
+            Offline::KnownMissing
+        ));
         // once downloaded, the cached file is used
         fs::write(base.join("icons/zz-remote-test.svg"), b"<svg/>").unwrap();
-        assert!(matches!(r.resolve_offline("zz-remote-test"), Offline::Hit(_)));
+        assert!(matches!(
+            r.resolve_offline("zz-remote-test"),
+            Offline::Hit(_)
+        ));
         let _ = fs::remove_dir_all(&base);
     }
 
@@ -573,7 +635,14 @@ mod tests {
         fs::create_dir_all(base.join("sub")).unwrap();
         fs::write(base.join("sub/zz.svg"), b"<svg/>").unwrap();
         let mut map = RemoteMap::new();
-        map.insert("zz-file-test".into(), RemoteEntry { file: Some("sub/zz.svg".into()), theme: vec!["zz-no-such-theme-icon".into()], ..Default::default() });
+        map.insert(
+            "zz-file-test".into(),
+            RemoteEntry {
+                file: Some("sub/zz.svg".into()),
+                theme: vec!["zz-no-such-theme-icon".into()],
+                ..Default::default()
+            },
+        );
         let r = Resolver {
             cache_root: base.clone(),
             cache_dir: base.join("icons"),
@@ -584,7 +653,9 @@ mod tests {
             script_icons: Mutex::new(None),
             remote: Mutex::new(Some(Arc::new(map))),
         };
-        assert!(matches!(r.resolve_offline("zz-file-test"), Offline::Hit(p) if p.ends_with("sub/zz.svg")));
+        assert!(
+            matches!(r.resolve_offline("zz-file-test"), Offline::Hit(p) if p.ends_with("sub/zz.svg"))
+        );
         let _ = fs::remove_dir_all(&base);
     }
 
@@ -597,7 +668,14 @@ mod tests {
         fs::write(beside.join("zz.svg"), b"<svg/>").unwrap();
         fs::write(icons.join("zz.svg"), b"<svg/>").unwrap();
         let mut map = RemoteMap::new();
-        map.insert("zz-beside".into(), RemoteEntry { file: Some("zz.svg".into()), dir: Some(beside.clone()), ..Default::default() });
+        map.insert(
+            "zz-beside".into(),
+            RemoteEntry {
+                file: Some("zz.svg".into()),
+                dir: Some(beside.clone()),
+                ..Default::default()
+            },
+        );
         let r = Resolver {
             cache_root: base.clone(),
             cache_dir: base.join("cache"),
@@ -608,7 +686,9 @@ mod tests {
             script_icons: Mutex::new(None),
             remote: Mutex::new(Some(Arc::new(map))),
         };
-        assert!(matches!(r.resolve_offline("zz-beside"), Offline::Hit(p) if p.starts_with(&beside)));
+        assert!(
+            matches!(r.resolve_offline("zz-beside"), Offline::Hit(p) if p.starts_with(&beside))
+        );
         let _ = fs::remove_dir_all(&base);
     }
 
@@ -636,7 +716,10 @@ mod tests {
         fs::write(base.join("fake.png"), b"<html>no</html>").unwrap();
         let r = Resolver::new(base.join("cache"));
         // a real picture next to the JSON is used
-        assert_eq!(r.script_file_icon(&base, "logo.svg", "demo"), Some(base.join("logo.svg")));
+        assert_eq!(
+            r.script_file_icon(&base, "logo.svg", "demo"),
+            Some(base.join("logo.svg"))
+        );
         // wrong content, missing file and path tricks are refused
         assert_eq!(r.script_file_icon(&base, "fake.png", "demo"), None);
         assert_eq!(r.script_file_icon(&base, "missing.svg", "demo"), None);
