@@ -8,9 +8,11 @@ export component InstalledTab inherits Rectangle {
     in property <bool> has-more;
     in property <int> total;
     in-out property <string> filter;
+    in property <int> refresh-tick: 0;
     callback filter-edited(string);
     callback app-clicked(UiPackage);
     callback more-clicked();
+    callback icons-needed(int, int);
 
     vertical-stretch: 1;
 
@@ -40,9 +42,11 @@ export component InstalledTab inherits Rectangle {
             vertical-stretch: 1;
             packages: root.packages;
             has-more: root.has-more;
+            refresh-tick: root.refresh-tick;
             empty-text: root.loading ? "" : "Nothing to show";
             app-clicked(p) => { root.app-clicked(p); }
             more-clicked => { root.more-clicked(); }
+            icons-needed(first, last) => { root.icons-needed(first, last); }
         }
     }
 }
