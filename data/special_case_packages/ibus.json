@@ -1,0 +1,20 @@
+{
+  "package": "ibus",
+  "addons": {
+    "Chinese (Chewing)": "ibus-chewing",
+    "Chinese (Google Pinyin)": "ibus-googlepinyin",
+    "Chinese (LibPinyin)": "ibus-libpinyin",
+    "Chinese (Rime)": "ibus-rime",
+    "Chinese (SunPinyin)": "ibus-sunpinyin",
+    "Chinese tables": "ibus-table-chinese",
+    "Extra table phrases": "ibus-table-extraphrase",
+    "Japanese (Anthy)": "ibus-anthy",
+    "Japanese (Mozc)": "ibus-mozc",
+    "Korean (Hangul)": "ibus-hangul",
+    "Korean (KKC)": "ibus-kkc",
+    "Vietnamese (Bamboo)": "ibus-bamboo-git",
+    "Vietnamese (Unikey)": "ibus-unikey",
+    "Table engines": "ibus-table",
+    "Typing booster": "ibus-typing-booster"
+  }
+}
