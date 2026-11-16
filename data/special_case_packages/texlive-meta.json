@@ -1,0 +1,22 @@
+{
+  "package": "texlive-meta",
+  "language_packs": {
+    "Arabic": "texlive-langarabic",
+    "Chinese": "texlive-langchinese",
+    "CJK (Chinese, Japanese, Korean)": "texlive-langcjk",
+    "Cyrillic": "texlive-langcyrillic",
+    "Czech and Slovak": "texlive-langczechslovak",
+    "English": "texlive-langenglish",
+    "European languages": "texlive-langeuropean",
+    "French": "texlive-langfrench",
+    "German": "texlive-langgerman",
+    "Greek": "texlive-langgreek",
+    "Italian": "texlive-langitalian",
+    "Japanese": "texlive-langjapanese",
+    "Korean": "texlive-langkorean",
+    "Other languages": "texlive-langother",
+    "Polish": "texlive-langpolish",
+    "Portuguese": "texlive-langportuguese",
+    "Spanish": "texlive-langspanish"
+  }
+}
