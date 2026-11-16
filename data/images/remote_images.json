@@ -19,6 +19,9 @@
       ],
       "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/android/android-original.svg"
     },
+    "audacious": {
+      "file": "audacious.svg"
+    },
     "base-devel": {
       "theme": [
         "base-devel",
@@ -40,12 +43,18 @@
       ],
       "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/words.svg"
     },
+    "celluloid": {
+      "file": "celluloid.svg"
+    },
     "checksec": {
       "theme": [
         "checksec",
         "security-high"
       ],
       "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/security-high.svg"
+    },
+    "chromium": {
+      "file": "chromium.svg"
     },
     "clang": {
       "theme": [
@@ -71,6 +80,9 @@
       ],
       "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg"
     },
+    "docker-compose": {
+      "file": "docker-compose.svg"
+    },
     "dolphin": {
       "theme": [
         "org.kde.dolphin",
@@ -85,6 +97,15 @@
       ],
       "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/org.gnome.Epiphany.svg"
     },
+    "fcitx5": {
+      "file": "fcitx5.svg"
+    },
+    "firefox-developer-edition": {
+      "file": "firefox-developer-edition.svg"
+    },
+    "gamemode": {
+      "file": "gamemode.svg"
+    },
     "gcc": {
       "theme": [
         "gcc"
@@ -98,6 +119,30 @@
       ],
       "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/grub-customizer.svg"
     },
+    "handbrake": {
+      "file": "handbrake.svg"
+    },
+    "hyphen": {
+      "file": "hyphen.svg"
+    },
+    "ibus": {
+      "file": "ibus.svg"
+    },
+    "irssi": {
+      "file": "irssi.png"
+    },
+    "krita": {
+      "file": "krita.svg"
+    },
+    "lazygit": {
+      "file": "lazygit.svg"
+    },
+    "mangohud": {
+      "file": "mangohud.svg"
+    },
+    "mpv": {
+      "file": "mpv.svg"
+    },
     "nodejs": {
       "theme": [
         "nodejs",
@@ -105,6 +150,9 @@
         "node-js"
       ],
       "icon": "https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg"
+    },
+    "nyxt": {
+      "file": "nyxt.svg"
     },
     "onlyoffice-bin": {
       "theme": [
@@ -114,6 +162,27 @@
       ],
       "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/asc-de.svg"
     },
+    "pipewire": {
+      "file": "pipewire.svg"
+    },
+    "podman": {
+      "file": "podman.svg"
+    },
+    "retroarch": {
+      "file": "retroarch.svg"
+    },
+    "texlive": {
+      "file": "texlive.svg"
+    },
+    "texlive-meta": {
+      "file": "texlive.svg"
+    },
+    "vim": {
+      "file": "vim.svg"
+    },
+    "w3m": {
+      "file": "w3m.svg"
+    },
     "wps-office": {
       "theme": [
         "wps-office-wpsmain",
@@ -121,6 +190,12 @@
         "wps-office"
       ],
       "icon": "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/Papirus/64x64/apps/wps-office-wpsmain.svg"
+    },
+    "zoom": {
+      "file": "zoom.svg"
+    },
+    "zsh": {
+      "file": "zsh.svg"
     }
   }
 }
