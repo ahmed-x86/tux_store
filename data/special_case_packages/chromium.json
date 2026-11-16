@@ -1,0 +1,6 @@
+{
+  "package": "chromium",
+  "addons": {
+    "Widevine DRM": "chromium-widevine"
+  }
+}
