@@ -1,0 +1,60 @@
+# Maintainer: NAME <user at example dot org>
+#
+# Template for a package that builds from an upstream release tarball.
+# Replace each UPPERCASE placeholder. Delete each array that stays empty.
+# Then run: updpkgsums && pkgctl build && namcap PKGBUILD ./*.pkg.tar.zst
+
+pkgname=NAME
+pkgver=0.0.0
+pkgrel=1
+pkgdesc='SHORT DESCRIPTION WITHOUT THE PACKAGE NAME'
+arch=(x86_64)
+url='https://example.org/NAME'
+license=(SPDX-IDENTIFIER)
+depends=(
+  glibc
+)
+makedepends=(
+  meson
+  ninja
+)
+checkdepends=()
+optdepends=(
+  # 'package: reason'
+)
+provides=()
+conflicts=()
+backup=()
+options=()
+install=
+source=(
+  "https://example.org/NAME/releases/$pkgname-$pkgver.tar.gz"
+  "https://example.org/NAME/releases/$pkgname-$pkgver.tar.gz.sig"
+)
+sha256sums=(
+  'SKIP'
+  'SKIP'
+)
+validpgpkeys=()
+
+prepare() {
+  cd "$pkgname-$pkgver"
+  # patch -Np1 -i "$srcdir/fix-build.patch"
+}
+
+build() {
+  arch-meson "$pkgname-$pkgver" build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+  # Needed for a BSD, MIT, or custom license only.
+  # install -Dm644 "$pkgname-$pkgver/LICENSE" -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+# vim: set ts=2 sw=2 et:
