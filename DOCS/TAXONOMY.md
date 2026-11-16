@@ -242,7 +242,14 @@ checked as well as the package name. See
 | Request | Answer |
 |---|---|
 | `TaxonomyRequested` | `TaxonomyReady { taxonomy }` — all rows of the three sections |
+| `TaxonomySectionRequested { kind }` | `TaxonomySectionReady { kind, entries }` — only that section |
 | `TaxonomyPackagesRequested { kind, id }` | `TaxonomyPackagesReady { kind, id, title, subtitle, packages }` |
+
+The UI does **not** discover the taxonomy at start-up. It asks for a section
+the first time its page is opened (`TaxonomySectionRequested`) and caches it
+per `TaxonomyKind`; the other sections are never touched until the user opens
+them. `TaxonomyRequested` still exists for callers that really need all three
+sections at once, and for `--dump-taxonomy`.
 
 `TaxonomyReady` contains `repositories`, `groups`, `categories`, plus
 `raw_categories` (each raw AppStream id and its component count) and
