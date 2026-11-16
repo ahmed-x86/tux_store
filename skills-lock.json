@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "skills": {
+    "arabic-rtl-best-practices": {
+      "source": "alMubarmij/Arabic-AI-Skills",
+      "commit": "08d3b9d14c2d1719c0b96f703bced8dccfe2076a",
+      "sourceType": "github",
+      "skillPath": "arabic-rtl-best-practices/SKILL.md",
+      "computedHash": "73463cdd1884854e6e5acbc0220837693d582c68000b2bacb3cd91f5eabddbbe"
+    },
+    "archlinux-packaging": {
+      "source": "cesasol/skills",
+      "commit": "076970b6e42d97f2a1ae5a33d6f728062891ae2d",
+      "sourceType": "github",
+      "skillPath": "archlinux-packaging/SKILL.md",
+      "computedHash": "d5ad74d289fdc4960817595940d5ac70cfb25151c45fe41aeb207611d7de4334"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "commit": "50894c1d98bc45ca1ab127213e59d6525065b5e7",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "7bc223e2aafbdbf6e50ea243ba6ef67fe432bb069ab439fea0390795dac0bf7f"
+    },
+    "rust-async-patterns": {
+      "source": "wshobson/agents",
+      "commit": "9c61ab243def98f72da12abd41cfcf5bcd91af9d",
+      "sourceType": "github",
+      "skillPath": "plugins/systems-programming/skills/rust-async-patterns/SKILL.md",
+      "computedHash": "286b73077a434af5844dd480e5b98026bea5b31fcfafce3c04405a7392331601"
+    },
+    "rust-best-practices": {
+      "source": "apollographql/skills",
+      "commit": "9dda1397730370aeb8df4ff8f2015c34c86b5003",
+      "sourceType": "github",
+      "skillPath": "skills/rust-best-practices/SKILL.md",
+      "computedHash": "7e12e68aa50152eb7ba9ea1f88ca5380c846ea0175f8ab6788bb79b7faf12ca0"
+    },
+    "slint": {
+      "source": "slint-ui/ai-plugins",
+      "commit": "eb360989bbad453557778643e2954af5d5136727",
+      "sourceType": "github",
+      "skillPath": "skills/slint/SKILL.md",
+      "computedHash": "4b577478ae3b72be9487099c99527fe43f274da326404f2510c61c9b8ed59ff0"
+    }
+  }
+}

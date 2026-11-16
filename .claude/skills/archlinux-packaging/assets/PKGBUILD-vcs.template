@@ -1,0 +1,57 @@
+# Maintainer: NAME <user at example dot org>
+#
+# Template for a package that builds the latest commit of a Git repository.
+# The name needs the -git suffix. Test pkgver() before you publish the package.
+# Then run: pkgctl build && namcap PKGBUILD ./*.pkg.tar.zst
+
+pkgname=NAME-git
+_pkgname=${pkgname%-git}
+pkgver=0.0.0.r0.g0000000
+pkgrel=1
+pkgdesc='SHORT DESCRIPTION WITHOUT THE PACKAGE NAME'
+arch=(x86_64)
+url='https://example.org/NAME'
+license=(SPDX-IDENTIFIER)
+depends=(
+  glibc
+)
+makedepends=(
+  git
+  meson
+  ninja
+)
+checkdepends=()
+provides=("$_pkgname=$pkgver")
+conflicts=("$_pkgname")
+source=("$_pkgname::git+https://example.org/NAME.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$_pkgname"
+  # Annotated tags:
+  git describe --long --abbrev=7 | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+  # No tags:
+  # printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+prepare() {
+  cd "$_pkgname"
+  # git submodule init
+  # git config submodule.libs/libdep.url "$srcdir/lib-dependency"
+  # git -c protocol.file.allow=always submodule update
+}
+
+build() {
+  arch-meson "$_pkgname" build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+}
+
+# vim: set ts=2 sw=2 et:

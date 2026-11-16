@@ -1,0 +1,125 @@
+{
+  "skill_name": "archlinux-packaging",
+  "queries": [
+    {
+      "id": 1,
+      "query": "namcap on my foo-git PKGBUILD says provides=$pkgname is a duplicate and flags a missing depend. Fix the arrays for me.",
+      "should_trigger": true,
+      "split": "train"
+    },
+    {
+      "id": 2,
+      "query": "Use pacman -Qi output with awk to list every explicitly installed package over 100 MiB, biggest first.",
+      "should_trigger": false,
+      "split": "train"
+    },
+    {
+      "id": 3,
+      "query": "My package builds fine on my laptop but fails in a clean environment because the laptop already has libfoo. How do I catch that before I push?",
+      "should_trigger": true,
+      "split": "validation"
+    },
+    {
+      "id": 4,
+      "query": "Write an RPM spec for our Go daemon for a Fedora COPR build, with a %files section and a %changelog entry for 2.3.1.",
+      "should_trigger": false,
+      "split": "validation"
+    },
+    {
+      "id": 5,
+      "query": "I wrote a Rust TUI and want my own machines to install it like any other system package. The project is only built from git master with no tags, so the version should come from the commit count.",
+      "should_trigger": true,
+      "split": "train"
+    },
+    {
+      "id": 6,
+      "query": "Add a cache: block to .gitlab-ci.yml so node_modules persist between the lint and test jobs, and make the test job need lint.",
+      "should_trigger": false,
+      "split": "train"
+    },
+    {
+      "id": 7,
+      "query": "Need a PKGBUILD for my Go CLI 'tidbit' for the AUR. It's in ~/aur/tidbit, upstream tags look like v1.4.2, binaries are on GitHub releases.",
+      "should_trigger": true,
+      "split": "train"
+    },
+    {
+      "id": 8,
+      "query": "Package our Rust tool as a Nix flake output with buildRustPackage, and add a devShell for contributors.",
+      "should_trigger": false,
+      "split": "validation"
+    },
+    {
+      "id": 9,
+      "query": "Before I push my update to the repo that users pull from, check that the metadata matches the build file so the listing shows 3.0.1, not 3.0.0.",
+      "should_trigger": true,
+      "split": "validation"
+    },
+    {
+      "id": 10,
+      "query": "CHANGELOG.md has mixed heading levels and trailing spaces across 40 entries. Set up rumdl to check it and fix what it can.",
+      "should_trigger": false,
+      "split": "train"
+    },
+    {
+      "id": 11,
+      "query": "I want to ship my Python CLI as a package that installs with pacman on Arch. It has a pyproject.toml and depends on requests; how do I stop the build from pulling pip stuff at build time?",
+      "should_trigger": true,
+      "split": "train"
+    },
+    {
+      "id": 12,
+      "query": "Write a justfile with recipes dev, test, fmt, and release, where release runs cargo build --release and copies the binary to dist/.",
+      "should_trigger": false,
+      "split": "validation"
+    },
+    {
+      "id": 13,
+      "query": "Making a split package with two outputs, foo and foo-docs. pacman says the docs output has a file collision and the depends on the docs output looks wrong.",
+      "should_trigger": true,
+      "split": "train"
+    },
+    {
+      "id": 14,
+      "query": "Build a .deb for our CLI with dpkg-deb and debhelper for Ubuntu 24.04, with a postinst that creates a service user.",
+      "should_trigger": false,
+      "split": "train"
+    },
+    {
+      "id": 15,
+      "query": "Our internal tool ships as a prebuilt binary tarball on the release page. I want it to install and upgrade with the same tooling as the distro packages on our laptops, no compiling. Write the recipe.",
+      "should_trigger": true,
+      "split": "validation"
+    },
+    {
+      "id": 16,
+      "query": "Create a GitLab release v2.3.1 with glab release create and attach the three binaries from dist/.",
+      "should_trigger": false,
+      "split": "train"
+    },
+    {
+      "id": 17,
+      "query": "Upstream bumped to 2.3.1 and now my build fails because the hash in my file is still for 2.3.0. Update it and whatever else needs bumping.",
+      "should_trigger": true,
+      "split": "train"
+    },
+    {
+      "id": 18,
+      "query": "Set up prek hooks for our Python repo so ruff check and ruff format run before each commit, and reject commit messages that aren't conventional.",
+      "should_trigger": false,
+      "split": "validation"
+    },
+    {
+      "id": 19,
+      "query": "makepkg -si dies with 'One or more PGP signatures could not be verified' on my foo package. Upstream signs with key 0xABCD1234, what goes in validpgpkeys?",
+      "should_trigger": true,
+      "split": "validation"
+    },
+    {
+      "id": 20,
+      "query": "Write a Homebrew formula for our CLI with a bottle block and a test do block that runs --version.",
+      "should_trigger": false,
+      "split": "train"
+    }
+  ]
+}

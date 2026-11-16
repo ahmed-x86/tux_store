@@ -1,0 +1,35 @@
+# Maintainer: NAME <user at example dot org>
+#
+# Template for a package that ships a file that upstream compiled.
+# The name needs the -bin suffix when the sources exist.
+# Find the runtime dependencies with: ldd path/to/binary
+# Then run: updpkgsums && pkgctl build && namcap PKGBUILD ./*.pkg.tar.zst
+
+pkgname=NAME-bin
+_pkgname=${pkgname%-bin}
+pkgver=0.0.0
+pkgrel=1
+pkgdesc='SHORT DESCRIPTION WITHOUT THE PACKAGE NAME'
+arch=(x86_64)
+url='https://example.org/NAME'
+license=(SPDX-IDENTIFIER)
+depends=(
+  glibc
+  gcc-libs
+)
+provides=("$_pkgname=$pkgver")
+conflicts=("$_pkgname")
+# !strip keeps the upstream binary unchanged. !debug stops an empty debug package.
+options=(!strip !debug)
+source_x86_64=("$pkgname-$pkgver.tar.gz::https://example.org/NAME/releases/download/v$pkgver/NAME-linux-amd64.tar.gz")
+sha256sums_x86_64=('SKIP')
+
+package() {
+  install -Dm755 "$_pkgname" "$pkgdir/usr/bin/$_pkgname"
+  install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+  # install -Dm644 "$_pkgname.1" -t "$pkgdir/usr/share/man/man1/"
+  # install -Dm644 "completions/$_pkgname.bash" \
+  #   "$pkgdir/usr/share/bash-completion/completions/$_pkgname"
+}
+
+# vim: set ts=2 sw=2 et:
