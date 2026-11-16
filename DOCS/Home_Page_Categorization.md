@@ -27,8 +27,8 @@ To add a category, add an object — no code changes. To add an app, add its pac
 
 ## UI
 
-`HomeTab` iterates the section model — `for section[i] in sections : AppRow { … }`. `AppRow` is a titled `Flickable` of `AppCard`s with the shared `HScrollBar` (drag or touch). The row index feeds the placeholder accent colour so neighbouring rows differ.
+`HomeTab` iterates the section model — `for section[i] in sections : AppRow { … }`. `AppRow` is a titled `Flickable` of `AppCard`s with the shared `HScrollBar` (drag or touch). The row index feeds the placeholder accent colour so neighbouring rows differ. Each row tells the UI which cards are inside the window and only those icons are requested; see [LAZY_LOADING.md](LAZY_LOADING.md).
 
 While the search box has text, the shelves are replaced by the paginated search grid; clearing it brings the shelves back.
 
-The banner above the shelves is the cover carousel (`data/images/cover/<app>/*`): a random cover first, auto-advance every 8 s (paused on hover), arrows to step, click to open that app's page (`codium` maps to `vscodium`). Only the visible image is decoded.
+The banner above the shelves is the cover carousel (`data/images/cover/<app>/*`): a random cover first, auto-advance every 8 s (paused on hover), arrows to step, click to open that app's page (`codium` maps to `vscodium`). Only the visible image is decoded; a remote cover's pictures are downloaded only when that cover is displayed.
