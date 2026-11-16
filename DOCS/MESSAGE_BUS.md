@@ -15,7 +15,7 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 
 | Message | Sent by | Handled by | Meaning |
 |---|---|---|---|
-| `UiReady` | ui | thumbnail | window exists; warm up the icon theme index |
+| `UiReady` | ui | — | window exists (lifecycle signal; no backend warms up eagerly any more) |
 | `HomeRequested` | ui | search | build the curated sections |
 | `HomeReady{sections}` | search | ui | one `Section` per catalog section |
 | `SearchRequested{query}` | ui | search | run a search |
@@ -28,11 +28,15 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 | `AddonsReady{package, packages}` | search | ui | add-ons with real repo/version data |
 | `InstalledRequested` / `InstalledReady{packages}` | ui / search | search / ui | explicitly installed packages |
 | `UpdatesRequested` / `UpdatesReady{updates, error}` | ui / search | search / ui | pending upgrades |
-| `CoversRequested` / `CoversReady{covers}` | ui / thumbnail | thumbnail / ui | home banner images |
+| `CoversRequested` / `CoversReady{covers}` | ui / thumbnail | thumbnail / ui | list the home covers (disk only) |
+| `CoverImagesRequested{name}` | ui | thumbnail | download the remote pictures of the one cover on screen |
+| `CoverImagesReady{name, images}` | thumbnail | ui | its picture paths (after a `CoverImagesRequested`) |
+| `TaxonomyRequested` / `TaxonomyReady{taxonomy}` | ui / search | search / ui | all three side-menu sections at once (rarely needed) |
+| `TaxonomySectionRequested{kind}` / `TaxonomySectionReady{kind, entries}` | ui / search | search / ui | discover only the section the user opened |
+| `TaxonomyPackagesRequested{kind, id}` / `TaxonomyPackagesReady{…}` | ui / search | search / ui | every package of one repo / group / category |
 | `IconRequested{name, size}` | ui | thumbnail | resolve an icon (once per package) |
 | `IconReady{name, path}` / `IconFailed{name}` | thumbnail | ui | result |
 | `ScreenshotsRequested{name}` | ui | thumbnail | find / download the screenshots of a package |
-| `ScreenshotsPrefetch{names}` | ui | thumbnail | idle-time hint: quietly cache these packages' screenshots (no reply) |
 | `ScreenshotsReady{name, images}` | thumbnail | ui | complete list of picture paths so far (may repeat while downloading) |
 | `ClearIconCache` / `IconCacheCleared{removed}` | ui / thumbnail | thumbnail / ui | settings button |
 | `InstallRequested{name}` | ui | install | `pacman -S` |
