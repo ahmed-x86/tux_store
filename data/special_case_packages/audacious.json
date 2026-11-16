@@ -1,0 +1,6 @@
+{
+  "package": "audacious",
+  "addons": {
+    "Plugins (codecs, effects, visualizations)": "audacious-plugins"
+  }
+}
