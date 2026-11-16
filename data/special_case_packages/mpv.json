@@ -1,0 +1,7 @@
+{
+  "package": "mpv",
+  "addons": {
+    "MPRIS support": "mpv-mpris",
+    "YouTube support (yt-dlp)": "yt-dlp"
+  }
+}
