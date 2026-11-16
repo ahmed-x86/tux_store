@@ -76,7 +76,19 @@ Slint structs are plain values; the UI follows read-modify-write for them (`get_
 
 **Screenshots** — UI `ScreenshotsRequested` when a package page opens → thumbnail uses local files, the cache, or downloads from Flathub → `ScreenshotsReady{images}` (repeated as pictures arrive) → the slider's model is replaced. See [SCREENSHOTS.md](SCREENSHOTS.md).
 
-**Icon** — UI `IconRequested` (once per package) → thumbnail resolves it offline or with one HTTP request → `IconReady{path}` → UI patches every visible card.
+**Icon** — UI `IconRequested` (once per package, only when one of its cards enters a viewport or its page opens) → thumbnail resolves it offline or with one HTTP request → `IconReady{path}` → UI patches every visible card.
+
+**Cover** — UI `CoversRequested` lists what is already on disk → `CoversReady` (remote covers may have no pictures yet) → when such a cover is displayed, `CoverImagesRequested{name}` downloads that one cover → `CoverImagesReady` refreshes the banner if it is still showing.
+
+**Taxonomy** — the drawer page opened first sends `TaxonomySectionRequested{kind}` → search/taxonomy discover that section only → `TaxonomySectionReady{kind, entries}`. The other sections are not touched until their page is opened.
+
+### Lazy loading
+
+Start-up asks only for Home and the cover list; everything else is driven by
+what is visible. Grids and shelves report their visible index range, the side
+menu is discovered per section, screenshots follow the opened package page, and
+big lists stay paged. See [LAZY_LOADING.md](LAZY_LOADING.md) for the full table
+and for `TUX_LAZY_STATS=1`.
 
 ## Where things are found at runtime
 
