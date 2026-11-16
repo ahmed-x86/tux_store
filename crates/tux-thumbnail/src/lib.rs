@@ -1,9 +1,15 @@
 //! `libtux_thumbnail.so` — turns package names into icon files and lists the
 //! home-page cover images.
 //!
-//! Handles: `IconRequested`, `CoversRequested`, `ScreenshotsRequested`, `ClearIconCache` (wipes the
-//! whole `~/.cache/tux-store`), `UiReady` (warm-up). Answers: `IconReady`,
-//! `IconFailed`, `CoversReady`, `IconCacheCleared`.
+//! Handles: `IconRequested`, `CoversRequested`, `CoverImagesRequested`,
+//! `ScreenshotsRequested`, `ClearIconCache` (wipes the whole
+//! `~/.cache/tux-store`). Answers: `IconReady`, `IconFailed`, `CoversReady`,
+//! `CoverImagesReady`, `IconCacheCleared`.
+//!
+//! Everything is on demand: the UI only asks for the icons of cards that are
+//! on screen, the screenshots of the page that was opened, and the remote
+//! pictures of the one cover that is showing. Nothing is warmed up or
+//! prefetched in the background.
 //!
 //! Pipeline: requests are coalesced per package, resolved offline by one
 //! "local" thread (cache / bundled / theme), and only true misses go to a pool
@@ -42,7 +48,10 @@ type Inflight = Arc<Mutex<HashSet<String>>>;
 fn finish(bus: &Bus, inflight: &Inflight, name: String, path: Option<PathBuf>) {
     lock(inflight).remove(&name);
     match path {
-        Some(p) => bus.publish(&Message::IconReady { name, path: p.to_string_lossy().into_owned() }),
+        Some(p) => bus.publish(&Message::IconReady {
+            name,
+            path: p.to_string_lossy().into_owned(),
+        }),
         None => bus.publish(&Message::IconFailed { name }),
     }
 }
@@ -97,15 +106,17 @@ impl Module for ThumbnailModule {
             });
         }
 
-        ThumbnailModule { bus, resolver, inflight, shots: Arc::default(), local_tx }
+        ThumbnailModule {
+            bus,
+            resolver,
+            inflight,
+            shots: Arc::default(),
+            local_tx,
+        }
     }
 
     fn on_message(&self, msg: Message) {
         match msg {
-            Message::UiReady => {
-                let resolver = self.resolver.clone();
-                spawn_named("thumb-warmup".into(), move || resolver.warm_up());
-            }
             Message::IconRequested { name, .. } => {
                 if !is_valid_package_name(&name) {
                     return;
@@ -121,18 +132,24 @@ impl Module for ThumbnailModule {
                     covers::serve(&bus);
                 });
             }
+            Message::CoverImagesRequested { name } => {
+                let bus = self.bus;
+                spawn_named("thumb-cover-one".into(), move || {
+                    covers::serve_one(&bus, &name)
+                });
+            }
             Message::ScreenshotsRequested { name } => {
                 let (bus, shots) = (self.bus, self.shots.clone());
-                spawn_named("thumb-shots".into(), move || screenshots::serve(&bus, &shots, &name));
-            }
-            Message::ScreenshotsPrefetch { names } => {
-                let shots = self.shots.clone();
-                spawn_named("thumb-prefetch".into(), move || screenshots::prefetch(&shots, &names));
+                spawn_named("thumb-shots".into(), move || {
+                    screenshots::serve(&bus, &shots, &name)
+                });
             }
             Message::ClearIconCache => {
                 let (bus, resolver) = (self.bus, self.resolver.clone());
                 spawn_named("thumb-clear".into(), move || {
-                    bus.publish(&Message::IconCacheCleared { removed: resolver.clear_cache() });
+                    bus.publish(&Message::IconCacheCleared {
+                        removed: resolver.clear_cache(),
+                    });
                 });
             }
             _ => {}
