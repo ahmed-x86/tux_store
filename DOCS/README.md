@@ -19,6 +19,7 @@ what you are changing.
 | Document | What it covers |
 |---|---|
 | [UI_LAYER.md](UI_LAYER.md) | Slint components and UI state |
+| [LAZY_LOADING.md](LAZY_LOADING.md) | what loads when: viewport icons, paged lists, on-demand screenshots/covers/taxonomy |
 | [Tab_Navigation.md](Tab_Navigation.md) | Home / Updates / Installed tabs |
 | [Home_Page_Categorization.md](Home_Page_Categorization.md) | data-driven Home shelves |
 | [SCREENSHOTS.md](SCREENSHOTS.md) | screenshot slider and `data/screenshots/` |
