@@ -22,6 +22,18 @@ TUX_LOG=debug ./tux-store     # error | warn | info (default) | debug | trace | 
 
 The level is read once by the host and handed to the modules, so the filter is the same everywhere.
 
+## Lazy-loading statistics
+
+```bash
+TUX_LAZY_STATS=1 ./tux-store
+```
+
+When this variable is set, the UI logs one `[lazy]` line at exit with how many
+icons, package rows, screenshots, covers, taxonomy sections and operations were
+loaded. It is a `log::info!` record, so `TUX_LOG=error` hides it. Without the
+variable nothing is printed and the counters have no other effect. See
+[LAZY_LOADING.md](LAZY_LOADING.md).
+
 ## Conventions
 
 - `error!` — something failed that the user will notice.
