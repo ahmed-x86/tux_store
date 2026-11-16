@@ -824,12 +824,41 @@ export component AppRow inherits Rectangle {
     in property <string> title;
     in property <[UiPackage]> pkgs;
     in property <int> row-idx;
+    // Lazy icons: the shelf reports only the cards inside the window.
+    in property <length> view-y: 0px;
+    in property <length> view-h: 0px;
+    in property <int> refresh-tick: 0;
     callback clicked(UiPackage);
+    callback icons-needed(int, int, int);
 
     height: root.pkgs.length > 0 ? 260px : 0px;
     clip: true;
 
-    if root.pkgs.length > 0 : VerticalLayout {
+    property <length> step: 216px; // card width + gap
+    property <bool> on-screen: root.pkgs.length > 0
+        && root.y + root.height > -root.view-y
+        && root.y < -root.view-y + root.view-h;
+    property <int> first-visible: max(0, floor((0px - flick.content-x) / root.step));
+    property <int> last-visible: min(root.pkgs.length - 1, floor((flick.width - flick.content-x) / root.step));
+    public function report-icons() {
+        if (root.on-screen && root.last-visible >= root.first-visible) {
+            root.icons-needed(root.row-idx, root.first-visible, root.last-visible);
+        }
+    }
+    changed on-screen => { root.report-icons(); }
+    changed first-visible => { root.report-icons(); }
+    changed last-visible => { root.report-icons(); }
+    changed pkgs => { root.report-icons(); }
+    changed refresh-tick => { root.report-icons(); }
+    // The layout is ready a moment after creation; only visible shelves report.
+    Timer {
+        interval: 120ms;
+        running: root.pkgs.length > 0;
+        triggered => { root.report-icons(); self.running = false; }
+    }
+
+    VerticalLayout {
+        visible: root.pkgs.length > 0;
         spacing: 12px;
         padding-left: 24px;
         padding-right: 24px;
@@ -866,8 +895,10 @@ export component PackageGrid inherits Flickable {
     in property <[UiPackage]> packages;
     in property <bool> has-more: false;
     in property <string> empty-text: "";
+    in property <int> refresh-tick: 0;
     callback app-clicked(UiPackage);
     callback more-clicked();
+    callback icons-needed(int, int);
 
     property <length> card-w: 200px;
     property <length> card-h: 180px;
@@ -877,6 +908,27 @@ export component PackageGrid inherits Flickable {
     property <int> total-rows: packages.length > 0 ? floor((packages.length + cols - 1) / cols) : 0;
     property <length> button-row: root.has-more ? 72px : 0px;
     content-height: max(self.height, pad + total-rows * (card-h + gap) + button-row);
+
+    // Only the rows intersecting the viewport; the index range is inclusive.
+    property <int> first-row: max(0, floor((0px - root.content-y - root.pad) / (root.card-h + root.gap)));
+    property <int> last-row: min(root.total-rows - 1, max(0, floor((0px - root.content-y - root.pad + root.height) / (root.card-h + root.gap))));
+    property <int> first-visible: max(0, min(root.packages.length - 1, root.first-row * root.cols));
+    property <int> last-visible: max(0, min(root.packages.length - 1, (root.last-row + 1) * root.cols - 1));
+    public function report-icons() {
+        if (root.packages.length > 0 && root.last-visible >= root.first-visible) {
+            root.icons-needed(root.first-visible, root.last-visible);
+        }
+    }
+    changed first-visible => { root.report-icons(); }
+    changed last-visible => { root.report-icons(); }
+    changed packages => { root.report-icons(); }
+    changed refresh-tick => { root.report-icons(); }
+    changed height => { root.report-icons(); }
+    Timer {
+        interval: 120ms;
+        running: true;
+        triggered => { root.report-icons(); self.running = false; }
+    }
 
     for pkg[idx] in root.packages : AppCard {
         x: root.pad + mod(idx, root.cols) * (root.card-w + root.gap);
