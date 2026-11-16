@@ -8,7 +8,29 @@ component BrowseRow inherits Rectangle {
     in property <UiTaxonomyEntry> entry;
     in property <color> accent;
     in property <int> section: 0;
+    // Lazy icon-theme pictures: only visible rows ask for theirs.
+    in property <length> view-y: 0px;
+    in property <length> view-h: 0px;
+    in property <int> refresh-tick: 0;
     callback clicked();
+    callback icon-needed(string);
+
+    property <bool> on-screen: root.entry.icon-key != ""
+        && root.y + root.height > -root.view-y
+        && root.y < -root.view-y + root.view-h;
+    public function report-icon() {
+        if (root.on-screen) {
+            root.icon-needed(root.entry.icon-key);
+        }
+    }
+    changed on-screen => { root.report-icon(); }
+    changed entry => { root.report-icon(); }
+    changed refresh-tick => { root.report-icon(); }
+    Timer {
+        interval: 120ms;
+        running: root.entry.icon-key != "";
+        triggered => { root.report-icon(); self.running = false; }
+    }
 
     function badge-color(b: string) -> color {
         if b == "Official" { return Theme.green; }
@@ -216,11 +238,14 @@ export component BrowseView inherits Rectangle {
     in property <string> entry-subtitle;
     in property <[UiPackage]> packages;
     in property <bool> has-more;
+    in property <int> refresh-tick: 0;
 
     callback back-clicked();
     callback entry-clicked(UiTaxonomyEntry);
     callback app-clicked(UiPackage);
     callback more-clicked();
+    callback icons-needed(int, int);
+    callback icon-needed(string);
 
     property <color> accent: Theme.accents[root.section == 0 ? 0 : (root.section == 1 ? 1 : 4)];
     background: Theme.base;
@@ -359,7 +384,11 @@ export component BrowseView inherits Rectangle {
                             entry: entry;
                             accent: root.accent;
                             section: root.section;
+                            view-y: list.content-y;
+                            view-h: list.height;
+                            refresh-tick: root.refresh-tick;
                             clicked => { root.entry-clicked(entry); }
+                            icon-needed(k) => { root.icon-needed(k); }
                         }
 
                         if root.entries.length == 0 : Rectangle {
@@ -449,9 +478,11 @@ export component BrowseView inherits Rectangle {
                         vertical-stretch: 1;
                         packages: root.packages;
                         has-more: root.has-more;
+                        refresh-tick: root.refresh-tick;
                         empty-text: root.loading ? "Loading packages…" : "No packages in this section";
                         app-clicked(p) => { root.app-clicked(p); }
                         more-clicked => { root.more-clicked(); }
+                        icons-needed(first, last) => { root.icons-needed(first, last); }
                     }
                 }
             }
