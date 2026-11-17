@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.17.0
 
 - **Top button for add-on scripts.** A script may declare `"top_button": {"label", "url", "icon", "position"}`; the run window then shows a link button in its top-right corner that opens the URL in the default browser (only `http(s)://` links are accepted). `ScriptViewData` gained `link_label` / `link_url` (`#[serde(default)]`). The NVIDIA drivers add-on ships with an "Arch Wiki - NVIDIA" button. See `DOCS/SCRIPTS_SYSTEM.md#top-button`.
 
