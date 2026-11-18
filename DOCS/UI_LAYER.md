@@ -10,7 +10,7 @@ The UI is [Slint](https://slint.dev), compiled by `slint-build` from `ui/main.sl
 |---|---|
 | `theme.slint` | `global Theme` (Catppuccin palette, `is-dark`, 14 `accents`) |
 | `types.slint` | enums `AppView`, `OpPhase`, `OpKind` and all `Ui*` structs |
-| `components.slint` | `PillButton`, `TopBar`, `SearchBox`, `TabButton`, `HScrollBar`, `AppCard`, `SuggestionCard`, `AppRow`, `PackageGrid`, `DepRow`, `CoverCarousel`, `ProgressCard`, `ConsoleOverlay` |
+| `components.slint` | `PillButton`, `TopBar`, `SearchBox`, `TabButton`, `HScrollBar`, `AppCard`, `SuggestionCard`, `AppRow`, `PackageGrid`, `DepRow`, `CoverCarousel`, `ProgressCard`, `DowngradeDialog`, `ConsoleOverlay` |
 | `home_tab.slint` | `HomeTab` — banner + one `AppRow` per section |
 | `installed_tab.slint` | `InstalledTab` — filterable paginated grid |
 | `update_tab.slint` | `UpdateTab` — update list + *Update all* + progress |
@@ -19,7 +19,7 @@ The UI is [Slint](https://slint.dev), compiled by `slint-build` from `ui/main.sl
 | `settings_view.slint` | `SettingsView` |
 | `main.slint` | `MainWindow`: navigation, search, tabs, overlays |
 
-Shared building blocks replace the original duplication: one `TopBar` (children go to the right via `@children`), one `PackageGrid` for search, installed and add-ons, one `ProgressCard` for installs, removals and system upgrades, one `HScrollBar` for every horizontal shelf.
+Shared building blocks replace the original duplication: one `TopBar` (children go to the right via `@children`), one `PackageGrid` for search, installed and add-ons, one `ProgressCard` for installs, removals and every update/downgrade variant, one `HScrollBar` for every horizontal shelf.
 
 ## Shared types
 
@@ -32,17 +32,18 @@ UiPackageDetails { app-size-str, dependencies, installed-deps-size-str, new-deps
 UiInstallState   { phase: OpPhase, kind: OpKind, success, progress, deps-ratio, target }
 UiSpecialCase    { is-special, type-name, items: [UiAddon], is-addon-for }
 UiUpdate         { name, old-version, new-version }
+UiDowngrade      { name, repo, local-version, repo-version, checked }
 ```
 
 All sizes arrive pre-formatted and all proportions pre-computed (`convert.rs`): `.slint` files only lay things out.
 
-`UiInstallState.target` is the package name, or `"@upgrade"` for a system upgrade. Views show the progress card only when `target` matches what they display, so a running upgrade does not appear on an unrelated package page.
+`UiInstallState.target` is the package name, or `"@upgrade"` for a system upgrade, system downgrade or selected downgrade. Views show the progress card only when `target` matches what they display, so a running update does not appear on an unrelated package page.
 
 ## `MainWindow` interface
 
 - **State properties:** `view: AppView`, `active-tab`, `search-query`, `installed-filter`, `show-console`.
 - **Data properties (set from Rust):** models and strings listed in `main.slint`.
-- **Callbacks (Slint → Rust):** `search-edited`, `search-submitted`, `home-clicked`, `tab-changed`, `app-clicked`, `back-clicked`, `install-clicked`, `remove-clicked(flag)`, `open-url`, `addon-clicked`, `view-all-addons-clicked`, `request-more-results`, `request-more-installed`, `installed-filter-edited`, `refresh-updates`, `upgrade-all`, `cover-prev/next/clicked`, `theme-changed`, `clear-icon-cache`.
+- **Callbacks (Slint → Rust):** `search-edited`, `search-submitted`, `home-clicked`, `tab-changed`, `app-clicked`, `back-clicked`, `install-clicked`, `remove-clicked(flag)`, `open-url`, `addon-clicked`, `view-all-addons-clicked`, `request-more-results`, `request-more-installed`, `installed-filter-edited`, `refresh-updates`, `upgrade-all`, `downgrade-continue`, `downgrade-all`, `downgrade-selected`, `downgrade-cancel`, `downgrade-toggle(i)`, `cover-prev/next/clicked`, `theme-changed`, `clear-icon-cache`.
 - `copy-text(string)` — a public function that copies through a hidden read-only `TextInput` (`select-all()` + `copy()`), which works on X11 and Wayland without extra dependencies.
 
 ## Rust side
@@ -60,6 +61,7 @@ All sizes arrive pre-formatted and all proportions pre-computed (`convert.rs`): 
 - **Navigation history:** opening a package from a suggestion or add-on pushes the current one; *Back* pops it, and returns to Main when empty.
 - **Suggestions:** up to 8, preferring packages of the same Home section.
 - **Operations:** `begin_operation` refuses to start while one is running; on success the *installed* flag is patched in all lists.
+- **Downgrade dialog:** *Update all* first publishes `DowngradeCheckRequested`. `on_downgrade_check` either starts a normal update (nothing found, or the check failed) or opens `DowngradeDialog` with every `UiDowngrade` row checked. The choice view maps to `downgrade_continue`, `downgrade_all` and `downgrade_selecting`; the selection view toggles rows, updates `downgrade_selected_count`, and publishes `DowngradeRequested` with the checked names. See [SMART_DOWNGRADES.md](SMART_DOWNGRADES.md).
 
 ### `app.rs`
 Creates the window, loads the saved theme, binds models, installs the state, wires callbacks, starts two timers and runs the event loop. Search typing is **debounced 250 ms**; Enter searches immediately. `tux-store openpackage <name>` is read here from `std::args()` and published as `ExactRequested`.
