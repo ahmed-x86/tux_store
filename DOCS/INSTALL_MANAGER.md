@@ -2,12 +2,25 @@
 
 Files: `crates/tux-install/src/{lib,stream}.rs`, `crates/tux-pacman/src/progress.rs`
 
-`tux-install` is the only module that **changes the system**. It runs `pacman -S`, `pacman -R…` and `pacman -Syu`, streams their raw output, and derives a monotonic progress fraction.
+`tux-install` is the only module that **changes the system**. It runs `pacman -S`, `pacman -R…`, `pacman -Syu`, `pacman -Syuu` and the selected-package downgrade, streams their raw output, and derives a monotonic progress fraction.
 
 ## Messages
 
-Handles `InstallRequested`, `RemoveRequested`, `SystemUpgradeRequested`, and overhears `DetailsReady`.
+Handles `InstallRequested`, `RemoveRequested`, `SystemUpgradeRequested`,
+`SystemDowngradeRequested`, `DowngradeRequested{packages}`, and overhears
+`DetailsReady`.
 Emits `OperationStarted`, `OperationOutput`, `OperationProgress`, `OperationFinished`.
+
+The update requests map to operations as follows:
+
+| Message | Operation | Direct command | Libalpm |
+|---|---|---|---|
+| `SystemUpgradeRequested` | `SystemUpgrade` | `pacman -Syu` | `sync_sysupgrade(false)` |
+| `SystemDowngradeRequested` | `SystemDowngrade` | `pacman -Syuu` | `sync_sysupgrade(true)` |
+| `DowngradeRequested{packages}` | `Downgrade { packages }` | `pacman -S -- <names>` | add only those sync packages |
+
+The UI only sends these after `DowngradeCheckReady`; see
+[SMART_DOWNGRADES.md](SMART_DOWNGRADES.md).
 
 ```
 OperationStarted
@@ -29,13 +42,13 @@ otherwise: pkexec script -qec "env LC_ALL=C pacman … " /dev/null
 - **`script`** gives pacman a pty. Without a tty glibc block-buffers stdout and all output would arrive at the very end. Its stdin pipe is kept open (never written) so `script` does not see EOF and tear the pty down.
 - **`env LC_ALL=C`** is applied *inside* the elevated command because `pkexec` resets the environment; the progress parser relies on English phrases.
 - `--noconfirm` is mandatory (the app cannot answer prompts; the details page is the confirmation step). `--color=never` keeps escape codes out of the parser. The target is always passed after `--`.
-- All arguments are shell-quoted, and names are checked with `is_valid_package_name` first.
+- All arguments are shell-quoted, and names are checked with `is_valid_package_name` first. A `Downgrade { packages }` list must be non-empty and every name must pass the same check; libalpm repeats the empty-list check.
 
 Only one transaction runs at a time (`busy` flag); a second request is rejected with an `OperationFinished{success:false}` and an explanatory line of output. The flag is cleared *before* `OperationFinished` is published so the UI can start the next operation immediately.
 
 ## Where the sizes come from
 
-When `DetailsReady` passes by, the installer stores `{package → installed size}` for the target and every **not-yet-installed** dependency (last 16 plans kept). On `InstallRequested` that map weights the download phase. The UI never has to hand sizes over. Removal and system upgrade have no map and use counters instead.
+When `DetailsReady` passes by, the installer stores `{package → installed size}` for the target and every **not-yet-installed** dependency (last 16 plans kept). On `InstallRequested` that map weights the download phase. The UI never has to hand sizes over. Removal, system upgrade and both downgrade operations have no map and use counters instead.
 
 ## Output pipeline (`pump` + `stream.rs`)
 
