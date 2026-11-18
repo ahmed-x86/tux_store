@@ -28,6 +28,8 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 | `AddonsReady{package, packages}` | search | ui | add-ons with real repo/version data |
 | `InstalledRequested` / `InstalledReady{packages}` | ui / search | search / ui | explicitly installed packages |
 | `UpdatesRequested` / `UpdatesReady{updates, error}` | ui / search | search / ui | pending upgrades |
+| `DowngradeCheckRequested` | ui | search | find installed packages newer than their sync repository version |
+| `DowngradeCheckReady{packages, error}` | search | ui | `DowngradeEntry` list; empty + no error means a plain `-Syu` is safe |
 | `CoversRequested` / `CoversReady{covers}` | ui / thumbnail | thumbnail / ui | list the home covers (disk only) |
 | `CoverImagesRequested{name}` | ui | thumbnail | download the remote pictures of the one cover on screen |
 | `CoverImagesReady{name, images}` | thumbnail | ui | its picture paths (after a `CoverImagesRequested`) |
@@ -41,7 +43,9 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 | `ClearIconCache` / `IconCacheCleared{removed}` | ui / thumbnail | thumbnail / ui | settings button |
 | `InstallRequested{name}` | ui | install | `pacman -S` |
 | `RemoveRequested{name, mode}` | ui | install | `pacman -R…` (see [Uninstall_Engine.md](Uninstall_Engine.md)) |
-| `SystemUpgradeRequested` | ui | install | `pacman -Syu` |
+| `SystemUpgradeRequested` | ui | install | `pacman -Syu` (sent after the downgrade check, or when it finds nothing) |
+| `SystemDowngradeRequested` | ui | install | `pacman -Syuu`, downgrade every newer local package |
+| `DowngradeRequested{packages}` | ui | install | downgrade only the named packages (`pacman -S <names>`; libalpm adds just those targets) |
 | `OperationStarted{op}` | install | ui | transaction began |
 | `OperationOutput{text}` | install | ui | raw output chunk |
 | `OperationProgress{fraction}` | install | ui | 0..0.98, then 1.0 on success |
