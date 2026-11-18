@@ -12,7 +12,16 @@
     "buildx",
     "devops",
     "حاويات",
-    "دوكر"
+    "دوكر",
+    "containerization",
+    "virtualization",
+    "docker compose",
+    "docker buildx",
+    "container engine",
+    "تطبيقات معزولة",
+    "افتراضية",
+    "سيرفر",
+    "خدمات"
   ],
   "show_on_home": true,
   "category": "developer-tools",
