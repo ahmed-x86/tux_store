@@ -1,15 +1,18 @@
 //! Bus types → Slint structs (and back).
 
 use crate::{
-    UiAddon, UiPackage, UiPackageDependency, UiPackageDetails, UiScriptButton, UiScriptOption, UiScriptView,
-    UiSpecialCase, UiTaxonomyEntry, UiUpdate,
+    UiAddon, UiDowngrade, UiPackage, UiPackageDependency, UiPackageDetails, UiScriptButton,
+    UiScriptOption, UiScriptView, UiSpecialCase, UiTaxonomyEntry, UiUpdate,
 };
 use slint::{Image, ModelRc, VecModel};
 use std::collections::HashMap;
 use std::rc::Rc;
 use tux_abi::text::{format_size, prettify_name};
 use tux_abi::script::{ButtonStyle, Tone};
-use tux_abi::{Package, PackageDetails, ScriptViewData, SpecialCase, TaxonomyEntry, UpdateEntry};
+use tux_abi::{
+    DowngradeEntry, Package, PackageDetails, ScriptViewData, SpecialCase, TaxonomyEntry,
+    UpdateEntry,
+};
 
 pub fn to_ui(p: &Package, icon: Option<&Image>) -> UiPackage {
     // Scripts carry a real title; pacman packages get one derived from the name.
@@ -98,6 +101,16 @@ pub fn update(u: &UpdateEntry) -> UiUpdate {
         name: u.name.as_str().into(),
         old_version: u.old_version.as_str().into(),
         new_version: u.new_version.as_str().into(),
+    }
+}
+
+pub fn downgrade(d: &DowngradeEntry, checked: bool) -> UiDowngrade {
+    UiDowngrade {
+        name: d.name.as_str().into(),
+        repo: d.repo.as_str().into(),
+        local_version: d.local_version.as_str().into(),
+        repo_version: d.repo_version.as_str().into(),
+        checked,
     }
 }
 
