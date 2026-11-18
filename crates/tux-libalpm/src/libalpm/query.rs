@@ -3,12 +3,14 @@
 
 use super::{answer_question, open};
 use alpm::{Alpm, Package as AlpmPackage, TransFlag};
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use tux_abi::text::is_valid_package_name;
-use tux_abi::{Dependency, Package, PackageDetails, UpdateEntry};
+use tux_abi::{Dependency, DowngradeEntry, Package, PackageDetails, UpdateEntry};
 
 fn normalize(s: &str) -> String {
-    s.chars()
+    tux_abi::text::normalize_arabic(s)
+        .chars()
         .filter(|c| !matches!(c, ' ' | '-' | '_' | '.'))
         .flat_map(char::to_lowercase)
         .collect()
@@ -88,6 +90,7 @@ pub fn search(query: &str, limit: usize) -> Vec<Package> {
     };
     let installed = installed_names(&handle);
     let nq = normalize(query);
+    let arabic = tux_abi::text::contains_arabic(query);
     let mut found: Vec<(u8, Package)> = Vec::new();
     let mut seen: HashSet<String> = HashSet::new();
 
@@ -102,7 +105,10 @@ pub fn search(query: &str, limit: usize) -> Vec<Package> {
         for pkg in packages.iter() {
             let name = pkg.name().to_string();
             let nn = normalize(&name);
-            if !nn.contains(&nq) || !seen.insert(name.clone()) {
+            let description = pkg.desc().unwrap_or_default();
+            let name_match = nn.contains(&nq);
+            let description_match = arabic && normalize(description).contains(&nq);
+            if (!name_match && !description_match) || !seen.insert(name.clone()) {
                 continue;
             }
             let mut p = package_of(pkg, installed.contains(&name));
@@ -348,6 +354,34 @@ pub fn updates() -> Result<Vec<UpdateEntry>, String> {
                 name: local.name().to_string(),
                 old_version: local.version().to_string(),
                 new_version: new.version().to_string(),
+            })
+        })
+        .collect();
+    entries.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(entries)
+}
+
+/// Installed packages whose local version is **newer** than the version in
+/// their sync repository. These are the packages a normal `-Syu` keeps (with
+/// a warning) and `-Syuu` would replace.
+pub fn downgrades() -> Result<Vec<DowngradeEntry>, String> {
+    let handle = open()?;
+    let mut entries: Vec<DowngradeEntry> = handle
+        .localdb()
+        .pkgs()
+        .iter()
+        .filter_map(|local| {
+            let sync = sync_package(&handle, local.name())?;
+            if alpm::vercmp(local.version().as_str(), sync.version().as_str())
+                != Ordering::Greater
+            {
+                return None;
+            }
+            Some(DowngradeEntry {
+                name: local.name().to_string(),
+                repo: repo_of(sync),
+                local_version: local.version().to_string(),
+                repo_version: sync.version().to_string(),
             })
         })
         .collect();
