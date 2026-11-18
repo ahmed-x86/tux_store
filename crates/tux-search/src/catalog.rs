@@ -125,19 +125,17 @@ impl Catalog {
         l.script.package()
     }
 
-    /// Scripts whose id, title or keywords match `query`.
+    /// Scripts whose id, title, description or keywords match `query`.
+    /// Comparison folds Arabic letter variants on both sides.
     pub fn scripts_matching(&self, query: &str) -> Vec<Package> {
-        let norm = |s: &str| -> String {
-            s.chars().filter(|c| !matches!(c, ' ' | '-' | '_' | '.')).flat_map(char::to_lowercase).collect()
-        };
-        let needle = norm(query);
+        let needle = crate::normalize::search_key(query);
         if needle.is_empty() {
             return Vec::new();
         }
         self.filter_visible(
             self.scripts
                 .iter()
-                .filter(|l| l.script.matches(&needle, norm))
+                .filter(|l| l.script.matches(&needle, crate::normalize::search_key))
                 .map(Self::script_package)
                 .collect(),
         )
