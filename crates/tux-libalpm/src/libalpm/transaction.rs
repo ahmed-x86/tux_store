@@ -185,6 +185,26 @@ fn execute(handle: &mut Alpm, op: &Operation) -> Result<(), String> {
                 .sync_sysupgrade(false)
                 .map_err(|e| format!("cannot prepare the system upgrade: {e}"))?;
         }
+        Operation::SystemDowngrade => {
+            handle
+                .sync_sysupgrade(true)
+                .map_err(|e| format!("cannot prepare the system downgrade: {e}"))?;
+        }
+        Operation::Downgrade { packages } => {
+            if packages.is_empty() {
+                return Err("no packages were selected for downgrade".into());
+            }
+            for name in packages {
+                let target = handle
+                    .syncdbs()
+                    .iter()
+                    .find_map(|db| db.pkg(name.as_str()).ok())
+                    .ok_or_else(|| format!("package not found in the repositories: {name}"))?;
+                handle
+                    .trans_add_pkg(target)
+                    .map_err(|e| format!("cannot add {name} to the transaction: {e}"))?;
+            }
+        }
     }
 
     if let Err(e) = handle.trans_prepare() {
