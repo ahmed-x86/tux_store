@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+- **Smart downgrade handling on system update.** Before running a system update, the store now detects installed packages whose local version is newer than the version in their sync repository (`local > repo`). If any are found, a plain-language dialog offers three choices: continue with a normal update (`pacman -Syu`, keeping the newer local packages), downgrade every newer package (`pacman -Syuu`), or pick specific packages from a check-box list and downgrade only those (`pacman -S <packages>`, never `-Syuu`). Detection is best-effort; if the check fails, the update still runs normally. New messages `DowngradeCheckRequested` / `DowngradeCheckReady`, `SystemDowngradeRequested` and `DowngradeRequested { packages }`, plus the `DowngradeEntry` type and the `Operation::SystemDowngrade` / `Operation::Downgrade` variants.
+- **Arabic search normalization.** Search now folds Arabic letter variants on both the query and the package name, description, title and keywords, so `احمد` finds `أحمد` and `علي` finds `على`. The mapping is `ا/أ/إ/آ/ٱ → ا`, `ي/ى → ي` and `ة/ه → ه`, implemented once in `tux_abi::text::normalize_arabic` and shared by the direct-pacman and libalpm engines. Add-on scripts can also match on their description.
+- **Version 1.0.0.** The workspace version and `packaging/PKGBUILD` are now `1.0.0`; no beta labels remain in the app or README.
+
 ## 0.17.0
 
 - **Top button for add-on scripts.** A script may declare `"top_button": {"label", "url", "icon", "position"}`; the run window then shows a link button in its top-right corner that opens the URL in the default browser (only `http(s)://` links are accepted). `ScriptViewData` gained `link_label` / `link_url` (`#[serde(default)]`). The NVIDIA drivers add-on ships with an "Arch Wiki - NVIDIA" button. See `DOCS/SCRIPTS_SYSTEM.md#top-button`.
