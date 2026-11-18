@@ -143,6 +143,19 @@ pub struct UpdateEntry {
     pub new_version: String,
 }
 
+/// An installed package whose local version is **newer** than the version in
+/// its sync repository (the `warning: package: local (x) is newer than repo
+/// (y)` situation). Downgrading such a package is optional: a normal
+/// `pacman -Syu` keeps it, while `pacman -Syuu` replaces it.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DowngradeEntry {
+    pub name: String,
+    /// Sync repository that still carries an older version.
+    pub repo: String,
+    pub local_version: String,
+    pub repo_version: String,
+}
+
 /// The five uninstall flavours offered by the UI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RemoveMode {
@@ -181,7 +194,24 @@ impl RemoveMode {
 pub enum Operation {
     Install { name: String },
     Remove { name: String, mode: RemoveMode },
+    /// `pacman -Syu`: upgrade, keeping newer local packages.
     SystemUpgrade,
+    /// `pacman -Syuu`: upgrade and downgrade every newer local package.
+    SystemDowngrade,
+    /// Downgrade only these packages to their sync-repository versions.
+    Downgrade { packages: Vec<String> },
+}
+
+impl Operation {
+    /// Is this a system-wide update or downgrade (the "Updates" tab flow)?
+    pub fn is_system_change(&self) -> bool {
+        matches!(
+            self,
+            Operation::SystemUpgrade
+                | Operation::SystemDowngrade
+                | Operation::Downgrade { .. }
+        )
+    }
 }
 
 /// What the script's own page shows (besides title / description / version).
@@ -311,6 +341,10 @@ pub enum Message {
     },
     InstalledRequested,
     UpdatesRequested,
+    /// Before a system update, ask which installed packages are newer than
+    /// their repository versions (the ones `-Syu` would keep and `-Syuu`
+    /// would downgrade).
+    DowngradeCheckRequested,
     CoversRequested,
     /// Download the remote pictures of *one* cover that is on screen now.
     CoverImagesRequested {
@@ -346,6 +380,12 @@ pub enum Message {
         mode: RemoveMode,
     },
     SystemUpgradeRequested,
+    /// Upgrade and downgrade every newer local package (`pacman -Syuu`).
+    SystemDowngradeRequested,
+    /// Downgrade only the named packages to their repository versions.
+    DowngradeRequested {
+        packages: Vec<String>,
+    },
     /// Ask for the details of a script (its page).
     ScriptInfoRequested {
         id: String,
@@ -399,6 +439,12 @@ pub enum Message {
     },
     UpdatesReady {
         updates: Vec<UpdateEntry>,
+        error: Option<String>,
+    },
+    /// Answer to `DowngradeCheckRequested`; an empty list means a plain
+    /// `-Syu` is safe and no dialog is needed.
+    DowngradeCheckReady {
+        packages: Vec<DowngradeEntry>,
         error: Option<String>,
     },
     CoversReady {
