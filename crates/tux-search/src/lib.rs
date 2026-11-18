@@ -2,11 +2,15 @@
 //!
 //! Handles: `HomeRequested`, `SearchRequested`, `DetailsRequested`, `ScriptInfoRequested`,
 //! `ExactRequested`, `AddonsRequested`, `InstalledRequested`,
-//! `UpdatesRequested`. Drops its caches on `OperationFinished`.
+//! `UpdatesRequested`, `DowngradeCheckRequested`. Drops its caches on
+//! `OperationFinished`.
 //! Each request runs on its own short-lived thread so `on_message` never
 //! blocks the bus.
 
 mod catalog;
+mod normalize;
+
+pub use normalize::normalize_arabic;
 
 use catalog::Catalog;
 use std::collections::HashMap;
@@ -73,6 +77,7 @@ impl Module for SearchModule {
             Message::AddonsRequested { package } => self.addons(package),
             Message::InstalledRequested => self.installed(),
             Message::UpdatesRequested => self.updates(),
+            Message::DowngradeCheckRequested => self.downgrades(),
             Message::TaxonomyRequested => self.taxonomy(),
             Message::TaxonomySectionRequested { kind } => self.taxonomy_section(kind),
             Message::TaxonomyPackagesRequested { kind, id } => self.taxonomy_packages(kind, id),
@@ -199,6 +204,25 @@ impl SearchModule {
                 },
                 Err(e) => Message::UpdatesReady {
                     updates: Vec::new(),
+                    error: Some(e),
+                },
+            };
+            bus.publish(&msg);
+        });
+    }
+
+    /// Installed packages that are newer than their sync-repository version.
+    /// The UI asks this before a system update and offers the three choices.
+    fn downgrades(&self) {
+        let bus = self.bus;
+        thread::spawn(move || {
+            let msg = match tux_libalpm::downgrades() {
+                Ok(packages) => Message::DowngradeCheckReady {
+                    packages,
+                    error: None,
+                },
+                Err(e) => Message::DowngradeCheckReady {
+                    packages: Vec::new(),
                     error: Some(e),
                 },
             };
