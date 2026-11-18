@@ -38,6 +38,12 @@ tux-pacman = { path = "crates/tux-pacman" }
 tux-libalpm = { path = "crates/tux-libalpm" }
 alpm = { version = "5", default-features = false, features = ["pkg-config"] }
 
+# ============================================================
+# Default "release" profile — kept as-is for compatibility with
+# any existing "cargo build --release" invocation. The two real
+# modes are now "dist" (strong/slow, for GitHub Actions) and
+# "dev" (fast, for local development/testing).
+# ============================================================
 [profile.release]
 lto = "thin"
 codegen-units = 4
@@ -45,3 +51,30 @@ strip = true
 # panic MUST stay "unwind": every module entry point is wrapped in
 # catch_unwind so a bug in one .so can never abort the whole process.
 panic = "unwind"
+
+# ============================================================
+# 1) Strong/slow build mode — dedicated to GitHub Actions.
+#    Goal: smallest possible binary, even if it takes a very long time.
+#    Usage: cargo build --profile dist
+# ============================================================
+[profile.dist]
+inherits = "release"
+opt-level = "z"        # optimize for size, not speed
+lto = "fat"             # full cross-crate LTO (slower, smaller output)
+codegen-units = 1        # single codegen unit = smallest possible binary
+strip = true             # strip debug symbols from the final binary
+panic = "unwind"          # mandatory: catch_unwind relies on this, never change it
+incremental = false
+
+# ============================================================
+# 2) Fast build mode — for local development and testing.
+#    Goal: fastest possible compile time, even if the binary is
+#    bigger and slower at runtime.
+#    Usage: cargo build --profile dev  (or ./build.sh)
+# ============================================================
+[profile.dev]
+opt-level = 0
+debug = true
+incremental = true
+codegen-units = 256       # maximum parallelism during compilation
+panic = "unwind"           # mandatory here too, even in dev mode
