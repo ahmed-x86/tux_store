@@ -1117,6 +1117,7 @@ impl Script {
     pub fn matches(&self, needle: &str, normalize: impl Fn(&str) -> String) -> bool {
         normalize(&self.id).contains(needle)
             || normalize(&self.title).contains(needle)
+            || normalize(&self.description).contains(needle)
             || self.keywords.iter().any(|k| normalize(k).contains(needle))
     }
 }
