@@ -26,7 +26,15 @@
     "تصوير",
     "لايت روم",
     "معالجة الصور الخام",
-    "مكتبة صور"
+    "مكتبة صور",
+    "photo management",
+    "photo editing",
+    "catalog",
+    "camera",
+    "إدارة الصور",
+    "تحرير صور",
+    "كاميرا",
+    "ألبوم"
   ],
   "show_on_home": false,
   "categories": [
