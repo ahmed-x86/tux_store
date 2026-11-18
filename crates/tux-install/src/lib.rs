@@ -1,7 +1,8 @@
 //! `libtux_install.so` — runs package transactions as root and reports them.
 //!
 //! Handles: `InstallRequested`, `RemoveRequested`, `SystemUpgradeRequested`,
-//! `EngineChanged`. Emits: `OperationStarted/Output/Progress/Finished`.
+//! `SystemDowngradeRequested`, `DowngradeRequested`, `EngineChanged`.
+//! Emits: `OperationStarted/Output/Progress/Finished`.
 //!
 //! The actual work is delegated to `libtux_libalpm` (the selected engine): either
 //! direct `pacman` processes or libalpm through a privileged helper. This
@@ -60,6 +61,10 @@ impl Module for InstallModule {
                 self.start(Operation::Remove { name, mode })
             }
             Message::SystemUpgradeRequested => self.start(Operation::SystemUpgrade),
+            Message::SystemDowngradeRequested => self.start(Operation::SystemDowngrade),
+            Message::DowngradeRequested { packages } => {
+                self.start(Operation::Downgrade { packages })
+            }
             Message::ClearIconCache => lock(&self.plans).clear(),
             _ => {}
         }
@@ -72,7 +77,10 @@ impl InstallModule {
 
         let valid = match &op {
             Operation::Install { name } | Operation::Remove { name, .. } => is_valid_package_name(name),
-            Operation::SystemUpgrade => true,
+            Operation::Downgrade { packages } => {
+                !packages.is_empty() && packages.iter().all(|n| is_valid_package_name(n))
+            }
+            Operation::SystemUpgrade | Operation::SystemDowngrade => true,
         };
         if !valid {
             reject(&bus, op, "invalid package name");
