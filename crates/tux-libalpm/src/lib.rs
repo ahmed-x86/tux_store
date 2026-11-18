@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
-use tux_abi::{Engine, Operation, Package, PackageDetails, UpdateEntry};
+use tux_abi::{DowngradeEntry, Engine, Operation, Package, PackageDetails, UpdateEntry};
 
 static ACTIVE: AtomicU8 = AtomicU8::new(Engine::Direct as u8);
 
@@ -114,6 +114,14 @@ pub fn updates() -> Result<Vec<UpdateEntry>, String> {
     match active() {
         Engine::Direct => tux_pacman::queries::updates(),
         Engine::Libalpm => libalpm::updates(),
+    }
+}
+
+/// Installed packages whose local version is newer than the repository's.
+pub fn downgrades() -> Result<Vec<DowngradeEntry>, String> {
+    match active() {
+        Engine::Direct => direct::downgrades(),
+        Engine::Libalpm => libalpm::downgrades(),
     }
 }
 
