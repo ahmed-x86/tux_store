@@ -1,8 +1,9 @@
 import { Theme } from "theme.slint";
 import { AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
-         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo,
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiDowngrade, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo,
          UiTaxonomyEntry } from "types.slint";
-import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay, ScriptDialog, VScrollBar, ToTopButton, MenuRow } from "components.slint";
+import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay, ScriptDialog, DowngradeDialog,
+         VScrollBar, ToTopButton, MenuRow } from "components.slint";
 import { HomeTab } from "home_tab.slint";
 import { InstalledTab } from "installed_tab.slint";
 import { UpdateTab } from "update_tab.slint";
@@ -13,7 +14,7 @@ import { BrowseView } from "browse_view.slint";
 
 // Everything Rust needs to name must be re-exported from the main file.
 export { Theme, AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, UiPackageDetails,
-         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo,
+         UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiDowngrade, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo,
          UiTaxonomyEntry }
 
 export component MainWindow inherits Window {
@@ -49,6 +50,12 @@ export component MainWindow inherits Window {
     in property <[UiUpdate]> updates;
     in property <bool> updates-loading;
     in property <string> updates-status;
+
+    // ── smart downgrade dialog ──
+    in-out property <bool> downgrade-open: false;
+    in-out property <bool> downgrade-selecting: false;
+    in property <[UiDowngrade]> downgrade-packages;
+    in property <int> downgrade-selected-count: 0;
 
     // ── details ──
     in property <UiPackage> current-package;
@@ -117,6 +124,11 @@ export component MainWindow inherits Window {
     callback installed-filter-edited(string);
     callback refresh-updates();
     callback upgrade-all();
+    callback downgrade-continue();
+    callback downgrade-all();
+    callback downgrade-selected();
+    callback downgrade-cancel();
+    callback downgrade-toggle(int);
     callback cover-prev();
     callback cover-next();
     callback cover-clicked();
@@ -619,6 +631,20 @@ export component MainWindow inherits Window {
             Text { text: round(root.script-progress * 100) + "%"; color: Theme.mauve; font-size: 13px; font-weight: 700; vertical-alignment: center; }
             Text { text: "Show"; color: Theme.overlay1; font-size: 12px; vertical-alignment: center; }
         }
+    }
+
+    // Before a system update: explain newer local packages and offer the
+    // three choices. It sits above every screen, under the console.
+    if root.downgrade-open : DowngradeDialog {
+        packages: root.downgrade-packages;
+        selecting <=> root.downgrade-selecting;
+        selected-count: root.downgrade-selected-count;
+        continue-clicked => { root.downgrade-continue(); }
+        all-clicked => { root.downgrade-all(); }
+        select-clicked => { root.downgrade-selecting = true; }
+        toggle(i) => { root.downgrade-toggle(i); }
+        selected-clicked => { root.downgrade-selected(); }
+        cancel-clicked => { root.downgrade-cancel(); }
     }
 
     // The console overlay sits above every screen.
