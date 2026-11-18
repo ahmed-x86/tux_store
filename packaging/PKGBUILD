@@ -1,7 +1,7 @@
 # Maintainer: you
 # Build from a local checkout:  cd packaging && makepkg -si
 pkgname=tux-store
-pkgver=0.17.0
+pkgver=1.0.0
 pkgrel=1
 pkgdesc="Native Rust + Slint package store for Arch Linux (modular .so architecture)"
 arch=('x86_64')
@@ -15,7 +15,9 @@ optdepends=('pacman-contrib: checkupdates, for a safe "Updates" tab')
 
 build() {
   cd "$startdir/.."
-  cargo build --release
+  # "dist" is the slow, size-optimized profile (fat LTO, codegen-units=1)
+  # defined in the workspace Cargo.toml; it outputs to target/dist/.
+  cargo build --profile dist
 }
 
 package() {
