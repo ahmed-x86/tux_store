@@ -16,7 +16,10 @@ jobs:
   build:
     name: Build in Arch Linux container
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # The "dist" profile (fat LTO + codegen-units=1) is intentionally slow
+    # in exchange for the smallest binary, so the old 60-minute budget is
+    # no longer enough.
+    timeout-minutes: 180
     container:
       image: archlinux:latest
     defaults:
@@ -60,13 +63,15 @@ jobs:
           sed -i "0,/^version = \".*\"/s//version = \"$VERSION\"/" Cargo.toml
           grep -m1 '^version' Cargo.toml
 
-      - name: Build and package with makepkg (compiles the whole workspace once)
+      - name: Build and package with makepkg (compiles the whole workspace once, with the "dist" profile for the smallest binary)
         run: |
           mkdir -p "$GITHUB_WORKSPACE/dist"
           chown builder:builder "$GITHUB_WORKSPACE/dist"
           # PKGBUILD sets options=('!lto'): makepkg's default -flto breaks the
           # C/asm objects of build scripts and leaves module .so files with
-          # undefined symbols.
+          # undefined symbols. PKGBUILD itself builds with
+          # `cargo build --profile dist` (fat LTO, codegen-units=1), which is
+          # slow on purpose — see the timeout above.
           su builder -c "cd '$GITHUB_WORKSPACE/packaging' && \
             PKGDEST='$GITHUB_WORKSPACE/dist' makepkg --force --nodeps --noconfirm"
           ls -la dist
@@ -74,7 +79,7 @@ jobs:
       - name: Verify every module library is loadable
         run: |
           fail=0
-          for so in target/release/libtux_*.so; do
+          for so in target/dist/libtux_*.so; do
             echo "== $so"
             # No TLS/ring code may be linked into a module any more.
             if nm -D --undefined-only "$so" | grep -q 'ring_core'; then
@@ -107,8 +112,8 @@ jobs:
           STAGE="$(mktemp -d)/$NAME"
           mkdir -p "$STAGE"
 
-          install -m755 target/release/tux-store "$STAGE/"
-          install -m755 target/release/libtux_*.so "$STAGE/"
+          install -m755 target/dist/tux-store "$STAGE/"
+          install -m755 target/dist/libtux_*.so "$STAGE/"
           cp -r data "$STAGE/data"
           cp LICENSE README.md "$STAGE/"
 
