@@ -137,6 +137,21 @@ fn wire(ui: &MainWindow) {
     ui.on_upgrade_all(|| {
         with_state(|st| st.upgrade_all());
     });
+    ui.on_downgrade_continue(|| {
+        with_state(|st| st.downgrade_continue());
+    });
+    ui.on_downgrade_all(|| {
+        with_state(|st| st.downgrade_all());
+    });
+    ui.on_downgrade_selected(|| {
+        with_state(|st| st.downgrade_selected());
+    });
+    ui.on_downgrade_cancel(|| {
+        with_state(|st| st.downgrade_cancel());
+    });
+    ui.on_downgrade_toggle(|i| {
+        with_state(|st| st.downgrade_toggle(usize::try_from(i).unwrap_or(usize::MAX)));
+    });
 
     // ── details ──
     // Don't let the window be closed while a script is changing the system.
