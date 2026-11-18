@@ -5,6 +5,7 @@
 //! install module knowing anything about the difference.
 
 use crate::Emitter;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::io::Read;
 use std::process::{Command, Stdio};
@@ -13,11 +14,35 @@ use std::thread;
 use tux_abi::stream::{LineSplitter, Utf8Stream};
 use tux_abi::sync::lock;
 use tux_abi::text::shell_quote;
-use tux_abi::{Operation, Package};
+use tux_abi::{DowngradeEntry, Operation, Package};
 use tux_pacman::progress::{Kind, ProgressTracker};
 
 pub fn search(query: &str, limit: usize) -> Vec<Package> {
     tux_pacman::queries::search(query, limit)
+}
+
+/// Installed packages newer than their repository version, using one
+/// `pacman -Sl` call and the local database. `vercmp` comes from libalpm, so
+/// epochs and pkgrel compare exactly like pacman does.
+pub fn downgrades() -> Result<Vec<DowngradeEntry>, String> {
+    let repos = tux_pacman::queries::sync_versions()?;
+    let mut entries: Vec<DowngradeEntry> = tux_pacman::localdb::read_all()
+        .into_iter()
+        .filter_map(|local| {
+            let (repo, repo_version) = repos.get(&local.name)?;
+            if alpm::vercmp(local.version.as_str(), repo_version.as_str()) != Ordering::Greater {
+                return None;
+            }
+            Some(DowngradeEntry {
+                name: local.name,
+                repo: repo.clone(),
+                local_version: local.version,
+                repo_version: repo_version.clone(),
+            })
+        })
+        .collect();
+    entries.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(entries)
 }
 
 fn is_root() -> bool {
@@ -40,6 +65,19 @@ fn pacman_args(op: &Operation) -> (Kind, Vec<String>) {
         }
         Operation::SystemUpgrade => {
             args.extend(["-Syu", "--noconfirm", "--color=never"].map(String::from));
+            Kind::Upgrade
+        }
+        Operation::SystemDowngrade => {
+            // A second `-u` asks pacman to replace newer local packages with
+            // the repository versions.
+            args.extend(["-Syuu", "--noconfirm", "--color=never"].map(String::from));
+            Kind::Upgrade
+        }
+        Operation::Downgrade { packages } => {
+            // Explicit targets: pacman installs the repository version of
+            // exactly these packages (and resolves their dependencies).
+            args.extend(["-S", "--noconfirm", "--color=never", "--"].map(String::from));
+            args.extend(packages.iter().cloned());
             Kind::Upgrade
         }
     };
