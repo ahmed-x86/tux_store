@@ -9,8 +9,8 @@
 use crate::console::ConsoleBuffer;
 use crate::convert;
 use crate::{
-    AppView, MainWindow, OpKind, OpPhase, UiInstallState, UiPackage, UiPackageDetails,
-    UiScriptInfo, UiScriptOption, UiSection, UiTaxonomyEntry,
+    AppView, MainWindow, OpKind, OpPhase, UiDowngrade, UiInstallState, UiPackage,
+    UiPackageDetails, UiScriptInfo, UiScriptOption, UiSection, UiTaxonomyEntry,
 };
 use slint::{Image, Model, ModelRc, VecModel, Weak};
 use std::cell::RefCell;
@@ -19,9 +19,9 @@ use std::path::Path;
 use std::rc::Rc;
 use tux_abi::text::prettify_name;
 use tux_abi::{
-    Bus, Cover, Engine, Message, Operation, Package, PackageDetails, RemoveMode, ScriptInfo,
-    ScriptValues, ScriptViewData, Section, SpecialCase, Taxonomy, TaxonomyEntry, TaxonomyKind,
-    UpdateEntry,
+    Bus, Cover, DowngradeEntry, Engine, Message, Operation, Package, PackageDetails, RemoveMode,
+    ScriptInfo, ScriptValues, ScriptViewData, Section, SpecialCase, Taxonomy, TaxonomyEntry,
+    TaxonomyKind, UpdateEntry,
 };
 
 const FIRST_PAGE: usize = 35;
@@ -233,6 +233,15 @@ pub struct State {
     screenshots: Rc<VecModel<Image>>,
     updates: Rc<VecModel<crate::UiUpdate>>,
 
+    // ── smart downgrade dialog ──
+    /// A `DowngradeCheckRequested` is in flight; clicking Update all again
+    /// must not start a second check.
+    downgrade_check_pending: bool,
+    downgrade_rows: Rc<VecModel<UiDowngrade>>,
+    /// Index-aligned with `downgrade_rows`; kept in Rust so the selected
+    /// package names can be published without reading Slint back.
+    downgrade_checked: Vec<bool>,
+
     covers: Vec<Cover>,
     cover_idx: usize,
 
@@ -333,6 +342,9 @@ impl State {
             suggestions: Rc::new(VecModel::default()),
             screenshots: Rc::new(VecModel::default()),
             updates: Rc::new(VecModel::default()),
+            downgrade_check_pending: false,
+            downgrade_rows: Rc::new(VecModel::default()),
+            downgrade_checked: Vec::new(),
             covers: Vec::new(),
             cover_idx: 0,
             current: None,
@@ -368,6 +380,7 @@ impl State {
         ui.set_current_suggestions(ModelRc::from(self.suggestions.clone()));
         ui.set_current_screenshots(ModelRc::from(self.screenshots.clone()));
         ui.set_updates(ModelRc::from(self.updates.clone()));
+        ui.set_downgrade_packages(ModelRc::from(self.downgrade_rows.clone()));
         ui.set_browse_entries(ModelRc::from(self.browse_entries.clone()));
         ui.set_browse_packages(ModelRc::from(self.browse_packages.clone()));
     }
@@ -391,6 +404,9 @@ impl State {
                 self.apply_installed_filter();
             }
             Message::UpdatesReady { updates, error } => self.on_updates(updates, error),
+            Message::DowngradeCheckReady { packages, error } => {
+                self.on_downgrade_check(packages, error)
+            }
             Message::TaxonomyReady { taxonomy } => self.on_taxonomy(taxonomy),
             Message::TaxonomySectionReady { kind, entries } => {
                 self.on_taxonomy_section(kind, entries)
@@ -595,6 +611,39 @@ impl State {
         if let Some(ui) = self.ui.upgrade() {
             ui.set_updates_loading(false);
             ui.set_updates_status(error.unwrap_or_default().into());
+        }
+    }
+
+    /// Result of the pre-update check: no candidates → continue with the
+    /// normal `-Syu`; otherwise show the dialog and wait for the user.
+    fn on_downgrade_check(&mut self, packages: Vec<DowngradeEntry>, error: Option<String>) {
+        self.downgrade_check_pending = false;
+        if error.is_none() && packages.is_empty() {
+            self.run_system_change(Message::SystemUpgradeRequested);
+            return;
+        }
+        if let Some(error) = error {
+            // Detection is best-effort: a failure must not block updates.
+            log::warn!("downgrade check failed: {error}");
+            if let Some(ui) = self.ui.upgrade() {
+                ui.set_updates_status(error.into());
+            }
+            self.run_system_change(Message::SystemUpgradeRequested);
+            return;
+        }
+
+        self.downgrade_checked = vec![true; packages.len()];
+        self.downgrade_rows.set_vec(
+            packages
+                .iter()
+                .map(|d| convert::downgrade(d, true))
+                .collect::<Vec<_>>(),
+        );
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_updates_status("".into());
+            ui.set_downgrade_selected_count(packages.len() as i32);
+            ui.set_downgrade_selecting(false);
+            ui.set_downgrade_open(true);
         }
     }
 
@@ -882,7 +931,9 @@ impl State {
         match &op {
             Operation::Install { name } => self.set_installed(name, true),
             Operation::Remove { name, .. } => self.set_installed(name, false),
-            Operation::SystemUpgrade => self.request_updates(),
+            Operation::SystemUpgrade
+            | Operation::SystemDowngrade
+            | Operation::Downgrade { .. } => self.request_updates(),
         }
         if self.ui.upgrade().is_some_and(|ui| ui.get_active_tab() == 2) {
             self.refresh_installed();
@@ -1684,9 +1735,94 @@ impl State {
         }
     }
 
+    /// "Update all" no longer runs `pacman -Syu` blindly: check first whether
+    /// installed packages are newer than the repositories. The answer decides
+    /// between a plain update and the three-choice dialog.
     pub fn upgrade_all(&mut self) {
+        if self.downgrade_check_pending {
+            return;
+        }
+        let busy = self.script_running
+            || self
+                .ui
+                .upgrade()
+                .is_some_and(|ui| ui.get_current_install().phase == OpPhase::Running);
+        if busy {
+            return;
+        }
+        self.downgrade_check_pending = true;
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_updates_status("Checking installed packages…".into());
+        }
+        self.bus.publish(&Message::DowngradeCheckRequested);
+    }
+
+    /// First choice: update normally (`-Syu`) and keep the newer packages.
+    pub fn downgrade_continue(&mut self) {
+        self.close_downgrade();
+        self.run_system_change(Message::SystemUpgradeRequested);
+    }
+
+    /// Second choice: replace every newer package (`-Syuu`).
+    pub fn downgrade_all(&mut self) {
+        self.close_downgrade();
+        self.run_system_change(Message::SystemDowngradeRequested);
+    }
+
+    /// Third choice: downgrade only the ticked packages.
+    pub fn downgrade_selected(&mut self) {
+        let packages: Vec<String> = (0..self.downgrade_rows.row_count())
+            .filter(|&i| self.downgrade_checked.get(i).copied().unwrap_or(false))
+            .filter_map(|i| self.downgrade_rows.row_data(i))
+            .map(|row| row.name.to_string())
+            .collect();
+        if packages.is_empty() {
+            return;
+        }
+        self.close_downgrade();
+        self.run_system_change(Message::DowngradeRequested { packages });
+    }
+
+    pub fn downgrade_cancel(&mut self) {
+        self.close_downgrade();
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_updates_status("".into());
+        }
+    }
+
+    pub fn downgrade_toggle(&mut self, i: usize) {
+        let Some(checked) = self.downgrade_checked.get_mut(i) else {
+            return;
+        };
+        *checked = !*checked;
+        let checked = *checked;
+        if let Some(mut row) = self.downgrade_rows.row_data(i) {
+            row.checked = checked;
+            self.downgrade_rows.set_row_data(i, row);
+        }
+        let count = self.downgrade_checked.iter().filter(|c| **c).count();
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_downgrade_selected_count(count as i32);
+        }
+    }
+
+    fn close_downgrade(&mut self) {
+        self.downgrade_check_pending = false;
+        self.downgrade_rows.set_vec(Vec::new());
+        self.downgrade_checked.clear();
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_downgrade_open(false);
+            ui.set_downgrade_selecting(false);
+            ui.set_downgrade_selected_count(0);
+        }
+    }
+
+    fn run_system_change(&mut self, msg: Message) {
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_updates_status("".into());
+        }
         if self.begin_operation(OpKind::Upgrade, "@upgrade", 0.0) {
-            self.bus.publish(&Message::SystemUpgradeRequested);
+            self.bus.publish(&msg);
         }
     }
 
