@@ -12,7 +12,11 @@
     "makepkg",
     "arch user repository",
     "aur helper",
-    "ياي"
+    "ياي",
+    "أور",
+    "مساعد aur",
+    "تثبيت من aur",
+    "حزم arch"
   ],
   "show_on_home": true,
   "category": "developer-tools",
