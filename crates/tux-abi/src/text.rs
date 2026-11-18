@@ -31,6 +31,41 @@ pub fn prettify_name(raw: &str) -> String {
     out
 }
 
+/// Fold Arabic letter variations to their base forms so that a query typed in
+/// one style still matches text written in another.
+///
+/// * `ا` `أ` `إ` `آ` `ٱ` → `ا`
+/// * `ي` `ى` → `ي`
+/// * `ة` `ه` → `ه`
+///
+/// Everything else (including Latin text, digits and diacritics) is unchanged.
+/// The caller is responsible for case folding and whitespace/punctuation rules.
+pub fn normalize_arabic(text: &str) -> String {
+    text.chars()
+        .map(|c| match c {
+            'أ' | 'إ' | 'آ' | 'ٱ' => 'ا',
+            'ى' => 'ي',
+            'ة' => 'ه',
+            other => other,
+        })
+        .collect()
+}
+
+/// Does `text` contain Arabic-script characters? Used by search to decide
+/// whether a description fallback is worth trying (`pacman -Ss` already
+/// searched descriptions, but the store normally ranks names only).
+pub fn contains_arabic(text: &str) -> bool {
+    text.chars().any(|c| {
+        matches!(c,
+            '\u{0600}'..='\u{06FF}'   // Arabic
+            | '\u{0750}'..='\u{077F}' // Arabic Supplement
+            | '\u{08A0}'..='\u{08FF}' // Arabic Extended-A
+            | '\u{FB50}'..='\u{FDFF}' // Arabic Presentation Forms-A
+            | '\u{FE70}'..='\u{FEFF}' // Arabic Presentation Forms-B
+        )
+    })
+}
+
 /// Strict allow-list for package names. Names end up in command lines (some
 /// run as root) and in cache file names, so anything unusual is rejected.
 pub fn is_valid_package_name(name: &str) -> bool {
@@ -102,5 +137,21 @@ mod tests {
     #[test]
     fn ansi() {
         assert_eq!(strip_ansi("\u{1b}[1mhi\u{1b}[0m"), "hi");
+    }
+
+    #[test]
+    fn arabic_normalization_folds_letter_variants() {
+        assert_eq!(normalize_arabic("أحمد"), "احمد");
+        assert_eq!(normalize_arabic("إسلام"), "اسلام");
+        assert_eq!(normalize_arabic("آية"), "ايه");
+        assert_eq!(normalize_arabic("ٱلله"), "الله");
+        assert_eq!(normalize_arabic("على"), "علي");
+        assert_eq!(normalize_arabic("مدرسة"), "مدرسه");
+    }
+
+    #[test]
+    fn arabic_detection_ignores_latin_text() {
+        assert!(contains_arabic("أحمد"));
+        assert!(!contains_arabic("firefox"));
     }
 }
