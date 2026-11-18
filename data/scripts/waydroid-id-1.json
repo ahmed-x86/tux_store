@@ -27,7 +27,13 @@
     "nvidia",
     "gpu",
     "انفيديا",
-    "كرت شاشة"
+    "كرت شاشة",
+    "android apps",
+    "android emulator",
+    "wayland",
+    "تطبيقات أندرويد",
+    "محاكي أندرويد",
+    "ايبك"
   ],
   "show_on_home": true,
   "category": "utilities",
