@@ -73,7 +73,7 @@ Name the file after the id: `my-tool-id-1.json`. The `id` must be lowercase lett
 | `schema` | yes | `2` (version `1` files still load, but have no `info` / `icon` / `percent`) |
 | `id` | yes | unique id, see above |
 | `title` | yes | name shown on the card and page |
-| `description` | no | one or two sentences |
+| `description` | no | one or two sentences; also matched by search (including Arabic letter variants) |
 | `version` | no | text, **or** a command object (see *Dynamic values*) |
 | `author` | no | shown in “About this add-on package” |
 | `keywords` | no | extra search words (any language: `"فلاشة"` works) |
