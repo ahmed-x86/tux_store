@@ -1,6 +1,6 @@
 # Pacman Layer (`tux-pacman` + `tux-search`)
 
-Files: `crates/tux-pacman/src/{runner,info,localdb,queries}.rs`, `crates/tux-search/src/{lib,catalog}.rs`
+Files: `crates/tux-pacman/src/{runner,info,localdb,queries}.rs`, `crates/tux-search/src/{lib,catalog,normalize}.rs`
 
 `tux-pacman` is a plain library (no bus, no FFI) so it can be unit-tested; `tux-search` is the module that turns bus requests into calls on it. Everything here is **read-only**: it only asks pacman questions.
 
@@ -36,15 +36,21 @@ This replaces every `pacman -Q` call of the C++ version.
 | `details(name)` | `-Sp --print-format "%n\|%s"`, then one `-Si` for the planned packages | see below |
 | `installed_packages()` | one `-Sl` (repo labels) + local db | explicit packages only, sorted |
 | `updates()` | `checkupdates`, or `pacman -Qu` when pacman-contrib is missing | |
+| `sync_versions()` | one `-Sl` | `name → (repo, version)`, first repository wins; feeds downgrade detection |
 
 Timeouts: info 10 s, plan 20 s, search 8 s, `-Sl` 15 s, `checkupdates` 60 s.
 
 ### Search
 
 - Each word is escaped for pacman's POSIX regex engine (`c++` no longer breaks), and `--` stops a query like `-x` from being read as an option.
-- A result is kept only if the **normalised name** (lower-case, without spaces, `-`, `_`, `.`) contains the normalised query — the same rule as the C++ version.
+- A result is kept only if the **normalised name** (Arabic variants folded, lower-case, without spaces, `-`, `_`, `.`) contains the normalised query — the same rule as the C++ version.
+- For a query containing Arabic, a normalised **description** match is accepted too (`pacman -Ss` already searched descriptions; the parser used to keep names only).
 - Results are de-duplicated and ranked: exact match, then prefix match, then shorter names first. The cap is **200** (the C++ version cut at 60 *before* ranking); the UI paginates.
 - The `installed` flag comes from the local database, not from `[installed]` in the output.
+
+Arabic folding is shared with the libalpm engine and the add-on catalog. See
+[ARABIC_SEARCH.md](ARABIC_SEARCH.md) for the mapping, the search key and the
+exact fallback rules.
 
 ### Details
 
@@ -66,4 +72,5 @@ That is 2 processes instead of the C++ version's 4 (`-Si`, `-Sp`, `-Q`, `-Si`).
 - **One thread per request.** Searches carry a generation number: if a newer search started, the older one does not publish its results.
 - **Home cache** — built once with a single `-Si` for the whole curated list; later requests only refresh the installed flags.
 - **Details cache** — up to 32 entries, 60 s TTL.
+- **Downgrade check** — `DowngradeCheckRequested` runs `tux_libalpm::downgrades()` on a worker and answers `DowngradeCheckReady{packages, error}`. See [SMART_DOWNGRADES.md](SMART_DOWNGRADES.md).
 - Both caches are dropped when `OperationFinished` is heard.
