@@ -17,7 +17,17 @@
     "storage",
     "تنظيف",
     "مساحة",
-    "تفريغ"
+    "تفريغ",
+    "cleaner",
+    "disk",
+    "space",
+    "orphan",
+    "maintenance",
+    "تنظيف النظام",
+    "توفير مساحة",
+    "ملفات مؤقتة",
+    "حزم يتيمة",
+    "صيانة"
   ],
   "show_on_home": false,
   "category": "utilities",
