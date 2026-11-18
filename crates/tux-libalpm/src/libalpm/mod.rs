@@ -9,7 +9,9 @@ pub mod config;
 mod query;
 mod transaction;
 
-pub use query::{details, exact, installed_packages, packages_by_name, search, updates};
+pub use query::{
+    details, downgrades, exact, installed_packages, packages_by_name, search, updates,
+};
 pub use transaction::{run_privileged, run_root};
 
 use alpm::{Alpm, SigLevel, Usage};
