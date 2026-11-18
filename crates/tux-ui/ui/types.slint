@@ -71,6 +71,15 @@ export struct UiUpdate {
     new-version: string,
 }
 
+// One installed package that is newer than the version in its repository.
+export struct UiDowngrade {
+    name: string,
+    repo: string,
+    local-version: string,
+    repo-version: string,
+    checked: bool,
+}
+
 // One row of the side menu's Categories / Groups / Repositories pages. Every
 // field comes from a backend discovery, nothing is written in the UI.
 export struct UiTaxonomyEntry {
