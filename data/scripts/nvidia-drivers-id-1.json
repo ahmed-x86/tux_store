@@ -21,7 +21,18 @@
     "تعريف",
     "تعريفات",
     "Quadro",
-    "كرت الشاشة"
+    "كرت الشاشة",
+    "nouveau",
+    "nvidia-dkms",
+    "nvidia-open",
+    "optimus",
+    "prime",
+    "wayland",
+    "xorg",
+    "بطاقة الرسوميات",
+    "كرت رسومات",
+    "درايفر",
+    "شاشة"
   ],
   "show_on_home": true,
   "top_button": {
