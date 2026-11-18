@@ -91,7 +91,8 @@ pub fn exact(name: &str) -> Package {
 }
 
 fn normalize(s: &str) -> String {
-    s.chars()
+    tux_abi::text::normalize_arabic(s)
+        .chars()
         .filter(|c| !matches!(c, ' ' | '-' | '_' | '.'))
         .flat_map(char::to_lowercase)
         .collect()
@@ -125,6 +126,10 @@ pub fn search(query: &str, limit: usize) -> Vec<Package> {
 
 fn parse_search(text: &str, query: &str, limit: usize, installed: &HashSet<String>) -> Vec<Package> {
     let nq = normalize(query);
+    // `pacman -Ss` already searched descriptions, but this parser keeps only
+    // names containing the query. For Arabic queries, accept a normalized
+    // description match too, so `احمد` finds a package described as `أحمد`.
+    let arabic = tux_abi::text::contains_arabic(query);
     let mut found: Vec<(u8, Package)> = Vec::new();
     let mut seen: HashSet<String> = HashSet::new();
     let mut current: Option<Package> = None;
@@ -132,11 +137,19 @@ fn parse_search(text: &str, query: &str, limit: usize, installed: &HashSet<Strin
     let mut flush = |p: Option<Package>, found: &mut Vec<(u8, Package)>| {
         let Some(mut p) = p else { return };
         let nn = normalize(&p.name);
-        if !nn.contains(&nq) || !seen.insert(p.name.clone()) {
+        let name_match = nn.contains(&nq);
+        let description_match = arabic && normalize(&p.description).contains(&nq);
+        if (!name_match && !description_match) || !seen.insert(p.name.clone()) {
             return;
         }
         p.installed = installed.contains(&p.name);
-        let rank = if nn == nq { 0 } else if nn.starts_with(&nq) { 1 } else { 2 };
+        let rank = if nn == nq {
+            0
+        } else if nn.starts_with(&nq) {
+            1
+        } else {
+            2
+        };
         found.push((rank, p));
     };
 
@@ -259,6 +272,37 @@ fn repo_map() -> HashMap<String, String> {
     map
 }
 
+/// `pacman -Sl` → package name → `(repo, version)`. The first repository that
+/// carries a name wins, exactly like `pacman -Si` / install resolution.
+fn parse_sync_versions(text: &str) -> HashMap<String, (String, String)> {
+    let mut map = HashMap::new();
+    for line in text.lines() {
+        let mut it = line.split_whitespace();
+        let (Some(repo), Some(name), Some(version)) = (it.next(), it.next(), it.next()) else {
+            continue;
+        };
+        map.entry(name.to_string())
+            .or_insert_with(|| (repo.to_string(), version.to_string()));
+    }
+    map
+}
+
+/// Version of every package in the sync databases, with its repository.
+/// One `pacman -Sl` process; used by the downgrade detector.
+pub fn sync_versions() -> Result<HashMap<String, (String, String)>, String> {
+    let out = runner::run_pacman(&["-Sl"], T_LIST);
+    if out.timed_out {
+        return Err("Timed out while reading the repository databases".into());
+    }
+    if out.code != Some(0) && out.stdout.is_empty() {
+        return Err(format!(
+            "Cannot read the repository databases: {}",
+            first_line(&out.stderr)
+        ));
+    }
+    Ok(parse_sync_versions(&out.stdout))
+}
+
 /// Explicitly installed packages, read straight from the local database.
 pub fn installed_packages() -> Vec<Package> {
     let repos = repo_map();
@@ -337,6 +381,15 @@ mod tests {
         let names: Vec<_> = r.iter().map(|p| p.name.as_str()).collect();
         assert_eq!(names, ["vlc", "vlc-plugin-x", "libvlc"]);
         assert_eq!(r[0].description, "The player");
+    }
+
+    #[test]
+    fn sync_versions_parse_keeps_first_repository() {
+        let map = parse_sync_versions(
+            "core foo 1.0-1\nextra foo 2.0-1\nextra bar 3.0-2 [installed]\n",
+        );
+        assert_eq!(map.get("foo"), Some(&("core".to_string(), "1.0-1".to_string())));
+        assert_eq!(map.get("bar"), Some(&("extra".to_string(), "3.0-2".to_string())));
     }
 
     #[test]
