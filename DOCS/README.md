@@ -11,6 +11,7 @@ what you are changing.
 | [MESSAGE_BUS.md](MESSAGE_BUS.md) | every message, who sends it and who reacts |
 | [PACKAGE_MODEL.md](PACKAGE_MODEL.md) | shared types in `tux-abi` and text helpers |
 | [PACMAN_MANAGER.md](PACMAN_MANAGER.md) | pacman queries, search, details, installed and update lists |
+| [ARABIC_SEARCH.md](ARABIC_SEARCH.md) | Arabic letter folding, search keys and description matching |
 | [TAXONOMY.md](TAXONOMY.md) | side menu: repositories, groups/families, AppStream categories, add-on category metadata |
 | [HIDDEN_PACKAGES.md](HIDDEN_PACKAGES.md) | `hidden_packages.json` and every surface it filters |
 
@@ -25,6 +26,7 @@ what you are changing.
 | [SCREENSHOTS.md](SCREENSHOTS.md) | screenshot slider and `data/screenshots/` |
 | [ICON_FETCHER.md](ICON_FETCHER.md) | icon pipeline and covers |
 | [INSTALL_MANAGER.md](INSTALL_MANAGER.md) | install transactions and progress |
+| [SMART_DOWNGRADES.md](SMART_DOWNGRADES.md) | pre-update check, three-choice dialog and downgrade transactions |
 | [Uninstall_Engine.md](Uninstall_Engine.md) | the five removal modes |
 | [LOGGING.md](LOGGING.md) | log sinks |
 
