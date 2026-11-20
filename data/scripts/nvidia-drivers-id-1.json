@@ -42,7 +42,9 @@
     "position": "top-right"
   },
   "category": "utilities",
-  "categories": ["drivers"],
+  "categories": [
+    "drivers"
+  ],
   "vars": {
     "gpu_model": "unknown",
     "gpu_branch": "unknown"
@@ -264,6 +266,47 @@
           }
         },
         {
+          "value": "nvidia",
+          "label": "NVIDIA drivers — latest (proprietary)",
+          "hint": "The newest official NVIDIA driver with the proprietary kernel modules (the classic nvidia package, built with DKMS so it works with every kernel). For GeForce RTX 20/30/40/50 and GTX 16 series (Turing and newer). From the official Arch repositories.",
+          "notes": [
+            {
+              "when": {
+                "var": "gpu_branch",
+                "eq": "open"
+              },
+              "text": "✔ Compatible with your GPU: ${gpu_model}"
+            },
+            {
+              "when": {
+                "all": [
+                  {
+                    "var": "gpu_branch",
+                    "one_of": [
+                      "open",
+                      "580xx",
+                      "470xx",
+                      "390xx",
+                      "340xx"
+                    ]
+                  },
+                  {
+                    "var": "gpu_branch",
+                    "ne": "open"
+                  }
+                ]
+              },
+              "text": "⚠ Your GPU (${gpu_model}) looks like it needs a different driver."
+            }
+          ],
+          "set": {
+            "driver_label": "NVIDIA drivers — latest proprietary (nvidia-dkms)",
+            "driver_source": "the official Arch repositories",
+            "driver_warning": "",
+            "driver_packages": "nvidia-dkms nvidia-utils nvidia-settings lib32-nvidia-utils"
+          }
+        },
+        {
           "value": "580xx",
           "label": "NVIDIA drivers 580.xx",
           "hint": "For GeForce GTX 10 (Pascal), GTX 9 / GTX 750 (Maxwell) and Volta. These cards are no longer supported by the latest driver. Installed from the AUR.",
@@ -443,6 +486,21 @@
             "all": [
               {
                 "var": "gpu_branch",
+                "eq": "open"
+              },
+              {
+                "var": "driver",
+                "eq": "nvidia"
+              }
+            ]
+          },
+          "goto": "confirm"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "var": "gpu_branch",
                 "one_of": [
                   "open",
                   "580xx",
@@ -544,7 +602,10 @@
           "root": true,
           "when": {
             "var": "driver",
-            "eq": "open"
+            "one_of": [
+              "open",
+              "nvidia"
+            ]
           },
           "weight": 10,
           "expected_secs": 150,
@@ -554,8 +615,16 @@
           "label": "Installing ${driver_label}",
           "script": "installing-driver-label-2.sh",
           "when": {
-            "var": "driver",
-            "ne": "open"
+            "all": [
+              {
+                "var": "driver",
+                "ne": "open"
+              },
+              {
+                "var": "driver",
+                "ne": "nvidia"
+              }
+            ]
           },
           "weight": 10,
           "expected_secs": 300,
