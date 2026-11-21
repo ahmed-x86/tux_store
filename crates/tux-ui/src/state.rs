@@ -17,7 +17,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::rc::Rc;
-use tux_abi::text::prettify_name;
+use tux_abi::text::{is_local_package_file_name, prettify_name};
 use tux_abi::{
     Backend, BackendKind, Bus, Cover, DowngradeEntry, Engine, Feature, Message, Operation,
     Package, PackageDetails, RemoveMode, ScriptInfo, ScriptValues, ScriptViewData, Section,
@@ -255,6 +255,8 @@ pub struct State {
     /// when the package was opened from there).
     return_view: Option<AppView>,
     last_details: PackageDetails,
+    /// Canonical path of the local package file on the details page, if any.
+    local_file: Option<String>,
 
     // ── side menu ──
     /// Each section is fetched only when its page is opened.
@@ -355,6 +357,7 @@ impl State {
             forward: Vec::new(),
             return_view: None,
             last_details: PackageDetails::default(),
+            local_file: None,
             taxonomy_sections: HashMap::new(),
             taxonomy_pending: HashSet::new(),
             browse_section: BrowseSection::Categories,
@@ -412,6 +415,13 @@ impl State {
                 special,
             } => self.on_details(name, details, special),
             Message::ExactReady { package } => self.open_package(package, false),
+            Message::LocalPackageReady {
+                path,
+                package,
+                details,
+                error,
+                reinstall,
+            } => self.on_local_package(path, package, details, error, reinstall),
             Message::ScreenshotsReady { name, images } => self.on_screenshots(name, images),
             Message::AddonsReady { package, packages } => self.on_addons(package, packages),
             Message::InstalledReady { packages } => {
@@ -569,6 +579,34 @@ impl State {
             ui.set_current_special_case(convert::special(special));
         }
         self.last_details = details;
+    }
+
+    /// Metadata of the local file arrived. A placeholder page was shown while
+    /// the read-only `pacman -Qip` request was in flight.
+    fn on_local_package(
+        &mut self,
+        path: String,
+        package: Package,
+        details: PackageDetails,
+        error: Option<String>,
+        reinstall: bool,
+    ) {
+        if self.local_file.as_deref() != Some(path.as_str())
+            || self.current.as_ref().is_none_or(|p| p.repo != "local")
+        {
+            return; // navigated elsewhere, or another file was opened
+        }
+        if let Some(error) = error {
+            self.set_local_error(error);
+            return;
+        }
+        self.open_package(package, true);
+        self.last_details = details.clone();
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_current_details(convert::details(&details));
+            ui.set_local_install_label(if reinstall { "Reinstall".into() } else { "Install".into() });
+            ui.set_local_error("".into());
+        }
     }
 
     /// Screenshots arrive as complete lists (possibly several times while a
@@ -1016,6 +1054,11 @@ impl State {
             Operation::SystemUpgrade
             | Operation::SystemDowngrade
             | Operation::Downgrade { .. } => self.request_updates(),
+            Operation::InstallFile { .. } => {
+                if let Some(pkg) = self.current.clone() {
+                    self.set_installed(&pkg.name, true);
+                }
+            }
         }
         if self.ui.upgrade().is_some_and(|ui| ui.get_active_tab() == 2) {
             self.refresh_installed();
@@ -1536,6 +1579,76 @@ impl State {
         self.bus.publish(&Message::ExactRequested { name });
     }
 
+    /// CLI / file-manager entry point. Canonicalise and validate before any
+    /// request reaches a backend; a bad argument still gets an error page.
+    pub fn open_local_file_arg(&mut self, arg: &str) {
+        let canonical = std::fs::canonicalize(arg);
+        let path = canonical
+            .as_ref()
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_else(|_| arg.to_string());
+        let valid = canonical.as_ref().is_ok_and(|p| {
+            p.is_file()
+                && p.file_name()
+                    .and_then(|n| n.to_str())
+                    .is_some_and(is_local_package_file_name)
+                && !p.to_string_lossy().chars().any(|c| c.is_control())
+        });
+        if !valid {
+            self.show_local_page(&path);
+            self.set_local_error(format!("Not a local package file: {arg}"));
+            return;
+        }
+        self.open_local_file(path);
+    }
+
+    /// Show the file's page at once, then ask the search module for its
+    /// read-only metadata. Only pacman/libalpm (install = true) can serve it.
+    pub fn open_local_file(&mut self, path: String) {
+        self.show_local_page(&path);
+        if !self.backend.supports(Feature::Details) || !self.backend.capabilities.install {
+            let message = if self.backend.is_supported() {
+                self.backend.feature_message(Feature::Install)
+            } else {
+                self.backend.unsupported_message()
+            };
+            self.set_local_error(message);
+            return;
+        }
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_local_install_label("Install".into());
+        }
+        self.set_local_error(String::new());
+        self.bus.publish(&Message::LocalPackageRequested { path });
+    }
+
+    fn show_local_page(&mut self, path: &str) {
+        let name = Path::new(path)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("Local package")
+            .to_string();
+        let pkg = Package {
+            name,
+            repo: "local".into(),
+            version: String::new(),
+            description: "Reading local package file…".into(),
+            ..Default::default()
+        };
+        self.local_file = Some(path.to_string());
+        self.open_package(pkg, false);
+    }
+
+    fn set_local_error(&mut self, text: String) {
+        if let Some(ui) = self.ui.upgrade() {
+            ui.set_local_error(text.into());
+            ui.set_current_details(UiPackageDetails {
+                is_loading: false,
+                ..Default::default()
+            });
+        }
+    }
+
     pub fn start_search(&mut self, raw: &str) {
         let q = raw.trim().to_string();
         self.search_query = q.clone();
@@ -1668,9 +1781,14 @@ impl State {
             ui.set_current_install(UiInstallState::default());
         }
         let is_script = pkg.repo == "script";
+        let is_local = pkg.repo == "local";
         let backend_details = self.backend.supports(Feature::Details);
         self.screenshots.set_vec(Vec::new());
-        if is_script {
+        if is_local {
+            // The local file page is filled by LocalPackageReady, not by the
+            // normal details / screenshots / icon requests.
+            self.suggestions.set_vec(Vec::new());
+        } else if is_script {
             self.suggestions.set_vec(Vec::new());
             ui.set_current_script_info(UiScriptInfo::default());
             self.script_page = None;
@@ -1684,14 +1802,14 @@ impl State {
             }
         }
         // Add-on packages can have screenshots too (declared in their JSON).
-        if backend_details {
+        if backend_details && !is_local {
             self.bus.publish(&Message::ScreenshotsRequested {
                 name: pkg.name.clone(),
             });
         }
         ui.set_view(AppView::Details);
 
-        let missing = if self.icons.contains_key(&pkg.name) {
+        let missing = if is_local || self.icons.contains_key(&pkg.name) {
             Vec::new()
         } else {
             vec![pkg.name.clone()]
@@ -1701,7 +1819,7 @@ impl State {
             self.bus.publish(&Message::ScriptInfoRequested {
                 id: pkg.name.clone(),
             });
-        } else if backend_details {
+        } else if backend_details && !is_local {
             self.bus.publish(&Message::DetailsRequested {
                 name: pkg.name.clone(),
             });
@@ -1841,6 +1959,19 @@ impl State {
         if self.begin_operation(OpKind::Install, &pkg.name, ratio) {
             self.bus
                 .publish(&Message::InstallRequested { name: pkg.name });
+        }
+    }
+
+    /// The Install / Reinstall button of a local package file page.
+    pub fn install_file_current(&mut self) {
+        if !self.backend.capabilities.install {
+            return;
+        }
+        let (Some(path), Some(pkg)) = (self.local_file.clone(), self.current.clone()) else {
+            return;
+        };
+        if self.begin_operation(OpKind::Upgrade, &pkg.name, 0.0) {
+            self.bus.publish(&Message::InstallFileRequested { path });
         }
     }
 
