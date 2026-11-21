@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-alpm-package">
+    <comment>Arch Linux package</comment>
+    <glob pattern="*.pkg.tar"/>
+    <glob pattern="*.pkg.tar.gz"/>
+    <glob pattern="*.pkg.tar.bz2"/>
+    <glob pattern="*.pkg.tar.xz"/>
+    <glob pattern="*.pkg.tar.zst"/>
+  </mime-type>
+</mime-info>
