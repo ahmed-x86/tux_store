@@ -94,6 +94,11 @@ impl Module for SearchModule {
                     self.exact(name);
                 }
             }
+            Message::LocalPackageRequested { path } => {
+                if self.supports(Feature::Details) {
+                    self.local_package(path);
+                }
+            }
             Message::AddonsRequested { package } => {
                 if self.supports(Feature::Addons) {
                     self.addons(package);
@@ -230,6 +235,27 @@ impl SearchModule {
         thread::spawn(move || {
             bus.publish(&Message::ExactReady {
                 package: tux_libalpm::exact(&name),
+            });
+        });
+    }
+
+    fn local_package(&self, path: String) {
+        let bus = self.bus;
+        thread::spawn(move || {
+            let (package, details, error, reinstall) = match tux_pacman::queries::local_package(&path)
+            {
+                Ok((package, details, reinstall)) => (package, details, None, reinstall),
+                Err(error) => {
+                    log::warn!("local package file: {error}");
+                    (Package::default(), PackageDetails::default(), Some(error), false)
+                }
+            };
+            bus.publish(&Message::LocalPackageReady {
+                path,
+                package,
+                details,
+                error,
+                reinstall,
             });
         });
     }
