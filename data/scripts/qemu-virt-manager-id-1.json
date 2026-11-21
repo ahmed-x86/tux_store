@@ -1,0 +1,1042 @@
+{
+  "schema": 2,
+  "id": "qemu-virt-manager-id-1",
+  "title": "Install QEMU/KVM and virt-manager",
+  "description": "Guided installation of QEMU/KVM, libvirt and a virtual machine manager (virt-manager, Cockpit or GNOME Boxes) for virtual machines on Arch Linux.",
+  "version": {
+    "label": "Latest QEMU version",
+    "script": "latest-version.sh"
+  },
+  "author": "Tux Store Team",
+  "keywords": [
+    "qemu",
+    "kvm",
+    "libvirt",
+    "virt-manager",
+    "virtual machine",
+    "virtual machines",
+    "vm",
+    "virtualization",
+    "virsh",
+    "virt-install",
+    "cockpit",
+    "gnome boxes",
+    "ovmf",
+    "uefi",
+    "tpm",
+    "windows 11",
+    "hypervisor",
+    "جهاز افتراضي",
+    "أجهزة افتراضية",
+    "الأجهزة الافتراضية",
+    "محاكي",
+    "فيرتشوال",
+    "وندوز",
+    "تثبيت ويندوز",
+    "ماكينة افتراضية",
+    "محاكاة",
+    "virtio-win",
+    "quickgui",
+    "quickemu",
+    "nested",
+    "nested virtualization",
+    "virtio",
+    "درايفرات ويندوز",
+    "تعريفات ويندوز"
+  ],
+  "show_on_home": true,
+  "top_button": {
+    "label": "Arch Wiki - QEMU",
+    "url": "https://wiki.archlinux.org/title/QEMU",
+    "icon": "external-link",
+    "position": "top-right"
+  },
+  "category": "utilities",
+  "categories": [
+    "developer-tools"
+  ],
+  "vars": {
+    "qemu_pkgs": "",
+    "frontend_pkgs": "",
+    "extras": "",
+    "qemu_line": "",
+    "frontend_line": "",
+    "frontend_hint": "",
+    "suggested_qemu": "desktop",
+    "pkg_line": "",
+    "kvm_warning": "",
+    "kvm_conf": "",
+    "nested": "no",
+    "nested_line": "",
+    "nested_now": "",
+    "nested_conf": "",
+    "aur_pkgs": "",
+    "new_aur": "",
+    "aur_line": "",
+    "relogin_note": ""
+  },
+  "start": "welcome",
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "script": "download-size.sh"
+    },
+    "extracted_mb": 600,
+    "installed_mb": {
+      "label": "Installed size",
+      "script": "installed-size.sh"
+    },
+    "note": "Sizes are read from your package database for the recommended setup (qemu-desktop, libvirt, virt-manager, UEFI, TPM). qemu-full and extra tools need more space. AUR extras (virtio-win, Quickgui) are built on your computer and are not counted."
+  },
+  "icon": [
+    {
+      "theme": "virt-manager"
+    },
+    {
+      "file": "qemu-virt-manager-id-1.svg"
+    }
+  ],
+  "uninstall": "un_confirm",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Before you install",
+      "tone": "info",
+      "message": [
+        "This guide installs QEMU/KVM with libvirt, so you can run virtual machines on this computer.",
+        "",
+        "It will check your system, let you pick the QEMU package and the graphical tool, install only what is missing, start the libvirt service and add your user to the libvirt group.",
+        "",
+        "Make sure your system is fully updated first. You will need to log out and back in at the end."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "script": "checking-your-system.sh",
+        "label": "Checking your system…"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_result",
+      "on_failure": "error_generic"
+    },
+    "preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "detect_user"
+    },
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "detect_user": {
+      "type": "check",
+      "command": {
+        "script": "detecting-your-user-name.sh",
+        "label": "Looking for your user name…"
+      },
+      "capture": "login_user",
+      "on_success": "detect_qemu",
+      "on_failure": "error_generic"
+    },
+    "detect_qemu": {
+      "type": "check",
+      "command": {
+        "script": "detecting-an-installed-qemu.sh",
+        "label": "Looking for an installed QEMU…"
+      },
+      "capture": "current_qemu",
+      "on_success": "detect_group",
+      "on_failure": "error_generic"
+    },
+    "detect_group": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-libvirt-group.sh",
+        "label": "Checking the libvirt group…"
+      },
+      "capture": "was_in_group",
+      "on_success": "detect_service",
+      "on_failure": "error_generic"
+    },
+    "detect_service": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-libvirt-service.sh",
+        "label": "Checking the libvirt service…"
+      },
+      "capture": "was_enabled",
+      "on_success": "relogin_gate",
+      "on_failure": "error_generic"
+    },
+    "choose_frontend": {
+      "type": "choice",
+      "title": "Choose the virtual machine manager",
+      "tone": "info",
+      "message": "Pick the tool you will use to create and run virtual machines. libvirt and QEMU are installed in every case.",
+      "store_as": "frontend",
+      "default": "virt-manager",
+      "next": "qemu_gate",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "virt-manager",
+          "label": "virt-manager (graphical, recommended)",
+          "hint": "The classic desktop app: create VMs from an ISO, snapshots, networks, UEFI and TPM options.",
+          "set": {
+            "frontend_pkgs": "virt-manager",
+            "frontend_line": "Manager: virt-manager",
+            "frontend_hint": "Open “Virtual Machine Manager” from your application menu (or run virt-manager) and choose QEMU/KVM (qemu:///system).",
+            "suggested_qemu": "desktop"
+          }
+        },
+        {
+          "value": "cockpit",
+          "label": "Cockpit (web interface)",
+          "hint": "Manage VMs from your browser. Good for headless or remote machines. Installs cockpit and cockpit-machines and starts cockpit.socket.",
+          "set": {
+            "frontend_pkgs": "cockpit cockpit-machines",
+            "frontend_line": "Manager: Cockpit web interface",
+            "frontend_hint": "Open https://localhost:9090 in your browser, log in with your normal user and open “Virtual Machines”.",
+            "suggested_qemu": "desktop"
+          }
+        },
+        {
+          "value": "gnome-boxes",
+          "label": "GNOME Boxes (simple)",
+          "hint": "The easiest possible desktop app, but with few settings. Uses a per-user (session) connection.",
+          "set": {
+            "frontend_pkgs": "gnome-boxes",
+            "frontend_line": "Manager: GNOME Boxes",
+            "frontend_hint": "Open “Boxes” from your application menu.",
+            "suggested_qemu": "desktop"
+          }
+        },
+        {
+          "value": "none",
+          "label": "No graphical tool (command line only)",
+          "hint": "Manage VMs with virsh, virt-install and the qemu-system-x86_64 command. Best for servers.",
+          "set": {
+            "frontend_pkgs": "",
+            "frontend_line": "Manager: none (command line)",
+            "frontend_hint": "Use virsh and virt-install in a terminal (for example: virsh list --all).",
+            "suggested_qemu": "base"
+          }
+        }
+      ]
+    },
+    "qemu_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "current_qemu",
+            "ne": ""
+          },
+          "goto": "keep_qemu"
+        }
+      ],
+      "default": "choose_qemu"
+    },
+    "keep_qemu": {
+      "type": "set",
+      "vars": {
+        "qemu_pkgs": "",
+        "qemu_line": "QEMU: ${current_qemu} (already installed, left unchanged)"
+      },
+      "next": "choose_extras"
+    },
+    "choose_qemu": {
+      "type": "choice",
+      "title": "Choose the QEMU package",
+      "tone": "info",
+      "message": "Only one of these can be installed at a time.",
+      "store_as": "qemu",
+      "default": "${suggested_qemu}",
+      "next": "choose_extras",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "desktop",
+          "label": "qemu-desktop",
+          "hint": "x86 guests with graphical display, audio and USB redirection. The normal choice for a desktop computer.",
+          "notes": [
+            {
+              "when": {
+                "var": "suggested_qemu",
+                "eq": "desktop"
+              },
+              "text": "✔ Recommended for your choice"
+            }
+          ],
+          "set": {
+            "qemu_pkgs": "qemu-desktop",
+            "qemu_line": "QEMU: qemu-desktop"
+          }
+        },
+        {
+          "value": "full",
+          "label": "qemu-full",
+          "hint": "Everything: ARM, RISC-V and other architectures plus every storage backend. Largest download.",
+          "notes": [
+            {
+              "when": {
+                "var": "suggested_qemu",
+                "eq": "full"
+              },
+              "text": "✔ Recommended for your choice"
+            }
+          ],
+          "set": {
+            "qemu_pkgs": "qemu-full",
+            "qemu_line": "QEMU: qemu-full"
+          }
+        },
+        {
+          "value": "base",
+          "label": "qemu-base",
+          "hint": "Minimal x86 only, no graphical backends. For servers managed over the command line; not good with virt-manager's console.",
+          "notes": [
+            {
+              "when": {
+                "var": "suggested_qemu",
+                "eq": "base"
+              },
+              "text": "✔ Recommended for your choice"
+            }
+          ],
+          "set": {
+            "qemu_pkgs": "qemu-base",
+            "qemu_line": "QEMU: qemu-base"
+          }
+        }
+      ]
+    },
+    "choose_extras": {
+      "type": "choice",
+      "title": "Optional extras",
+      "tone": "info",
+      "multiple": true,
+      "min_select": 0,
+      "message": "Tick what you want. Packages that are already installed are skipped.",
+      "store_as": "extras",
+      "default": "edk2-ovmf swtpm virt-install",
+      "next": "detect_yay",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "edk2-ovmf",
+          "label": "UEFI firmware (edk2-ovmf)",
+          "hint": "Needed for UEFI guests and Windows 11."
+        },
+        {
+          "value": "swtpm",
+          "label": "Software TPM 2.0 (swtpm)",
+          "hint": "Windows 11 requires a TPM 2.0."
+        },
+        {
+          "value": "virt-install",
+          "label": "virt-install",
+          "hint": "Create virtual machines from the command line."
+        },
+        {
+          "value": "virt-viewer",
+          "label": "virt-viewer",
+          "hint": "A standalone window to open a VM's screen."
+        },
+        {
+          "value": "libosinfo",
+          "label": "libosinfo",
+          "hint": "OS database that gives better defaults when you create a VM."
+        },
+        {
+          "value": "dmidecode",
+          "label": "dmidecode",
+          "hint": "Host hardware information that libvirt uses."
+        },
+        {
+          "value": "guestfs-tools",
+          "label": "guestfs-tools",
+          "hint": "Inspect and edit VM disk images while the VM is off."
+        },
+        {
+          "value": "iptables-nft",
+          "label": "iptables-nft",
+          "hint": "Only if the default network fails with a firewall error. May replace the iptables package."
+        }
+      ]
+    },
+    "plan": {
+      "type": "check",
+      "command": {
+        "script": "building-the-package-list.sh",
+        "label": "Working out what is missing…",
+        "timeout_secs": 60
+      },
+      "capture": "new_pkgs",
+      "on_success": "plan_gate",
+      "on_failure": "plan_failed"
+    },
+    "plan_failed": {
+      "type": "dialog",
+      "title": "Cannot prepare the installation",
+      "tone": "error",
+      "message": "${new_pkgs}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "plan_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "plan_none"
+        }
+      ],
+      "default": "plan_some"
+    },
+    "plan_none": {
+      "type": "set",
+      "vars": {
+        "pkg_line": "Everything you chose is already installed. I will only set up the services and your user."
+      },
+      "next": "confirm"
+    },
+    "plan_some": {
+      "type": "set",
+      "vars": {
+        "pkg_line": "Packages to install: ${new_pkgs}"
+      },
+      "next": "confirm"
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Are you sure?",
+      "tone": "warning",
+      "message": [
+        "You are about to set up virtual machines:",
+        "${qemu_line}",
+        "${frontend_line}",
+        "libvirt and dnsmasq (default NAT network)",
+        "${nested_line}",
+        "",
+        "${pkg_line}",
+        "${aur_line}",
+        "",
+        "I will also start libvirtd, start the default network and add your user (${login_user}) to the libvirt group if needed.",
+        "${relogin_note}",
+        "",
+        "Do you want to continue?"
+      ],
+      "buttons": [
+        {
+          "label": "Yes",
+          "style": "primary",
+          "goto": "gate_install"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "gate_install": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "ne": ""
+          },
+          "goto": "install_packages"
+        }
+      ],
+      "default": "record_state"
+    },
+    "install_packages": {
+      "type": "run",
+      "title": "Installing packages…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing ${new_pkgs}",
+          "script": "installing-the-packages.sh",
+          "root": true,
+          "weight": 10,
+          "expected_secs": 90,
+          "percent": 60
+        }
+      ],
+      "on_success": "record_packages",
+      "on_failure": "install_failed"
+    },
+    "record_packages": {
+      "type": "record",
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "next": "record_state"
+    },
+    "record_state": {
+      "type": "record",
+      "set": {
+        "was_in_group": "${was_in_group}",
+        "was_enabled": "${was_enabled}",
+        "login_user": "${login_user}"
+      },
+      "next": "configure"
+    },
+    "configure": {
+      "type": "run",
+      "title": "Setting up virtualization…",
+      "message": "Starting libvirt and preparing your user.",
+      "commands": [
+        {
+          "label": "Configuring libvirt, the default network and your user",
+          "script": "configuring-virtualization.sh",
+          "root": true,
+          "weight": 4,
+          "expected_secs": 20,
+          "percent": 90,
+          "progress": "percent"
+        }
+      ],
+      "on_success": "aur_run_gate",
+      "on_failure": "config_failed"
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong while installing (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "pacman works in all-or-nothing transactions, so your system is normally unchanged. Make sure the system is updated and try again."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "config_failed": {
+      "type": "dialog",
+      "title": "The setup did not finish",
+      "tone": "error",
+      "message": [
+        "The packages are installed, but the setup step failed (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "You can open this add-on again to remove what was installed, or fix the problem and run the install again: it is safe to repeat."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "script": "verifying-the-setup.sh",
+        "label": "Verifying the setup…",
+        "timeout_secs": 60
+      },
+      "capture": "verify_msg",
+      "on_success": "kvm_status",
+      "on_failure": "verify_failed"
+    },
+    "verify_failed": {
+      "type": "dialog",
+      "title": "The setup could not be verified",
+      "tone": "error",
+      "message": "${verify_msg}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "kvm_status": {
+      "type": "check",
+      "command": {
+        "script": "kvm-status.sh"
+      },
+      "capture": "kvm_warning",
+      "on_success": "detect_kvm_conf",
+      "on_failure": "detect_kvm_conf"
+    },
+    "detect_kvm_conf": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-kvm-autoload-file.sh"
+      },
+      "capture": "kvm_conf",
+      "on_success": "detect_nested_conf",
+      "on_failure": "detect_nested_conf"
+    },
+    "read_version": {
+      "type": "check",
+      "command": {
+        "script": "reading-the-installed-version.sh",
+        "label": "Reading the installed version…"
+      },
+      "capture": "installed_version",
+      "on_success": "record_final",
+      "on_failure": "record_final"
+    },
+    "record_final": {
+      "type": "record",
+      "set": {
+        "kvm_conf": "${kvm_conf}",
+        "nested_conf": "${nested_conf}",
+        "frontend": "${frontend}"
+      },
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "success": true,
+      "title": "QEMU/KVM is ready",
+      "button": "Close",
+      "mark": "installed",
+      "message": [
+        "QEMU/KVM and libvirt are installed and running.",
+        "",
+        "${relogin_note}",
+        "",
+        "${frontend_hint}",
+        "",
+        "Want your virtual machines on your home network (own IP address)? Create a bridge with NetworkManager (nmcli) or systemd-networkd and choose “Bridge device” in the VM's network settings. Wi-Fi cards usually cannot be bridged: use the default NAT network instead.",
+        "",
+        "${kvm_warning}"
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "“${last_failed}” did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove QEMU/KVM?",
+      "tone": "warning",
+      "message": [
+        "This removes the packages this guide installed: ${recorded_packages}",
+        "",
+        "It also stops the libvirt services it turned on and removes your user from the libvirt group if this guide added it.",
+        "",
+        "Your virtual machine disks in /var/lib/libvirt/images are NOT deleted. Shut down all running virtual machines first.",
+        "",
+        "Do not turn off the computer while it is working."
+      ],
+      "buttons": [
+        {
+          "label": "Remove",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "script": "checking-your-system-2.sh",
+        "label": "Checking your system…"
+      },
+      "capture": "preflight",
+      "on_success": "un_preflight_result",
+      "on_failure": "error_generic"
+    },
+    "un_preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing QEMU/KVM…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Stopping the virtualization services",
+          "script": "stopping-the-services.sh",
+          "root": true,
+          "percent": 25,
+          "expected_secs": 10
+        },
+        {
+          "label": "Removing your user from the libvirt group",
+          "script": "removing-your-user-from-libvirt.sh",
+          "root": true,
+          "percent": 40,
+          "expected_secs": 5
+        },
+        {
+          "label": "Removing the packages",
+          "script": "removing-the-packages.sh",
+          "root": true,
+          "percent": 90,
+          "expected_secs": 40
+        },
+        {
+          "label": "Removing the KVM configuration files",
+          "script": "removing-the-kvm-config-files.sh",
+          "root": true,
+          "percent": 100,
+          "expected_secs": 5
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "QEMU/KVM removed",
+      "message": [
+        "The packages were removed.",
+        "",
+        "Your virtual machine disks in /var/lib/libvirt/images were left untouched. Delete them yourself if you no longer need them."
+      ]
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "QEMU/KVM could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "Another program may depend on one of these packages. Nothing is marked as removed, so you can try again later."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "relogin_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "was_in_group",
+            "eq": "yes"
+          },
+          "goto": "relogin_no"
+        }
+      ],
+      "default": "relogin_yes"
+    },
+    "relogin_yes": {
+      "type": "set",
+      "vars": {
+        "relogin_note": "IMPORTANT: log out and log back in (or restart) once so your user joins the “libvirt” group. Until then you may see “permission denied” on qemu:///system."
+      },
+      "next": "choose_frontend"
+    },
+    "relogin_no": {
+      "type": "set",
+      "vars": {
+        "relogin_note": "You were already in the libvirt group, so you do not need to log out."
+      },
+      "next": "choose_frontend"
+    },
+    "detect_yay": {
+      "type": "check",
+      "command": {
+        "script": "looking-for-yay.sh",
+        "label": "Looking for yay…"
+      },
+      "on_success": "choose_aur",
+      "on_failure": "no_aur"
+    },
+    "no_aur": {
+      "type": "set",
+      "vars": {
+        "aur_pkgs": "",
+        "new_aur": "",
+        "aur_line": "AUR packages: none (yay is not installed, so AUR extras were skipped)"
+      },
+      "next": "detect_nested"
+    },
+    "choose_aur": {
+      "type": "choice",
+      "title": "Extras from the AUR",
+      "tone": "info",
+      "multiple": true,
+      "min_select": 0,
+      "message": [
+        "These come from the AUR and are built on your computer with yay. Nothing is ticked by default.",
+        "",
+        "Skip this page if you do not need them."
+      ],
+      "store_as": "aur_pkgs",
+      "default": "",
+      "next": "aur_list",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "virtio-win",
+          "label": "virtio-win (Windows drivers)",
+          "hint": "The VirtIO driver ISO for Windows guests: faster disk and network. Attach it as a second CD-ROM during Windows setup."
+        },
+        {
+          "value": "quickgui-bin",
+          "label": "Quickgui (QEMU app with automatic ISO download)",
+          "hint": "A simple graphical app on top of Quickemu: pick an OS, it downloads the ISO and creates the VM. Talks to QEMU directly (not libvirt). Needs qemu-desktop; installs Quickemu as a dependency.",
+          "visible_if": {
+            "all": [
+              {
+                "var": "qemu",
+                "ne": "base"
+              },
+              {
+                "var": "current_qemu",
+                "ne": "qemu-base"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "aur_list": {
+      "type": "check",
+      "command": {
+        "script": "building-the-aur-list.sh",
+        "label": "Checking the AUR packages…"
+      },
+      "capture": "new_aur",
+      "on_success": "aur_gate",
+      "on_failure": "error_generic"
+    },
+    "aur_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_aur",
+            "eq": ""
+          },
+          "goto": "aur_none"
+        }
+      ],
+      "default": "aur_some"
+    },
+    "aur_none": {
+      "type": "set",
+      "vars": {
+        "aur_line": "AUR packages: none"
+      },
+      "next": "detect_nested"
+    },
+    "aur_some": {
+      "type": "set",
+      "vars": {
+        "aur_line": "AUR packages (built with yay): ${new_aur}"
+      },
+      "next": "detect_nested"
+    },
+    "detect_nested": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-nested-setting.sh",
+        "label": "Checking nested virtualization…"
+      },
+      "capture": "nested_now",
+      "on_success": "nested_gate",
+      "on_failure": "nested_gate"
+    },
+    "nested_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "nested_now",
+            "eq": "yes"
+          },
+          "goto": "nested_already"
+        }
+      ],
+      "default": "choose_nested"
+    },
+    "nested_already": {
+      "type": "set",
+      "vars": {
+        "nested": "no",
+        "nested_line": "Nested virtualization: already enabled"
+      },
+      "next": "plan"
+    },
+    "choose_nested": {
+      "type": "choice",
+      "title": "Nested virtualization",
+      "tone": "info",
+      "message": "Turn this on only if you want to run virtual machines inside a virtual machine (for example Docker Desktop or Android emulators inside a guest). It takes effect after the next restart.",
+      "store_as": "nested",
+      "default": "no",
+      "next": "plan",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "no",
+          "label": "Leave it as it is",
+          "hint": "The normal choice.",
+          "set": {
+            "nested_line": "Nested virtualization: not changed"
+          }
+        },
+        {
+          "value": "yes",
+          "label": "Enable nested virtualization",
+          "hint": "Writes /etc/modprobe.d/tux-store-kvm-nested.conf (options kvm_intel/kvm_amd nested=1). Removed again when you uninstall.",
+          "set": {
+            "nested_line": "Nested virtualization: will be enabled (after a restart)"
+          }
+        }
+      ]
+    },
+    "aur_run_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_aur",
+            "ne": ""
+          },
+          "goto": "aur_install"
+        }
+      ],
+      "default": "verify"
+    },
+    "aur_install": {
+      "type": "run",
+      "title": "Installing the AUR packages…",
+      "message": "Building packages can take a few minutes. Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing build tools",
+          "script": "installing-the-build-tools.sh",
+          "root": true,
+          "weight": 1,
+          "expected_secs": 20,
+          "percent": 93
+        },
+        {
+          "label": "Building ${new_aur}",
+          "script": "installing-the-aur-packages.sh",
+          "weight": 8,
+          "expected_secs": 120,
+          "percent": 98
+        }
+      ],
+      "on_success": "record_aur",
+      "on_failure": "aur_failed"
+    },
+    "record_aur": {
+      "type": "record",
+      "packages": [
+        "${new_aur}"
+      ],
+      "next": "verify"
+    },
+    "aur_failed": {
+      "type": "dialog",
+      "title": "The AUR packages were not installed",
+      "tone": "warning",
+      "message": [
+        "QEMU, libvirt and your tools are installed, but building the AUR packages failed (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "Nothing else is affected. You can open this add-on again and install them later."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "verify"
+        },
+        {
+          "label": "Close",
+          "exit": true
+        }
+      ]
+    },
+    "detect_nested_conf": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-nested-file.sh"
+      },
+      "capture": "nested_conf",
+      "on_success": "read_version",
+      "on_failure": "read_version"
+    }
+  }
+}
