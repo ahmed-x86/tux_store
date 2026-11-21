@@ -26,6 +26,8 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 | `DetailsReady{name, details, special}` | search | ui, **install** | plan, plus add-on info; installer caches sizes |
 | `ExactRequested{name}` | ui | search | look up one package by exact name |
 | `ExactReady{package}` | search | ui | the package (opens its page) |
+| `LocalPackageRequested{path}` | ui | search | read-only metadata of a local `.pkg.tar.*` file |
+| `LocalPackageReady{path, package, details, error, reinstall}` | search | ui | file details; `error` shown on the page, `reinstall` = same version installed |
 | `AddonsRequested{package}` | ui | search | list the package's add-ons |
 | `AddonsReady{package, packages}` | search | ui | add-ons with real repo/version data |
 | `InstalledRequested` / `InstalledReady{packages}` | ui / search | search / ui | explicitly installed packages |
@@ -44,6 +46,7 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 | `ScreenshotsReady{name, images}` | thumbnail | ui | complete list of picture paths so far (may repeat while downloading) |
 | `ClearIconCache` / `IconCacheCleared{removed}` | ui / thumbnail | thumbnail / ui | settings button |
 | `InstallRequested{name}` | ui | install | `pacman -S` |
+| `InstallFileRequested{path}` | ui | install | `pacman -U` on a local package file |
 | `RemoveRequested{name, mode}` | ui | install | `pacman -R…` (see [Uninstall_Engine.md](Uninstall_Engine.md)) |
 | `SystemUpgradeRequested` | ui | install | `pacman -Syu` (sent after the downgrade check, or when it finds nothing) |
 | `SystemDowngradeRequested` | ui | install | `pacman -Syuu`, downgrade every newer local package |
