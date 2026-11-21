@@ -29,12 +29,18 @@ install: build
 	install -d $(DESTDIR)$(PREFIX)/share/tux-store
 	cp -r data/. $(DESTDIR)$(PREFIX)/share/tux-store/
 	install -Dm644 packaging/tux-store.desktop $(DESTDIR)$(PREFIX)/share/applications/tux-store.desktop
+	install -Dm644 packaging/tux-store-mime.xml $(DESTDIR)$(PREFIX)/share/mime/packages/tux-store-mime.xml
 	install -Dm644 LICENSE $(DESTDIR)$(PREFIX)/share/licenses/tux-store/LICENSE
+	@if [ -z "$(DESTDIR)" ]; then \
+		command -v update-mime-database >/dev/null 2>&1 && update-mime-database $(PREFIX)/share/mime || true; \
+		command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database $(PREFIX)/share/applications || true; \
+	fi
 
 uninstall:
 	rm -f  $(DESTDIR)$(PREFIX)/bin/tux-store
 	rm -rf $(DESTDIR)$(PREFIX)/lib/tux-store $(DESTDIR)$(PREFIX)/share/tux-store
 	rm -f  $(DESTDIR)$(PREFIX)/share/applications/tux-store.desktop
+	rm -f  $(DESTDIR)$(PREFIX)/share/mime/packages/tux-store-mime.xml
 
 clean:
 	cargo clean
