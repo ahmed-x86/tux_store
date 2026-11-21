@@ -2,8 +2,9 @@
 Type=Application
 Name=Tux Store
 Comment=A native package store for Arch Linux
-Exec=tux-store
+Exec=tux-store openpkgfile %f
 Icon=system-software-install
 Terminal=false
 Categories=System;PackageManager;Settings;
 Keywords=pacman;packages;software;store;arch;
+MimeType=application/x-alpm-package;application/x-zstd-compressed-tar;application/x-xz-compressed-tar;
