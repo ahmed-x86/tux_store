@@ -64,6 +64,8 @@ export component MainWindow inherits Window {
     in property <[image]> current-screenshots;
     in property <bool> can-forward: false;
     in property <UiSpecialCase> current-special-case;
+    in property <string> local-error;          // error on a local file page
+    in property <string> local-install-label;  // "Install" or "Reinstall"
     in property <[UiPackage]> addons-packages;
     in property <int> accent-idx: 4;
 
@@ -122,6 +124,7 @@ export component MainWindow inherits Window {
     callback back-clicked();
     callback forward-clicked();
     callback install-clicked();
+    callback install-file-clicked();
     callback remove-clicked(string);
     callback open-url(string, string);
     callback open-link(string);
@@ -386,6 +389,8 @@ export component MainWindow inherits Window {
         suggestions: root.current-suggestions;
         screenshots: root.current-screenshots;
         special-case: root.current-special-case;
+        local-error: root.local-error;
+        local-install-label: root.local-install-label;
         accent-idx: root.accent-idx;
         script-info: root.current-script-info;
         script-running: root.script-active && root.script-running-id == root.current-package.name;
@@ -401,6 +406,7 @@ export component MainWindow inherits Window {
         forward-clicked => { root.forward-clicked(); }
         back-clicked => { root.back-clicked(); }
         install-clicked => { root.install-clicked(); }
+        install-file-clicked => { root.install-file-clicked(); }
         remove-clicked(mode) => { root.remove-clicked(mode); }
         suggestion-clicked(p) => { root.app-clicked(p); }
         open-url(repo, name) => { root.open-url(repo, name); }
