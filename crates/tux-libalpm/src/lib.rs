@@ -130,6 +130,11 @@ pub fn downgrades() -> Result<Vec<DowngradeEntry>, String> {
 /// Run a privileged transaction with the selected engine. Returns the exit
 /// code (`-1` when it could not even start).
 pub fn run_transaction(op: &Operation, weights: &HashMap<String, u64>, emitter: &Emitter) -> i32 {
+    // File installs always use the `pacman -U` pty pipeline: libalpm's
+    // privileged helper only knows how to add packages from the sync databases.
+    if matches!(op, Operation::InstallFile { .. }) {
+        return direct::run_transaction(op, weights, emitter);
+    }
     match active() {
         Engine::Direct => direct::run_transaction(op, weights, emitter),
         Engine::Libalpm => libalpm::run_privileged(op, emitter),
