@@ -13,6 +13,7 @@
     "nvidia-settings",
     "opencl-nvidia",
     "lib32-opencl-nvidia",
+    "Podman",
     "xiphos",
     "bibletime",
     "sword",
