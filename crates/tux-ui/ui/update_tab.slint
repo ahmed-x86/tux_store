@@ -24,6 +24,7 @@ export component UpdateTab inherits Rectangle {
     in property <bool> loading;
     in property <string> status;
     in property <UiInstallState> install-state;
+    in property <bool> can-update: true;
     callback refresh();
     callback upgrade-all();
     callback show-console();
@@ -58,7 +59,7 @@ export component UpdateTab inherits Rectangle {
                     clicked => { root.refresh(); }
                 }
             }
-            VerticalLayout {
+            if root.can-update : VerticalLayout {
                 alignment: center;
                 PillButton {
                     text: "Update all";

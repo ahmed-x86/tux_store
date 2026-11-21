@@ -1,0 +1,10 @@
+[package]
+name = "tux-backend"
+description = "Package-manager backend detection and capability lookup"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tux-abi.workspace = true
+log.workspace = true

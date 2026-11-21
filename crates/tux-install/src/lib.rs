@@ -19,7 +19,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use tux_abi::sync::lock;
 use tux_abi::text::is_valid_package_name;
-use tux_abi::{Bus, Message, Module, Operation};
+use tux_abi::{Backend, Bus, Feature, Message, Module, Operation};
 use tux_libalpm::{Emitter, TxEvent};
 
 type Weights = HashMap<String, u64>;
@@ -27,13 +27,19 @@ const PLAN_CACHE_MAX: usize = 16;
 
 pub struct InstallModule {
     bus: Bus,
+    backend: Backend,
     busy: Arc<AtomicBool>,
     plans: Arc<Mutex<HashMap<String, Weights>>>,
 }
 
 impl Module for InstallModule {
     fn create(bus: Bus) -> Self {
-        InstallModule { bus, busy: Arc::default(), plans: Arc::default() }
+        InstallModule {
+            bus,
+            backend: tux_backend::detect(),
+            busy: Arc::default(),
+            plans: Arc::default(),
+        }
     }
 
     fn on_message(&self, msg: Message) {
@@ -56,14 +62,30 @@ impl Module for InstallModule {
                 }
                 plans.insert(name, weights);
             }
-            Message::InstallRequested { name } => self.start(Operation::Install { name }),
-            Message::RemoveRequested { name, mode } => {
-                self.start(Operation::Remove { name, mode })
+            Message::InstallRequested { name } => {
+                if self.supports(Feature::Install) {
+                    self.start(Operation::Install { name });
+                }
             }
-            Message::SystemUpgradeRequested => self.start(Operation::SystemUpgrade),
-            Message::SystemDowngradeRequested => self.start(Operation::SystemDowngrade),
+            Message::RemoveRequested { name, mode } => {
+                if self.supports(Feature::Remove) {
+                    self.start(Operation::Remove { name, mode });
+                }
+            }
+            Message::SystemUpgradeRequested => {
+                if self.supports(Feature::SystemUpgrade) {
+                    self.start(Operation::SystemUpgrade);
+                }
+            }
+            Message::SystemDowngradeRequested => {
+                if self.supports(Feature::Downgrade) {
+                    self.start(Operation::SystemDowngrade);
+                }
+            }
             Message::DowngradeRequested { packages } => {
-                self.start(Operation::Downgrade { packages })
+                if self.supports(Feature::Downgrade) {
+                    self.start(Operation::Downgrade { packages });
+                }
             }
             Message::ClearIconCache => lock(&self.plans).clear(),
             _ => {}
@@ -72,6 +94,19 @@ impl Module for InstallModule {
 }
 
 impl InstallModule {
+    /// True when the active backend can run `feature`; otherwise announce the
+    /// typed "unsupported" answer and start nothing.
+    fn supports(&self, feature: Feature) -> bool {
+        if self.backend.supports(feature) {
+            return true;
+        }
+        self.bus.publish(&Message::Unsupported {
+            backend: self.backend.kind,
+            feature,
+        });
+        false
+    }
+
     fn start(&self, op: Operation) {
         let bus = self.bus;
 

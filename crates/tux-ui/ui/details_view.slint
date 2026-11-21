@@ -1,6 +1,6 @@
 import { Theme } from "theme.slint";
 import { UiPackage, UiPackageDetails, UiInstallState, UiSpecialCase, UiScriptInfo, OpPhase } from "types.slint";
-import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar, ScreenshotGallery, ScreenshotViewer, VScrollBar, ToTopButton } from "components.slint";
+import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar, ScreenshotGallery, ScreenshotViewer, VScrollBar, ToTopButton, UnsupportedState } from "components.slint";
 
 // One choice in the "how do you want to uninstall?" dialog.
 component RemoveOption inherits Rectangle {
@@ -71,6 +71,10 @@ export component DetailsView inherits Rectangle {
     in property <[UiPackage]> suggestions;
     in property <[image]> screenshots;
     in property <bool> can-forward: false;
+    // Set when the active backend cannot answer details for this page.
+    in property <string> unsupported-text: "";
+    in property <bool> can-install: true;
+    in property <bool> can-remove: true;
     // True while an overlay (console, script dialog) owns the keyboard.
     in property <bool> keys-blocked: false;
     callback forward-clicked();
@@ -403,7 +407,7 @@ export component DetailsView inherits Rectangle {
                             }
                         }
                     }
-                    if !root.is-script : VerticalLayout {
+                    if !root.is-script && (root.pkg.installed ? root.can-remove : root.can-install) : VerticalLayout {
                         alignment: center;
                         Rectangle {
                             width: 152px;
@@ -828,6 +832,20 @@ export component DetailsView inherits Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    // The backend cannot describe this package: show the same message as the
+    // rest of the app. The top bar stays usable so Back/Forward still work.
+    if root.unsupported-text != "" : Rectangle {
+        y: 64px;
+        width: parent.width;
+        height: parent.height - 64px;
+        background: Theme.base;
+        UnsupportedState {
+            width: parent.width;
+            height: parent.height;
+            message: root.unsupported-text;
         }
     }
 }

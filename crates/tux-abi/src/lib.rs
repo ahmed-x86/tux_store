@@ -14,6 +14,7 @@
 //! UTF-8 JSON, so modules need not be built by the same compiler version.
 
 pub mod addon_category;
+pub mod backend;
 pub mod engine;
 pub mod hidden;
 pub mod logging;
@@ -28,6 +29,7 @@ pub mod stream;
 pub mod sync;
 pub mod text;
 
+pub use backend::{Backend, BackendKind, Capabilities, Feature};
 pub use engine::Engine;
 pub use log;
 pub use message::*;

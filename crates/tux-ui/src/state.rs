@@ -19,9 +19,9 @@ use std::path::Path;
 use std::rc::Rc;
 use tux_abi::text::prettify_name;
 use tux_abi::{
-    Bus, Cover, DowngradeEntry, Engine, Message, Operation, Package, PackageDetails, RemoveMode,
-    ScriptInfo, ScriptValues, ScriptViewData, Section, SpecialCase, Taxonomy, TaxonomyEntry,
-    TaxonomyKind, UpdateEntry,
+    Backend, BackendKind, Bus, Cover, DowngradeEntry, Engine, Feature, Message, Operation,
+    Package, PackageDetails, RemoveMode, ScriptInfo, ScriptValues, ScriptViewData, Section,
+    SpecialCase, Taxonomy, TaxonomyEntry, TaxonomyKind, UpdateEntry,
 };
 
 const FIRST_PAGE: usize = 35;
@@ -211,6 +211,8 @@ pub struct State {
     bus: Bus,
     /// Package-manager backend selected in Settings.
     engine: Engine,
+    /// What this machine can actually do; read-only for the UI.
+    backend: Backend,
 
     icons: HashMap<String, Image>,
     icon_requested: HashSet<String>,
@@ -327,6 +329,7 @@ impl State {
             ui,
             bus,
             engine: crate::config::load().engine,
+            backend: tux_backend::detect(),
             icons: HashMap::new(),
             icon_requested: HashSet::new(),
             sections: Rc::new(VecModel::default()),
@@ -383,6 +386,18 @@ impl State {
         ui.set_downgrade_packages(ModelRc::from(self.downgrade_rows.clone()));
         ui.set_browse_entries(ModelRc::from(self.browse_entries.clone()));
         ui.set_browse_packages(ModelRc::from(self.browse_packages.clone()));
+        self.apply_backend(ui);
+    }
+
+    /// Tell Slint what the active manager can do. The UI only reads this; it
+    /// never asks pacman itself.
+    fn apply_backend(&self, ui: &MainWindow) {
+        ui.set_backend_supported(self.backend.is_supported());
+        ui.set_backend_message(self.backend.unsupported_message().into());
+        ui.set_can_install(self.backend.capabilities.install);
+        ui.set_can_remove(self.backend.capabilities.remove);
+        ui.set_can_update(self.backend.capabilities.updates && self.backend.capabilities.system_upgrade);
+        ui.set_engine_enabled(self.backend.is_supported());
     }
 
     // ───────────────────────── bus → UI ─────────────────────────
@@ -489,6 +504,7 @@ impl State {
                 }
             }
             Message::ScriptEnded { success, .. } => self.on_script_ended(success),
+            Message::Unsupported { backend, feature } => self.on_unsupported(backend, feature),
             _ => {}
         }
     }
@@ -614,6 +630,62 @@ impl State {
         }
     }
 
+    /// A module answered that the active backend cannot serve a request. Clear
+    /// whatever spinner that request started and show the reason.
+    fn on_unsupported(&mut self, backend: BackendKind, feature: Feature) {
+        let message = Backend::new(backend).feature_message(feature);
+        log::warn!("{message}");
+        match feature {
+            Feature::Search => {
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_search_busy(false);
+                    ui.set_has_more_results(false);
+                }
+            }
+            Feature::Details => {
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_current_details(UiPackageDetails {
+                        is_loading: false,
+                        ..Default::default()
+                    });
+                }
+            }
+            Feature::Updates | Feature::SystemUpgrade | Feature::Downgrade => {
+                self.downgrade_check_pending = false;
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_updates_loading(false);
+                    ui.set_updates_status(message.into());
+                }
+            }
+            Feature::InstalledList => {
+                self.installed_all.clear();
+                self.installed_paged.reset(Vec::new());
+                self.installed.set_vec(Vec::new());
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_installed_loading(false);
+                    ui.set_installed_total(0);
+                    ui.set_installed_has_more(false);
+                }
+            }
+            Feature::Categories | Feature::TaxonomyGroups | Feature::TaxonomyRepositories => {
+                self.browse_all.clear();
+                self.browse_entries.set_vec(Vec::new());
+                self.browse_packages.set_vec(Vec::new());
+                if let Some(ui) = self.ui.upgrade() {
+                    ui.set_browse_loading(false);
+                    ui.set_browse_status(message.into());
+                }
+            }
+            Feature::Addons => {
+                self.addons.set_vec(Vec::new());
+            }
+            Feature::Install | Feature::Remove => {
+                self.console.push(&format!("{message}\n"));
+                self.console_dirty = true;
+            }
+        }
+    }
+
     /// Result of the pre-update check: no candidates → continue with the
     /// normal `-Syu`; otherwise show the dialog and wait for the user.
     fn on_downgrade_check(&mut self, packages: Vec<DowngradeEntry>, error: Option<String>) {
@@ -719,6 +791,16 @@ impl State {
 
     /// Ask the search module for one side-menu section (the page being opened).
     fn request_taxonomy(&mut self, kind: TaxonomyKind) {
+        if !self.backend.supports(match kind {
+            TaxonomyKind::Category => Feature::Categories,
+            TaxonomyKind::Group => Feature::TaxonomyGroups,
+            TaxonomyKind::Repository => Feature::TaxonomyRepositories,
+        }) {
+            if let Some(ui) = self.ui.upgrade() {
+                ui.set_browse_loading(false);
+            }
+            return;
+        }
         if self.taxonomy_sections.contains_key(&kind) {
             self.rebuild_browse();
             return;
@@ -1394,6 +1476,11 @@ impl State {
             engine: self.engine,
         });
         self.bus.publish(&Message::UiReady);
+        if !self.backend.is_supported() {
+            // The window shows the unsupported state; asking for data would
+            // only start spinners nobody can complete.
+            return;
+        }
         // Home (visible at start-up) and the cover already on screen. Nothing
         // else: the side menu, search, tabs and package pages ask for their
         // data when they are opened.
@@ -1436,10 +1523,16 @@ impl State {
     }
 
     pub fn request_home(&mut self) {
+        if !self.backend.is_supported() {
+            return;
+        }
         self.bus.publish(&Message::HomeRequested);
     }
 
     pub fn open_by_name(&mut self, name: String) {
+        if !self.backend.supports(Feature::Details) {
+            return;
+        }
         self.bus.publish(&Message::ExactRequested { name });
     }
 
@@ -1447,7 +1540,7 @@ impl State {
         let q = raw.trim().to_string();
         self.search_query = q.clone();
         let Some(ui) = self.ui.upgrade() else { return };
-        if q.is_empty() {
+        if q.is_empty() || !self.backend.supports(Feature::Search) {
             self.search_paged.reset(Vec::new());
             self.search.set_vec(Vec::new());
             ui.set_has_more_results(false);
@@ -1467,6 +1560,12 @@ impl State {
     }
 
     pub fn refresh_installed(&mut self) {
+        if !self.backend.supports(Feature::InstalledList) {
+            if let Some(ui) = self.ui.upgrade() {
+                ui.set_installed_loading(false);
+            }
+            return;
+        }
         if let Some(ui) = self.ui.upgrade() {
             ui.set_installed_loading(true);
         }
@@ -1520,6 +1619,13 @@ impl State {
     }
 
     pub fn request_updates(&mut self) {
+        if !self.backend.supports(Feature::Updates) {
+            if let Some(ui) = self.ui.upgrade() {
+                ui.set_updates_loading(false);
+                ui.set_updates_status(self.backend.feature_message(Feature::Updates).into());
+            }
+            return;
+        }
         if let Some(ui) = self.ui.upgrade() {
             ui.set_updates_loading(true);
             ui.set_updates_status("".into());
@@ -1562,6 +1668,7 @@ impl State {
             ui.set_current_install(UiInstallState::default());
         }
         let is_script = pkg.repo == "script";
+        let backend_details = self.backend.supports(Feature::Details);
         self.screenshots.set_vec(Vec::new());
         if is_script {
             self.suggestions.set_vec(Vec::new());
@@ -1569,11 +1676,19 @@ impl State {
             self.script_page = None;
         } else {
             self.build_suggestions(&pkg);
+            if !backend_details {
+                ui.set_current_details(UiPackageDetails {
+                    is_loading: false,
+                    ..Default::default()
+                });
+            }
         }
         // Add-on packages can have screenshots too (declared in their JSON).
-        self.bus.publish(&Message::ScreenshotsRequested {
-            name: pkg.name.clone(),
-        });
+        if backend_details {
+            self.bus.publish(&Message::ScreenshotsRequested {
+                name: pkg.name.clone(),
+            });
+        }
         ui.set_view(AppView::Details);
 
         let missing = if self.icons.contains_key(&pkg.name) {
@@ -1586,7 +1701,7 @@ impl State {
             self.bus.publish(&Message::ScriptInfoRequested {
                 id: pkg.name.clone(),
             });
-        } else {
+        } else if backend_details {
             self.bus.publish(&Message::DetailsRequested {
                 name: pkg.name.clone(),
             });
@@ -1635,6 +1750,9 @@ impl State {
 
     pub fn show_addons(&mut self) {
         self.addons.set_vec(Vec::new());
+        if !self.backend.supports(Feature::Addons) {
+            return;
+        }
         if let Some(cur) = &self.current {
             self.bus.publish(&Message::AddonsRequested {
                 package: cur.name.clone(),
@@ -1704,6 +1822,9 @@ impl State {
     }
 
     pub fn install_current(&mut self) {
+        if !self.backend.supports(Feature::Install) {
+            return;
+        }
         let Some(pkg) = self.current.clone() else {
             return;
         };
@@ -1724,6 +1845,9 @@ impl State {
     }
 
     pub fn remove_current(&mut self, flag: &str) {
+        if !self.backend.supports(Feature::Remove) {
+            return;
+        }
         let (Some(pkg), Some(mode)) = (self.current.clone(), RemoveMode::from_flag(flag)) else {
             return;
         };
@@ -1739,6 +1863,11 @@ impl State {
     /// installed packages are newer than the repositories. The answer decides
     /// between a plain update and the three-choice dialog.
     pub fn upgrade_all(&mut self) {
+        if !self.backend.supports(Feature::Updates)
+            || !self.backend.supports(Feature::SystemUpgrade)
+        {
+            return;
+        }
         if self.downgrade_check_pending {
             return;
         }
@@ -1759,18 +1888,27 @@ impl State {
 
     /// First choice: update normally (`-Syu`) and keep the newer packages.
     pub fn downgrade_continue(&mut self) {
+        if !self.backend.supports(Feature::SystemUpgrade) {
+            return;
+        }
         self.close_downgrade();
         self.run_system_change(Message::SystemUpgradeRequested);
     }
 
     /// Second choice: replace every newer package (`-Syuu`).
     pub fn downgrade_all(&mut self) {
+        if !self.backend.supports(Feature::Downgrade) {
+            return;
+        }
         self.close_downgrade();
         self.run_system_change(Message::SystemDowngradeRequested);
     }
 
     /// Third choice: downgrade only the ticked packages.
     pub fn downgrade_selected(&mut self) {
+        if !self.backend.supports(Feature::Downgrade) {
+            return;
+        }
         let packages: Vec<String> = (0..self.downgrade_rows.row_count())
             .filter(|&i| self.downgrade_checked.get(i).copied().unwrap_or(false))
             .filter_map(|i| self.downgrade_rows.row_data(i))

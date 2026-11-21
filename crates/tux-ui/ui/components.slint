@@ -3,8 +3,7 @@ import { UiPackage, UiPackageDependency, UiInstallState, OpPhase, OpKind, UiScri
 
 // ── Buttons ────────────────────────────────────────────────────────────────
 
-export component PillButton inherits Rectangle {
-    in property <string> text;
+export component PillButton inherits Rectangle {    in property <string> text;
     in property <bool> primary: false;
     in property <bool> enabled: true;
     in property <color> accent: Theme.blue;
@@ -33,6 +32,25 @@ export component PillButton inherits Rectangle {
         font-weight: 700;
         horizontal-alignment: center;
         vertical-alignment: center;
+    }
+}
+
+// The one message shown when the machine has no usable package manager (or
+// the detected one has no adapter yet). Centred, read-only, no controls.
+export component UnsupportedState inherits Rectangle {
+    in property <string> message;
+    background: Theme.base;
+
+    Text {
+        width: min(parent.width - 64px, 620px);
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        text: root.message;
+        color: Theme.overlay1;
+        font-size: 16px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        wrap: word-wrap;
     }
 }
 

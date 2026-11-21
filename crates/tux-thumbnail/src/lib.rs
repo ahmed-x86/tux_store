@@ -30,12 +30,13 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use tux_abi::sync::lock;
 use tux_abi::text::is_valid_package_name;
-use tux_abi::{paths, Bus, Message, Module};
+use tux_abi::{paths, Backend, Bus, Feature, Message, Module};
 
 const NET_WORKERS: usize = 8;
 
 pub struct ThumbnailModule {
     bus: Bus,
+    backend: Backend,
     resolver: Arc<Resolver>,
     inflight: Arc<Mutex<HashSet<String>>>,
     /// Screenshot downloads running right now.
@@ -108,6 +109,7 @@ impl Module for ThumbnailModule {
 
         ThumbnailModule {
             bus,
+            backend: tux_backend::detect(),
             resolver,
             inflight,
             shots: Arc::default(),
@@ -118,6 +120,9 @@ impl Module for ThumbnailModule {
     fn on_message(&self, msg: Message) {
         match msg {
             Message::IconRequested { name, .. } => {
+                if !self.supports(Feature::Search) {
+                    return;
+                }
                 if !is_valid_package_name(&name) {
                     return;
                 }
@@ -127,18 +132,27 @@ impl Module for ThumbnailModule {
                 }
             }
             Message::CoversRequested => {
+                if !self.supports(Feature::Search) {
+                    return;
+                }
                 let bus = self.bus;
                 spawn_named("thumb-covers".into(), move || {
                     covers::serve(&bus);
                 });
             }
             Message::CoverImagesRequested { name } => {
+                if !self.supports(Feature::Search) {
+                    return;
+                }
                 let bus = self.bus;
                 spawn_named("thumb-cover-one".into(), move || {
                     covers::serve_one(&bus, &name)
                 });
             }
             Message::ScreenshotsRequested { name } => {
+                if !self.supports(Feature::Details) {
+                    return;
+                }
                 let (bus, shots) = (self.bus, self.shots.clone());
                 spawn_named("thumb-shots".into(), move || {
                     screenshots::serve(&bus, &shots, &name)
@@ -154,6 +168,21 @@ impl Module for ThumbnailModule {
             }
             _ => {}
         }
+    }
+}
+
+impl ThumbnailModule {
+    /// Thumbnails are only useful for packages the backend can list. Unknown
+    /// managers get the typed "unsupported" answer instead of a stalled job.
+    fn supports(&self, feature: Feature) -> bool {
+        if self.backend.supports(feature) {
+            return true;
+        }
+        self.bus.publish(&Message::Unsupported {
+            backend: self.backend.kind,
+            feature,
+        });
+        false
     }
 }
 

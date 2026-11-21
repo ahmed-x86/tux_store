@@ -5,6 +5,7 @@
 //! UI, but any module may listen — e.g. the installer overhears
 //! [`Message::DetailsReady`] to learn package sizes for its progress bar).
 
+use crate::backend::{BackendKind, Feature};
 use crate::engine::Engine;
 use crate::script::{ButtonStyle, Tone};
 use serde::{Deserialize, Serialize};
@@ -449,6 +450,12 @@ pub enum Message {
     },
     CoversReady {
         covers: Vec<Cover>,
+    },
+    /// A backend was asked for a feature it does not implement. No other answer
+    /// for that request will follow.
+    Unsupported {
+        backend: BackendKind,
+        feature: Feature,
     },
     /// Remote pictures of one cover, after a `CoverImagesRequested`.
     CoverImagesReady {

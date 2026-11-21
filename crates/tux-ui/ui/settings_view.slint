@@ -4,6 +4,7 @@ import { PillButton, TopBar } from "components.slint";
 component ChoiceButton inherits Rectangle {
     in property <string> label;
     in property <bool> selected;
+    in property <bool> enabled: true;
     callback clicked();
 
     width: 110px;
@@ -11,14 +12,15 @@ component ChoiceButton inherits Rectangle {
     border-radius: 8px;
     border-width: 1px;
     border-color: root.selected ? Theme.blue : Theme.surface2;
-    background: root.selected ? Theme.blue.transparentize(0.85) : Theme.surface1;
+    background: !root.enabled ? Theme.surface0.transparentize(0.5)
+        : (root.selected ? Theme.blue.transparentize(0.85) : Theme.surface1);
     animate border-color { duration: 150ms; }
     animate background { duration: 150ms; }
 
-    TouchArea { mouse-cursor: pointer; clicked => { root.clicked(); } }
+    TouchArea { enabled: root.enabled; mouse-cursor: pointer; clicked => { root.clicked(); } }
     Text {
         text: root.label;
-        color: root.selected ? Theme.blue : Theme.text;
+        color: !root.enabled ? Theme.overlay0 : (root.selected ? Theme.blue : Theme.text);
         font-weight: root.selected ? 700 : 500;
         font-size: 14px;
         horizontal-alignment: center;
@@ -72,6 +74,8 @@ export component SettingsView inherits Rectangle {
     in property <string> app-version;
     in property <string> cache-status;
     in property <string> engine;
+    in property <bool> engine-enabled: true;
+    in property <string> backend-message;
     callback back-clicked();
     callback theme-selected(bool);
     callback engine-selected(string);
@@ -135,14 +139,22 @@ export component SettingsView inherits Rectangle {
                                     label: "Direct pacman";
                                     width: 150px;
                                     selected: root.engine == "direct";
+                                    enabled: root.engine-enabled;
                                     clicked => { root.engine-selected("direct"); }
                                 }
                                 ChoiceButton {
                                     label: "libalpm";
                                     width: 110px;
                                     selected: root.engine == "libalpm";
+                                    enabled: root.engine-enabled;
                                     clicked => { root.engine-selected("libalpm"); }
                                 }
+                            }
+                            if root.backend-message != "" : Text {
+                                text: root.backend-message;
+                                color: Theme.overlay1;
+                                font-size: 13px;
+                                wrap: word-wrap;
                             }
                         }
                     }

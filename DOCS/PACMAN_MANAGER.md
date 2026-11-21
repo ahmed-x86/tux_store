@@ -4,6 +4,10 @@ Files: `crates/tux-pacman/src/{runner,info,localdb,queries}.rs`, `crates/tux-sea
 
 `tux-pacman` is a plain library (no bus, no FFI) so it can be unit-tested; `tux-search` is the module that turns bus requests into calls on it. Everything here is **read-only**: it only asks pacman questions.
 
+## Backend layer
+
+`tux-abi::backend` holds the data-only `Backend`, `BackendKind`, `Capabilities` and `Feature` types; the small `tux-backend` crate detects the active manager (`TUX_BACKEND` overrides it, otherwise `/var/lib/pacman`, `pacman`, `apt-get`, `dnf`, `zypper`, `nix` are checked in that order). The UI reads capabilities and never runs pacman. `tux-search`, `tux-install` and `tux-thumbnail` check the active backend before answering and reply `Message::Unsupported{backend, feature}` when a request is not supported. Pacman and libalpm expose the full capability set; the other managers are recognised but currently report as unsupported. All pacman/libalpm code stays in `tux-pacman`/`tux-libalpm` (plus the `tux-search`/`tux-install` adapters).
+
 ## `runner.rs`
 
 `run(program, args, timeout) -> Captured { stdout, stderr, code, timed_out }`

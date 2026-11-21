@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 tux-abi.workspace = true
+tux-backend.workspace = true
 tux-appstream.workspace = true
 tux-pacman.workspace = true
 tux-taxonomy.workspace = true

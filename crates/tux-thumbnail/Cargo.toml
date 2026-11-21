@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 tux-abi.workspace = true
+tux-backend.workspace = true
 serde_json.workspace = true
 log.workspace = true
 crossbeam-channel.workspace = true

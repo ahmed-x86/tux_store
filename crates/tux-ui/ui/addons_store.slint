@@ -1,10 +1,11 @@
 import { Theme } from "theme.slint";
 import { UiPackage } from "types.slint";
-import { PackageGrid, PillButton, TopBar } from "components.slint";
+import { PackageGrid, PillButton, TopBar, UnsupportedState } from "components.slint";
 
 export component AddonsStore inherits Rectangle {
     in property <[UiPackage]> packages;
     in property <string> store-title: "Addons Store";
+    in property <string> unsupported-text: "";
     in property <int> refresh-tick: 0;
     callback back-clicked();
     callback app-clicked(UiPackage);
@@ -33,6 +34,18 @@ export component AddonsStore inherits Rectangle {
             empty-text: "Loading…";
             app-clicked(p) => { root.app-clicked(p); }
             icons-needed(first, last) => { root.icons-needed(first, last); }
+        }
+    }
+
+    if root.unsupported-text != "" : Rectangle {
+        y: 64px;
+        width: parent.width;
+        height: parent.height - 64px;
+        background: Theme.base;
+        UnsupportedState {
+            width: parent.width;
+            height: parent.height;
+            message: root.unsupported-text;
         }
     }
 }

@@ -4592,10 +4592,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tux-backend"
+version = "0.17.0"
+dependencies = [
+ "log",
+ "tux-abi",
+]
+
+[[package]]
 name = "tux-install"
 version = "0.17.0"
 dependencies = [
  "tux-abi",
+ "tux-backend",
  "tux-libalpm",
 ]
 
@@ -4643,6 +4652,7 @@ dependencies = [
  "serde_json",
  "tux-abi",
  "tux-appstream",
+ "tux-backend",
  "tux-libalpm",
  "tux-pacman",
  "tux-taxonomy",
@@ -4677,6 +4687,7 @@ dependencies = [
  "log",
  "serde_json",
  "tux-abi",
+ "tux-backend",
 ]
 
 [[package]]
@@ -4690,6 +4701,7 @@ dependencies = [
  "slint",
  "slint-build",
  "tux-abi",
+ "tux-backend",
 ]
 
 [[package]]

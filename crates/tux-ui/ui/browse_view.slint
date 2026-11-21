@@ -1,6 +1,6 @@
 import { Theme } from "theme.slint";
 import { UiPackage, UiTaxonomyEntry } from "types.slint";
-import { PackageGrid, VScrollBar, ToTopButton } from "components.slint";
+import { PackageGrid, VScrollBar, ToTopButton, UnsupportedState } from "components.slint";
 
 // One repository / group / category row. Everything shown here was discovered
 // by the backend; the UI only draws it.
@@ -238,6 +238,7 @@ export component BrowseView inherits Rectangle {
     in property <string> entry-subtitle;
     in property <[UiPackage]> packages;
     in property <bool> has-more;
+    in property <string> unsupported-text: "";
     in property <int> refresh-tick: 0;
 
     callback back-clicked();
@@ -485,6 +486,14 @@ export component BrowseView inherits Rectangle {
                         icons-needed(first, last) => { root.icons-needed(first, last); }
                     }
                 }
+            }
+
+            // Unsupported manager: keep the header (so Back works) and replace
+            // the list with one clear message.
+            if root.unsupported-text != "" : UnsupportedState {
+                width: parent.width;
+                height: parent.height;
+                message: root.unsupported-text;
             }
         }
     }

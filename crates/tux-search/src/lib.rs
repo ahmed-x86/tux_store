@@ -21,7 +21,8 @@ use std::time::{Duration, Instant};
 use tux_abi::sync::lock;
 use tux_abi::text::is_valid_package_name;
 use tux_abi::{
-    paths, Bus, Message, Module, Package, PackageDetails, ScriptInfo, Section, TaxonomyKind,
+    paths, Backend, Bus, Feature, Message, Module, Package, PackageDetails, ScriptInfo, Section,
+    TaxonomyKind,
 };
 use tux_pacman::localdb;
 use tux_taxonomy::{packages_for, TaxonomyState};
@@ -31,6 +32,8 @@ const DETAILS_CACHE_MAX: usize = 32;
 
 pub struct SearchModule {
     bus: Bus,
+    /// What this machine can do; every package request checks it first.
+    backend: Backend,
     catalog: Arc<Catalog>,
     home_cache: Arc<Mutex<Option<Vec<Section>>>>,
     details_cache: Arc<Mutex<HashMap<String, (Instant, PackageDetails)>>>,
@@ -44,6 +47,7 @@ impl Module for SearchModule {
     fn create(bus: Bus) -> Self {
         SearchModule {
             bus,
+            backend: tux_backend::detect(),
             catalog: Arc::new(Catalog::load(paths::data_dir())),
             home_cache: Arc::default(),
             details_cache: Arc::default(),
@@ -61,9 +65,21 @@ impl Module for SearchModule {
                 lock(&self.taxonomy).clear();
                 self.search_gen.fetch_add(1, Ordering::SeqCst);
             }
-            Message::HomeRequested => self.home(),
-            Message::SearchRequested { query } => self.search(query),
-            Message::DetailsRequested { name } => self.details(name),
+            Message::HomeRequested => {
+                if self.supports(Feature::Search) {
+                    self.home();
+                }
+            }
+            Message::SearchRequested { query } => {
+                if self.supports(Feature::Search) {
+                    self.search(query);
+                }
+            }
+            Message::DetailsRequested { name } => {
+                if self.supports(Feature::Details) {
+                    self.details(name);
+                }
+            }
             Message::ScriptInfoRequested { id } => {
                 let info = self
                     .catalog
@@ -73,14 +89,46 @@ impl Module for SearchModule {
                     .map(script_info);
                 self.bus.publish(&Message::ScriptInfoReady { id, info });
             }
-            Message::ExactRequested { name } => self.exact(name),
-            Message::AddonsRequested { package } => self.addons(package),
-            Message::InstalledRequested => self.installed(),
-            Message::UpdatesRequested => self.updates(),
-            Message::DowngradeCheckRequested => self.downgrades(),
-            Message::TaxonomyRequested => self.taxonomy(),
-            Message::TaxonomySectionRequested { kind } => self.taxonomy_section(kind),
-            Message::TaxonomyPackagesRequested { kind, id } => self.taxonomy_packages(kind, id),
+            Message::ExactRequested { name } => {
+                if self.supports(Feature::Details) {
+                    self.exact(name);
+                }
+            }
+            Message::AddonsRequested { package } => {
+                if self.supports(Feature::Addons) {
+                    self.addons(package);
+                }
+            }
+            Message::InstalledRequested => {
+                if self.supports(Feature::InstalledList) {
+                    self.installed();
+                }
+            }
+            Message::UpdatesRequested => {
+                if self.supports(Feature::Updates) {
+                    self.updates();
+                }
+            }
+            Message::DowngradeCheckRequested => {
+                if self.supports(Feature::Downgrade) {
+                    self.downgrades();
+                }
+            }
+            Message::TaxonomyRequested => {
+                if self.supports(Feature::Categories) {
+                    self.taxonomy();
+                }
+            }
+            Message::TaxonomySectionRequested { kind } => {
+                if self.supports(taxonomy_feature(kind)) {
+                    self.taxonomy_section(kind);
+                }
+            }
+            Message::TaxonomyPackagesRequested { kind, id } => {
+                if self.supports(taxonomy_feature(kind)) {
+                    self.taxonomy_packages(kind, id);
+                }
+            }
             Message::OperationFinished { .. }
             | Message::ScriptEnded { .. }
             | Message::ClearIconCache => {
@@ -94,6 +142,19 @@ impl Module for SearchModule {
 }
 
 impl SearchModule {
+    /// True when the active backend can answer `feature`. Otherwise publish the
+    /// typed "unsupported" answer and let the caller stop.
+    fn supports(&self, feature: Feature) -> bool {
+        if self.backend.supports(feature) {
+            return true;
+        }
+        self.bus.publish(&Message::Unsupported {
+            backend: self.backend.kind,
+            feature,
+        });
+        false
+    }
+
     fn home(&self) {
         let (bus, catalog, cache) = (self.bus, self.catalog.clone(), self.home_cache.clone());
         thread::spawn(move || {
@@ -295,6 +356,15 @@ fn section_entries(state: &TaxonomyState, kind: TaxonomyKind) -> Vec<tux_abi::Ta
         TaxonomyKind::Category => state.message.categories.clone(),
         TaxonomyKind::Group => state.message.groups.clone(),
         TaxonomyKind::Repository => state.message.repositories.clone(),
+    }
+}
+
+/// The capability a side-menu section needs.
+fn taxonomy_feature(kind: TaxonomyKind) -> Feature {
+    match kind {
+        TaxonomyKind::Category => Feature::Categories,
+        TaxonomyKind::Group => Feature::TaxonomyGroups,
+        TaxonomyKind::Repository => Feature::TaxonomyRepositories,
     }
 }
 

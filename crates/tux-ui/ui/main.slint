@@ -3,7 +3,7 @@ import { AppView, OpPhase, OpKind, UiPackage, UiSection, UiPackageDependency, Ui
          UiInstallState, UiAddon, UiSpecialCase, UiUpdate, UiDowngrade, UiScriptOption, UiScriptButton, UiScriptView, UiScriptInfo,
          UiTaxonomyEntry } from "types.slint";
 import { PackageGrid, SearchBox, TabButton, TopBar, ConsoleOverlay, ScriptDialog, DowngradeDialog,
-         VScrollBar, ToTopButton, MenuRow } from "components.slint";
+         VScrollBar, ToTopButton, MenuRow, UnsupportedState } from "components.slint";
 import { HomeTab } from "home_tab.slint";
 import { InstalledTab } from "installed_tab.slint";
 import { UpdateTab } from "update_tab.slint";
@@ -87,6 +87,14 @@ export component MainWindow inherits Window {
     in property <string> app-version;
     in property <string> cache-status;
     in-out property <string> engine;
+
+    // ── package-manager backend capabilities (read-only, set from Rust) ──
+    in property <bool> backend-supported: true;
+    in property <string> backend-message;
+    in property <bool> can-install: true;
+    in property <bool> can-remove: true;
+    in property <bool> can-update: true;
+    in property <bool> engine-enabled: true;
 
     // ── side menu ──
     in-out property <bool> menu-open: false;
@@ -335,6 +343,7 @@ export component MainWindow inherits Window {
             updates: root.updates;
             loading: root.updates-loading;
             status: root.updates-status;
+            can-update: root.can-update;
             install-state: root.current-install;
             refresh => { root.refresh-updates(); }
             upgrade-all => { root.upgrade-all(); }
@@ -353,6 +362,14 @@ export component MainWindow inherits Window {
             more-clicked => { root.request-more-installed(); }
             icons-needed(first, last) => { root.installed-icons-needed(first, last); }
         }
+
+        // No usable manager: Home, Search, Updates and Installed all show the
+        // same message instead of an empty or half-loaded page.
+        if !root.backend-supported : UnsupportedState {
+            width: parent.width;
+            height: parent.height;
+            message: root.backend-message;
+        }
         }
       }
     }
@@ -362,6 +379,10 @@ export component MainWindow inherits Window {
         pkg: root.current-package;
         details: root.current-details;
         install-state: root.current-install;
+        can-install: root.can-install;
+        can-remove: root.can-remove;
+        unsupported-text: (root.backend-supported || root.current-package.repo == "script")
+            ? "" : root.backend-message;
         suggestions: root.current-suggestions;
         screenshots: root.current-screenshots;
         special-case: root.current-special-case;
@@ -392,6 +413,7 @@ export component MainWindow inherits Window {
     if root.view == AppView.addons : AddonsStore {
         packages: root.addons-packages;
         store-title: root.current-special-case.type-name + " for " + root.current-package.pretty-name;
+        unsupported-text: root.backend-supported ? "" : root.backend-message;
         refresh-tick: root.icon-refresh-tick;
         back-clicked => { root.view = AppView.details; }
         app-clicked(p) => { root.app-clicked(p); }
@@ -402,6 +424,8 @@ export component MainWindow inherits Window {
         app-version: root.app-version;
         cache-status: root.cache-status;
         engine: root.engine;
+        engine-enabled: root.engine-enabled;
+        backend-message: root.backend-message;
         back-clicked => { root.view = AppView.main; }
         theme-selected(dark) => { root.theme-changed(dark); }
         engine-selected(engine) => { root.engine = engine; root.engine-selected(engine); }
@@ -429,6 +453,7 @@ export component MainWindow inherits Window {
         entry-subtitle: root.browse-entry-subtitle;
         packages: root.browse-packages;
         has-more: root.browse-has-more;
+        unsupported-text: root.backend-supported ? "" : root.backend-message;
         refresh-tick: root.icon-refresh-tick;
 
         back-clicked => { root.browse-back-clicked(); }

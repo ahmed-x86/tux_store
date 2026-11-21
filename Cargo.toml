@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "crates/tux-abi",
+    "crates/tux-backend",
     "crates/tux-appstream",
     "crates/tux-taxonomy",
     "crates/tux-pacman",
@@ -32,6 +33,7 @@ quick-xml = "0.41"
 slint = "1"
 slint-build = "1"
 tux-abi = { path = "crates/tux-abi" }
+tux-backend = { path = "crates/tux-backend" }
 tux-appstream = { path = "crates/tux-appstream" }
 tux-taxonomy = { path = "crates/tux-taxonomy" }
 tux-pacman = { path = "crates/tux-pacman" }

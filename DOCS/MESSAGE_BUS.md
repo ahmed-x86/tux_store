@@ -10,12 +10,14 @@ A single enum, `Message`, is the whole vocabulary. On the wire it is JSON with a
 - Delivery is synchronous on the publisher's thread: handlers must not block.
 - A module ignores messages it does not care about, and ignores messages it cannot decode (a module built against an older enum simply skips new variants).
 - Naming: `XxxRequested` goes *towards* a backend; `XxxReady`, `Operation*` and `Icon*` come back.
+- Every backend-dependent handler checks `tux_abi::Backend` first. If the feature is not in its `Capabilities`, the module publishes `Unsupported{backend, feature}` instead of an empty or broken answer. The UI shows one "not supported yet" message for the whole app when no usable manager is found.
 
 ## Reference
 
 | Message | Sent by | Handled by | Meaning |
 |---|---|---|---|
 | `UiReady` | ui | — | window exists (lifecycle signal; no backend warms up eagerly any more) |
+| `Unsupported{backend, feature}` | search, install, thumbnail | ui | typed answer: the active backend cannot serve this request; no other answer follows |
 | `HomeRequested` | ui | search | build the curated sections |
 | `HomeReady{sections}` | search | ui | one `Section` per catalog section |
 | `SearchRequested{query}` | ui | search | run a search |
