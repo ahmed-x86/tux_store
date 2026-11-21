@@ -205,6 +205,9 @@ fn execute(handle: &mut Alpm, op: &Operation) -> Result<(), String> {
                     .map_err(|e| format!("cannot add {name} to the transaction: {e}"))?;
             }
         }
+        Operation::InstallFile { path } => {
+            return Err(format!("local package files need the pacman engine: {path}"));
+        }
     }
 
     if let Err(e) = handle.trans_prepare() {
