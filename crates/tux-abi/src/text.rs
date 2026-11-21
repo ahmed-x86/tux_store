@@ -77,6 +77,16 @@ pub fn is_valid_package_name(name: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'@' | b'.' | b'_' | b'+' | b'-'))
 }
 
+/// Accept only local Arch package archive names (`name.pkg.tar.zst|xz|gz|bz2`).
+/// The path itself is checked separately (absolute, existing regular file).
+pub fn is_local_package_file_name(name: &str) -> bool {
+    !name.is_empty()
+        && !name.chars().any(|c| c.is_control() || c == '/' || c == '\\')
+        && [".pkg.tar.zst", ".pkg.tar.xz", ".pkg.tar.gz", ".pkg.tar.bz2"]
+            .iter()
+            .any(|ext| name.strip_suffix(ext).is_some_and(|stem| !stem.is_empty()))
+}
+
 /// Quote one word for `sh -c` (`it's` → `'it'\\''s'`).
 pub fn shell_quote(s: &str) -> String {
     format!("'{}'", s.replace('\'', "'\\''"))
@@ -126,6 +136,15 @@ mod tests {
         assert!(!is_valid_package_name("-Rns"));
         assert!(!is_valid_package_name("a b"));
         assert!(!is_valid_package_name("../x"));
+    }
+
+    #[test]
+    fn local_package_files() {
+        assert!(is_local_package_file_name("vlc-3.0-1-x86_64.pkg.tar.zst"));
+        assert!(is_local_package_file_name("a.pkg.tar.xz"));
+        assert!(!is_local_package_file_name("a.pkg.tar"));
+        assert!(!is_local_package_file_name("../a.pkg.tar.gz"));
+        assert!(!is_local_package_file_name("a.pkg.tar.gz\nrm -rf /"));
     }
 
     #[test]
