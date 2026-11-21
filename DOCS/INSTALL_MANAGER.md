@@ -7,8 +7,10 @@ Files: `crates/tux-install/src/{lib,stream}.rs`, `crates/tux-pacman/src/progress
 ## Messages
 
 Handles `InstallRequested`, `RemoveRequested`, `SystemUpgradeRequested`,
-`SystemDowngradeRequested`, `DowngradeRequested{packages}`, and overhears
-`DetailsReady`.
+`SystemDowngradeRequested`, `DowngradeRequested{packages}`, and
+`InstallFileRequested{path}` (`pacman -U --noconfirm --color=never -- <path>`,
+pkexec + script + ProgressTracker, `Operation::InstallFile{path}` with
+`Upgrade`-style progress), and overhears `DetailsReady`.
 Emits `OperationStarted`, `OperationOutput`, `OperationProgress`, `OperationFinished`.
 
 The update requests map to operations as follows:
@@ -42,7 +44,7 @@ otherwise: pkexec script -qec "env LC_ALL=C pacman … " /dev/null
 - **`script`** gives pacman a pty. Without a tty glibc block-buffers stdout and all output would arrive at the very end. Its stdin pipe is kept open (never written) so `script` does not see EOF and tear the pty down.
 - **`env LC_ALL=C`** is applied *inside* the elevated command because `pkexec` resets the environment; the progress parser relies on English phrases.
 - `--noconfirm` is mandatory (the app cannot answer prompts; the details page is the confirmation step). `--color=never` keeps escape codes out of the parser. The target is always passed after `--`.
-- All arguments are shell-quoted, and names are checked with `is_valid_package_name` first. A `Downgrade { packages }` list must be non-empty and every name must pass the same check; libalpm repeats the empty-list check.
+- All arguments are shell-quoted, and names are checked with `is_valid_package_name` first. A `Downgrade { packages }` list must be non-empty and every name must pass the same check; libalpm repeats the empty-list check. `InstallFile { path }` is re-validated (absolute, existing regular file, allowed `.pkg.tar.*` suffix, no control characters) even though its path is shell-quoted; it always runs through the direct `pacman -U` pipeline, never the libalpm helper.
 
 Only one transaction runs at a time (`busy` flag); a second request is rejected with an `OperationFinished{success:false}` and an explanatory line of output. The flag is cleared *before* `OperationFinished` is published so the UI can start the next operation immediately.
 
