@@ -80,6 +80,12 @@ fn pacman_args(op: &Operation) -> (Kind, Vec<String>) {
             args.extend(packages.iter().cloned());
             Kind::Upgrade
         }
+        Operation::InstallFile { path } => {
+            // pacman resolves missing dependencies from the sync databases.
+            args.extend(["-U", "--noconfirm", "--color=never", "--"].map(String::from));
+            args.push(path.clone());
+            Kind::Upgrade
+        }
     };
     (kind, args)
 }
