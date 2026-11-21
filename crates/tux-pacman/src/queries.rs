@@ -4,8 +4,9 @@
 use crate::info::{parse_info, parse_size, InfoBlock};
 use crate::{localdb, runner};
 use std::collections::{HashMap, HashSet};
+use std::path::Path;
 use std::time::Duration;
-use tux_abi::text::is_valid_package_name;
+use tux_abi::text::{is_local_package_file_name, is_valid_package_name};
 use tux_abi::{Dependency, Package, PackageDetails, UpdateEntry};
 
 const T_INFO: Duration = Duration::from_secs(10);
@@ -88,6 +89,56 @@ pub fn exact(name: &str) -> Package {
     packages_by_name(&[name.to_string()])
         .pop()
         .unwrap_or_default()
+}
+
+/// Read-only metadata of a local `.pkg.tar.*` file (`pacman -Qip`). Returns
+/// `(package, details, reinstall)`; `reinstall` means the same version is
+/// already in the local database. Nothing is installed here.
+pub fn local_package(path: &str) -> Result<(Package, PackageDetails, bool), String> {
+    let file = Path::new(path);
+    let file_name = file.file_name().and_then(|n| n.to_str()).unwrap_or_default();
+    if !file.is_absolute() || !file.is_file() || !is_local_package_file_name(file_name) {
+        return Err("Not an existing local package file (.pkg.tar.zst/xz/gz/bz2)".into());
+    }
+    let out = runner::run_pacman(&["-Qip", "--", path], T_INFO);
+    if !out.success() {
+        let why = if out.timed_out {
+            "pacman timed out".to_string()
+        } else {
+            first_line(&out.stderr)
+        };
+        return Err(format!("Cannot read the package file: {why}"));
+    }
+    let block = parse_info(&out.stdout)
+        .into_iter()
+        .next()
+        .ok_or_else(|| "pacman returned no package information".to_string())?;
+    let name = block.get("Name").cloned().unwrap_or_default();
+    if !is_valid_package_name(&name) {
+        return Err("pacman did not report a valid package name".into());
+    }
+    let version = block.get("Version").cloned().unwrap_or_default();
+    let app_size = block
+        .get("Installed Size")
+        .map(|s| parse_size(s))
+        .unwrap_or(0);
+    let local = localdb::read_one(&name);
+    let reinstall = local.as_ref().is_some_and(|l| l.version == version);
+    let package = Package {
+        name,
+        repo: "local".into(),
+        version,
+        description: block.get("Description").cloned().unwrap_or_default(),
+        installed: local.is_some(),
+        ..Default::default()
+    };
+    let details = PackageDetails {
+        app_size,
+        total_installed: app_size,
+        plan_ok: false,
+        ..Default::default()
+    };
+    Ok((package, details, reinstall))
 }
 
 fn normalize(s: &str) -> String {
