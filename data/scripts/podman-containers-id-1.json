@@ -1,0 +1,776 @@
+{
+  "schema": 2,
+  "id": "podman-containers-id-1",
+  "title": "Install Podman",
+  "description": "Guided installation of Podman, the rootless container engine, with optional compose, Docker compatibility, image tools and a ready-to-use rootless setup.",
+  "version": {
+    "label": "Latest Podman version",
+    "script": "latest-version.sh"
+  },
+  "author": "Tux Store Team",
+  "keywords": [
+    "podman",
+    "container",
+    "containers",
+    "docker",
+    "rootless",
+    "buildah",
+    "skopeo",
+    "compose",
+    "podman-compose",
+    "podman-docker",
+    "oci",
+    "quadlet",
+    "image",
+    "images",
+    "devops",
+    "حاويات",
+    "حاوية",
+    "كونتينر",
+    "كونتينرز",
+    "بودمان",
+    "دوكر",
+    "دوكر بديل"
+  ],
+  "show_on_home": true,
+  "top_button": {
+    "label": "Arch Wiki - Podman",
+    "url": "https://wiki.archlinux.org/title/Podman",
+    "icon": "external-link",
+    "position": "top-right"
+  },
+  "category": "developer-tools",
+  "categories": [
+    "utilities"
+  ],
+  "vars": {
+    "tools": "",
+    "setup": "",
+    "pkg_line": "",
+    "subid_line": "",
+    "subid_new": "",
+    "need_root": "no",
+    "purge": "no",
+    "socket_note": "",
+    "registries_conf": "",
+    "ports_conf": "",
+    "socket_by_us": "no",
+    "linger_by_us": "no",
+    "has_docker": "no",
+    "current_podman": ""
+  },
+  "start": "welcome",
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "script": "download-size.sh"
+    },
+    "extracted_mb": 300,
+    "installed_mb": {
+      "label": "Installed size",
+      "script": "installed-size.sh"
+    },
+    "note": "Sizes are read from your package database for Podman and podman-compose, including the dependencies that are still missing. Container images you pull later need extra space."
+  },
+  "icon": [
+    {
+      "theme": "podman"
+    },
+    {
+      "file": "podman-containers-id-1.svg"
+    }
+  ],
+  "uninstall": "un_confirm",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Before you install",
+      "tone": "info",
+      "message": [
+        "This guide installs Podman, a container engine that works like Docker but needs no background daemon and runs containers as your normal user (rootless).",
+        "",
+        "It will check your system, install only what is missing, give your user the sub-ID range that rootless containers need, and apply the options you pick.",
+        "",
+        "Make sure your system is fully updated first."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "script": "checking-your-system.sh",
+        "label": "Checking your system…"
+      },
+      "on_success": "preflight_result",
+      "on_failure": "error_generic",
+      "capture": "preflight"
+    },
+    "preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "detect_user"
+    },
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "detect_user": {
+      "type": "check",
+      "command": {
+        "script": "detecting-your-user-name.sh",
+        "label": "Looking for your user name…"
+      },
+      "on_success": "detect_docker",
+      "on_failure": "error_generic",
+      "capture": "login_user"
+    },
+    "detect_docker": {
+      "type": "check",
+      "command": {
+        "script": "detecting-docker.sh",
+        "label": "Looking for Docker…"
+      },
+      "on_success": "detect_podman",
+      "on_failure": "error_generic",
+      "capture": "has_docker"
+    },
+    "detect_podman": {
+      "type": "check",
+      "command": {
+        "script": "detecting-podman.sh",
+        "label": "Looking for Podman…"
+      },
+      "on_success": "detect_socket_before",
+      "on_failure": "error_generic",
+      "capture": "current_podman"
+    },
+    "detect_socket_before": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-socket-before.sh",
+        "label": "Checking podman.socket…"
+      },
+      "on_success": "detect_linger_before",
+      "on_failure": "error_generic",
+      "capture": "was_socket"
+    },
+    "detect_linger_before": {
+      "type": "check",
+      "command": {
+        "script": "detecting-linger-before.sh",
+        "label": "Checking linger…"
+      },
+      "on_success": "detect_subid",
+      "on_failure": "error_generic",
+      "capture": "was_linger"
+    },
+    "detect_subid": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-subid-range.sh",
+        "label": "Checking your sub-ID range…"
+      },
+      "on_success": "subid_gate",
+      "on_failure": "error_generic",
+      "capture": "subid_new"
+    },
+    "subid_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "subid_new",
+            "ne": ""
+          },
+          "goto": "subid_missing"
+        }
+      ],
+      "default": "subid_ok"
+    },
+    "subid_missing": {
+      "type": "set",
+      "vars": {
+        "subid_line": "Rootless setup: your user has no sub-UID/GID range yet; I will add ${subid_new}."
+      },
+      "next": "choose_tools"
+    },
+    "subid_ok": {
+      "type": "set",
+      "vars": {
+        "subid_line": "Rootless setup: your user already has a sub-UID/GID range."
+      },
+      "next": "choose_tools"
+    },
+    "choose_tools": {
+      "type": "choice",
+      "title": "Extra tools",
+      "tone": "info",
+      "multiple": true,
+      "min_select": 0,
+      "message": "Podman itself is always installed. Tick any extra tools you want. Packages that are already installed are skipped.",
+      "store_as": "tools",
+      "default": "podman-compose",
+      "next": "choose_setup",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "podman-compose",
+          "label": "podman-compose",
+          "hint": "Run docker-compose.yml files with Podman."
+        },
+        {
+          "value": "podman-docker",
+          "label": "podman-docker",
+          "hint": "Makes the command “docker” run Podman, so scripts and habits keep working. Cannot be installed next to Docker.",
+          "visible_if": {
+            "var": "has_docker",
+            "eq": "no"
+          }
+        },
+        {
+          "value": "buildah",
+          "label": "buildah",
+          "hint": "A standalone image builder. “podman build” already works without it."
+        },
+        {
+          "value": "skopeo",
+          "label": "skopeo",
+          "hint": "Copy and inspect images between registries without pulling them."
+        }
+      ]
+    },
+    "choose_setup": {
+      "type": "choice",
+      "title": "Setup options",
+      "tone": "info",
+      "multiple": true,
+      "min_select": 0,
+      "message": "Tick what you want me to set up. Everything here is undone when you uninstall.",
+      "store_as": "setup",
+      "default": "registries socket",
+      "next": "plan",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "registries",
+          "label": "Search Docker Hub for short image names",
+          "hint": "Creates ~/.config/containers/registries.conf so “podman pull nginx” finds the image on docker.io. An existing file is never touched."
+        },
+        {
+          "value": "socket",
+          "label": "Docker-compatible socket",
+          "hint": "Turns on podman.socket for your user, so tools that expect the Docker API (IDEs, docker-compose) can talk to Podman."
+        },
+        {
+          "value": "ports",
+          "label": "Let containers use ports 80 and up",
+          "hint": "Rootless containers normally cannot listen on ports below 1024. This sets net.ipv4.ip_unprivileged_port_start=80 for the whole computer, so any program of any user may then use ports 80 and up."
+        },
+        {
+          "value": "linger",
+          "label": "Keep my containers running after I log out",
+          "hint": "Turns on “linger” for your user, so containers and Quadlet services can start at boot without a login."
+        }
+      ]
+    },
+    "plan": {
+      "type": "check",
+      "command": {
+        "script": "building-the-package-list.sh",
+        "label": "Working out what is missing…",
+        "timeout_secs": 60
+      },
+      "on_success": "plan_gate",
+      "on_failure": "plan_failed",
+      "capture": "new_pkgs"
+    },
+    "plan_failed": {
+      "type": "dialog",
+      "title": "Cannot prepare the installation",
+      "tone": "error",
+      "message": "${new_pkgs}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "plan_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "eq": ""
+          },
+          "goto": "plan_none"
+        }
+      ],
+      "default": "plan_some"
+    },
+    "plan_none": {
+      "type": "set",
+      "vars": {
+        "pkg_line": "Everything you chose is already installed. I will only apply the setup options."
+      },
+      "next": "detect_need_root"
+    },
+    "plan_some": {
+      "type": "set",
+      "vars": {
+        "pkg_line": "Packages to install: ${new_pkgs}"
+      },
+      "next": "detect_need_root"
+    },
+    "detect_need_root": {
+      "type": "check",
+      "command": {
+        "script": "detecting-whether-admin-setup-is-needed.sh",
+        "label": "Checking what needs administrator rights…"
+      },
+      "on_success": "confirm",
+      "on_failure": "error_generic",
+      "capture": "need_root"
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Are you sure?",
+      "tone": "warning",
+      "message": [
+        "You are about to set up Podman:",
+        "${pkg_line}",
+        "${subid_line}",
+        "Extra tools: ${tools}",
+        "Setup options: ${setup}",
+        "",
+        "Your user (${login_user}) is the only one affected; no group change and no logout are needed.",
+        "",
+        "Do you want to continue?"
+      ],
+      "buttons": [
+        {
+          "label": "Yes",
+          "style": "primary",
+          "goto": "gate_install"
+        },
+        {
+          "label": "I'll come back later",
+          "exit": true
+        }
+      ]
+    },
+    "gate_install": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "new_pkgs",
+            "ne": ""
+          },
+          "goto": "install_packages"
+        }
+      ],
+      "default": "record_state"
+    },
+    "install_packages": {
+      "type": "run",
+      "title": "Installing packages…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing ${new_pkgs}",
+          "script": "installing-the-packages.sh",
+          "root": true,
+          "weight": 10,
+          "expected_secs": 60,
+          "percent": 60
+        }
+      ],
+      "on_success": "record_packages",
+      "on_failure": "install_failed"
+    },
+    "record_packages": {
+      "type": "record",
+      "packages": [
+        "${new_pkgs}"
+      ],
+      "next": "record_state"
+    },
+    "record_state": {
+      "type": "record",
+      "set": {
+        "login_user": "${login_user}",
+        "was_socket": "${was_socket}",
+        "was_linger": "${was_linger}"
+      },
+      "next": "configure_system"
+    },
+    "configure_system": {
+      "type": "run",
+      "title": "Setting up your system…",
+      "message": "Preparing rootless containers.",
+      "commands": [
+        {
+          "label": "Applying the system settings",
+          "script": "configuring-the-system.sh",
+          "root": true,
+          "when": {
+            "var": "need_root",
+            "eq": "yes"
+          },
+          "weight": 3,
+          "expected_secs": 10,
+          "percent": 80,
+          "progress": "percent"
+        }
+      ],
+      "on_success": "configure_account",
+      "on_failure": "config_failed"
+    },
+    "configure_account": {
+      "type": "run",
+      "title": "Setting up your account…",
+      "message": "Applying your options.",
+      "commands": [
+        {
+          "label": "Applying your account settings",
+          "script": "configuring-your-account.sh",
+          "weight": 3,
+          "expected_secs": 10,
+          "percent": 95,
+          "progress": "percent"
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "config_failed"
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong while installing (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "pacman works in all-or-nothing transactions, so your system is normally unchanged. Make sure the system is updated and try again."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "config_failed": {
+      "type": "dialog",
+      "title": "The setup did not finish",
+      "tone": "error",
+      "message": [
+        "The packages are installed, but a setup step failed (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "You can open this add-on again to remove what was installed, or fix the problem and run the install again: it is safe to repeat."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "script": "verifying-podman.sh",
+        "label": "Checking that rootless Podman starts…",
+        "timeout_secs": 60
+      },
+      "on_success": "detect_registries",
+      "on_failure": "verify_failed",
+      "capture": "verify_msg"
+    },
+    "verify_failed": {
+      "type": "dialog",
+      "title": "Rootless Podman does not start",
+      "tone": "error",
+      "message": "${verify_msg}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "detect_registries": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-registries-file.sh"
+      },
+      "on_success": "detect_ports",
+      "on_failure": "detect_ports",
+      "capture": "registries_conf"
+    },
+    "detect_ports": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-ports-file.sh"
+      },
+      "on_success": "detect_socket",
+      "on_failure": "detect_socket",
+      "capture": "ports_conf"
+    },
+    "detect_socket": {
+      "type": "check",
+      "command": {
+        "script": "detecting-the-socket-we-enabled.sh"
+      },
+      "on_success": "detect_linger",
+      "on_failure": "detect_linger",
+      "capture": "socket_by_us"
+    },
+    "detect_linger": {
+      "type": "check",
+      "command": {
+        "script": "detecting-linger-we-enabled.sh"
+      },
+      "on_success": "read_version",
+      "on_failure": "read_version",
+      "capture": "linger_by_us"
+    },
+    "read_version": {
+      "type": "check",
+      "command": {
+        "script": "reading-the-installed-version.sh",
+        "label": "Reading the installed version…"
+      },
+      "on_success": "record_final",
+      "on_failure": "record_final",
+      "capture": "installed_version"
+    },
+    "record_final": {
+      "type": "record",
+      "set": {
+        "subid_range": "${subid_new}",
+        "registries_conf": "${registries_conf}",
+        "ports_conf": "${ports_conf}",
+        "socket_by_us": "${socket_by_us}",
+        "linger_by_us": "${linger_by_us}",
+        "tools": "${tools}",
+        "setup": "${setup}"
+      },
+      "next": "note_gate"
+    },
+    "note_gate": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "socket_by_us",
+            "eq": "yes"
+          },
+          "goto": "note_yes"
+        }
+      ],
+      "default": "note_no"
+    },
+    "note_yes": {
+      "type": "set",
+      "vars": {
+        "socket_note": "Docker-compatible socket is on. For tools that need it: export DOCKER_HOST=unix://$$XDG_RUNTIME_DIR/podman/podman.sock"
+      },
+      "next": "done"
+    },
+    "note_no": {
+      "type": "set",
+      "vars": {
+        "socket_note": ""
+      },
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "success": true,
+      "title": "Podman is ready",
+      "button": "Close",
+      "mark": "installed",
+      "message": [
+        "Podman ${installed_version} is installed and rootless containers work for your user.",
+        "",
+        "Try it in a terminal:",
+        "  podman run --rm docker.io/library/hello-world",
+        "",
+        "${socket_note}"
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "“${last_failed}” did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "un_confirm": {
+      "type": "dialog",
+      "title": "Remove Podman?",
+      "tone": "warning",
+      "message": [
+        "This removes the packages this guide installed: ${recorded_packages}",
+        "",
+        "It also undoes the options this guide turned on (socket, linger, port setting, registries file).",
+        "",
+        "Your containers, images and volumes live in ~/.local/share/containers. Choose below whether to keep or delete them.",
+        "",
+        "Do not turn off the computer while it is working."
+      ],
+      "buttons": [
+        {
+          "label": "Remove, keep my containers and images",
+          "style": "danger",
+          "goto": "un_preflight"
+        },
+        {
+          "label": "Remove and DELETE all my containers, images and volumes",
+          "style": "danger",
+          "goto": "un_preflight",
+          "set": {
+            "purge": "yes"
+          }
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_preflight": {
+      "type": "check",
+      "command": {
+        "script": "checking-your-system-2.sh",
+        "label": "Checking your system…"
+      },
+      "on_success": "un_preflight_result",
+      "on_failure": "error_generic",
+      "capture": "preflight"
+    },
+    "un_preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "un_run"
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Podman…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Deleting your containers, images and volumes",
+          "script": "deleting-your-containers-and-images.sh",
+          "when": {
+            "var": "purge",
+            "eq": "yes"
+          },
+          "percent": 30,
+          "expected_secs": 20
+        },
+        {
+          "label": "Undoing your account settings",
+          "script": "undoing-your-account-settings.sh",
+          "percent": 45,
+          "expected_secs": 5
+        },
+        {
+          "label": "Undoing the system settings",
+          "script": "undoing-the-system-settings.sh",
+          "root": true,
+          "percent": 60,
+          "expected_secs": 10
+        },
+        {
+          "label": "Removing the packages",
+          "script": "removing-the-packages.sh",
+          "root": true,
+          "percent": 100,
+          "expected_secs": 30
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "Podman removed",
+      "message": [
+        "The packages and the settings this guide added were removed.",
+        "",
+        "If you kept your containers and images, they are still in ~/.local/share/containers and your sub-ID range was left in place, so a later reinstall finds them again."
+      ]
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Podman could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "Another program may depend on one of these packages. Nothing is marked as removed, so you can try again later."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    }
+  }
+}
