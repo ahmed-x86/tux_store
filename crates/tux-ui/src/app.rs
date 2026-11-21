@@ -34,12 +34,22 @@ pub fn run(bus: Bus) -> Result<(), PlatformError> {
 
     with_state(|st| {
         st.startup();
-        // `tux-store openpackage <name>` deep link.
+        // Deep links: `openpackage NAME`, `openpkgfile PATH`, and a bare
+        // `*.pkg.tar.*` path from the file manager's "Open With".
         let mut args = std::env::args().skip(1);
-        if args.next().as_deref() == Some("openpackage") {
-            if let Some(name) = args.next() {
-                st.open_by_name(name);
+        match args.next().as_deref() {
+            Some("openpackage") => {
+                if let Some(name) = args.next() {
+                    st.open_by_name(name);
+                }
             }
+            Some("openpkgfile") => {
+                if let Some(path) = args.next() {
+                    st.open_local_file_arg(&path);
+                }
+            }
+            Some(arg) if is_local_pkg_arg(arg) => st.open_local_file_arg(arg),
+            _ => {}
         }
     });
 
@@ -195,6 +205,9 @@ fn wire(ui: &MainWindow) {
     ui.on_install_clicked(|| {
         with_state(|st| st.install_current());
     });
+    ui.on_install_file_clicked(|| {
+        with_state(|st| st.install_file_current());
+    });
     ui.on_remove_clicked(|flag| {
         with_state(|st| st.remove_current(&flag));
     });
@@ -239,4 +252,10 @@ fn wire(ui: &MainWindow) {
     ui.on_clear_icon_cache(|| {
         with_state(|st| st.clear_icon_cache());
     });
+}
+
+fn is_local_pkg_arg(arg: &str) -> bool {
+    [".pkg.tar.zst", ".pkg.tar.xz", ".pkg.tar.gz", ".pkg.tar.bz2"]
+        .iter()
+        .any(|ext| arg.ends_with(ext))
 }
