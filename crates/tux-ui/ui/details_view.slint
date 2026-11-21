@@ -79,6 +79,8 @@ export component DetailsView inherits Rectangle {
     in property <bool> keys-blocked: false;
     callback forward-clicked();
     in property <UiSpecialCase> special-case;
+    in property <string> local-error: "";
+    in property <string> local-install-label: "Install";
     in property <int> accent-idx;
     in property <UiScriptInfo> script-info;
     in property <bool> script-running;
@@ -91,6 +93,7 @@ export component DetailsView inherits Rectangle {
     callback show-script-clicked();
     callback back-clicked();
     callback install-clicked();
+    callback install-file-clicked();
     callback remove-clicked(string);
     callback suggestion-clicked(UiPackage);
     callback open-url(string, string);
@@ -101,6 +104,8 @@ export component DetailsView inherits Rectangle {
 
     // A script is shown on the same page as a package, with a few differences.
     property <bool> is-script: root.pkg.repo == "script";
+    // A local .pkg.tar.* file uses this page too, but has no plan/screenshots.
+    property <bool> is-local-package: root.pkg.repo == "local";
     property <bool> show-uninstall-modal: false;
     // A new page opens at its top, not where the previous page was scrolled to.
     property <string> shown-name: root.pkg.name;
@@ -195,6 +200,17 @@ export component DetailsView inherits Rectangle {
                 padding-top: 40px;
                 padding-bottom: 64px;
                 spacing: 32px;
+
+                if root.local-error != "" : Rectangle {
+                    background: Theme.red.transparentize(0.88);
+                    border-color: Theme.red;
+                    border-width: 1px;
+                    border-radius: 10px;
+                    VerticalLayout {
+                        padding: 12px;
+                        Text { text: root.local-error; color: Theme.red; font-size: 13px; wrap: word-wrap; }
+                    }
+                }
 
                 // ---- Header ------------------------------------------------
                 HorizontalLayout {
@@ -294,6 +310,20 @@ export component DetailsView inherits Rectangle {
                                         vertical-alignment: center;
                                     }
                                 }
+                                if root.is-local-package : Rectangle {
+                                    width: local-txt.width + 20px;
+                                    height: 24px;
+                                    border-radius: 12px;
+                                    background: Theme.blue.transparentize(0.82);
+                                    local-txt := Text {
+                                        text: "Local package file";
+                                        color: Theme.blue;
+                                        font-size: 11px;
+                                        font-weight: 700;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
                                 Rectangle {
                                     width: repo-txt.width + 20px;
                                     height: 24px;
@@ -307,7 +337,7 @@ export component DetailsView inherits Rectangle {
                                         clicked => { root.open-url(root.pkg.repo, root.pkg.name); }
                                     }
                                     repo-txt := Text {
-                                        text: root.is-script ? "Add-on package" : root.pkg.repo;
+                                        text: root.is-script ? "Add-on package" : (root.is-local-package ? "local" : root.pkg.repo);
                                         color: root.is-script ? Theme.mauve : Theme.subtext0;
                                         font-size: 11px;
                                         font-weight: 700;
@@ -407,7 +437,30 @@ export component DetailsView inherits Rectangle {
                             }
                         }
                     }
-                    if !root.is-script && (root.pkg.installed ? root.can-remove : root.can-install) : VerticalLayout {
+                    if root.is-local-package && root.local-error == "" : VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 152px;
+                            height: 44px;
+                            background: root.accent;
+                            border-radius: 10px;
+                            opacity: root.busy && root.mine ? 0.5 : 1.0;
+                            TouchArea {
+                                enabled: !root.busy;
+                                mouse-cursor: pointer;
+                                clicked => { root.install-file-clicked(); }
+                            }
+                            Text {
+                                text: root.busy && root.mine ? "Working…" : root.local-install-label;
+                                color: Theme.crust;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                    if !root.is-script && !root.is-local-package && (root.pkg.installed ? root.can-remove : root.can-install) : VerticalLayout {
                         alignment: center;
                         Rectangle {
                             width: 152px;
@@ -549,7 +602,7 @@ export component DetailsView inherits Rectangle {
                 }
 
                 // ---- Download summary -------------------------------------
-                if !root.is-script : Card {
+                if !root.is-script && !root.is-local-package : Card {
                     HorizontalLayout {
                         alignment: space-between;
                         Text { text: "What you'll download"; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
@@ -612,7 +665,7 @@ export component DetailsView inherits Rectangle {
                 }
 
                 // ---- Addons / language packs -------------------------------
-                if root.special-case.is-special : Card {
+                if root.special-case.is-special && !root.is-local-package : Card {
                     HorizontalLayout {
                         alignment: space-between;
                         Text { text: root.special-case.type-name; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
@@ -651,7 +704,7 @@ export component DetailsView inherits Rectangle {
                 }
 
                 // ---- Screenshots (slider with arrows, like Google Play) ----
-                if root.screenshots.length > 0 : VerticalLayout {
+                if root.screenshots.length > 0 && !root.is-local-package : VerticalLayout {
                     spacing: 14px;
                     Text { text: "Screenshots"; color: Theme.text; font-size: 18px; font-weight: 700; }
                     ScreenshotGallery {
@@ -662,7 +715,7 @@ export component DetailsView inherits Rectangle {
                 }
 
                 // ---- Dependencies ------------------------------------------
-                if !root.is-script && !root.details.is-loading && root.details.dependencies.length > 0 : Card {
+                if !root.is-script && !root.is-local-package && !root.details.is-loading && root.details.dependencies.length > 0 : Card {
                     Text {
                         text: "Dependencies (" + root.details.dependencies.length + ")";
                         color: Theme.text;
@@ -674,7 +727,7 @@ export component DetailsView inherits Rectangle {
                         accent: root.accent;
                     }
                 }
-                if !root.is-script && !root.details.is-loading && root.details.plan-ok && root.details.dependencies.length == 0 : Card {
+                if !root.is-script && !root.is-local-package && !root.details.is-loading && root.details.plan-ok && root.details.dependencies.length == 0 : Card {
                     Text { text: "No additional dependencies required."; color: Theme.subtext1; font-size: 13px; }
                 }
 
@@ -837,7 +890,7 @@ export component DetailsView inherits Rectangle {
 
     // The backend cannot describe this package: show the same message as the
     // rest of the app. The top bar stays usable so Back/Forward still work.
-    if root.unsupported-text != "" : Rectangle {
+    if root.unsupported-text != "" && !root.is-local-package : Rectangle {
         y: 64px;
         width: parent.width;
         height: parent.height - 64px;
