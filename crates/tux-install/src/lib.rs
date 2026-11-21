@@ -1,7 +1,8 @@
 //! `libtux_install.so` — runs package transactions as root and reports them.
 //!
-//! Handles: `InstallRequested`, `RemoveRequested`, `SystemUpgradeRequested`,
-//! `SystemDowngradeRequested`, `DowngradeRequested`, `EngineChanged`.
+//! Handles: `InstallRequested`, `InstallFileRequested`, `RemoveRequested`,
+//! `SystemUpgradeRequested`, `SystemDowngradeRequested`, `DowngradeRequested`,
+//! `EngineChanged`.
 //! Emits: `OperationStarted/Output/Progress/Finished`.
 //!
 //! The actual work is delegated to `libtux_libalpm` (the selected engine): either
@@ -14,11 +15,12 @@
 //! has to pass that information along.
 
 use std::collections::HashMap;
+use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use tux_abi::sync::lock;
-use tux_abi::text::is_valid_package_name;
+use tux_abi::text::{is_local_package_file_name, is_valid_package_name};
 use tux_abi::{Backend, Bus, Feature, Message, Module, Operation};
 use tux_libalpm::{Emitter, TxEvent};
 
@@ -65,6 +67,11 @@ impl Module for InstallModule {
             Message::InstallRequested { name } => {
                 if self.supports(Feature::Install) {
                     self.start(Operation::Install { name });
+                }
+            }
+            Message::InstallFileRequested { path } => {
+                if self.supports(Feature::Install) {
+                    self.start(Operation::InstallFile { path });
                 }
             }
             Message::RemoveRequested { name, mode } => {
@@ -115,6 +122,7 @@ impl InstallModule {
             Operation::Downgrade { packages } => {
                 !packages.is_empty() && packages.iter().all(|n| is_valid_package_name(n))
             }
+            Operation::InstallFile { path } => valid_local_package_path(path),
             Operation::SystemUpgrade | Operation::SystemDowngrade => true,
         };
         if !valid {
@@ -148,6 +156,18 @@ impl InstallModule {
             bus.publish(&Message::OperationFinished { op, success, exit_code: code });
         });
     }
+}
+
+/// The path is shell-quoted before it reaches `sh -c`, but allow-list it
+/// anyway: absolute, an existing regular file, allowed suffix, no control chars.
+fn valid_local_package_path(path: &str) -> bool {
+    let p = Path::new(path);
+    p.is_absolute()
+        && p.is_file()
+        && p.file_name()
+            .and_then(|n| n.to_str())
+            .is_some_and(is_local_package_file_name)
+        && !path.chars().any(|c| c.is_control())
 }
 
 fn reject(bus: &Bus, op: Operation, why: &str) {
