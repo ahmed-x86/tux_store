@@ -7,7 +7,7 @@ pkgdesc="Native Rust + Slint package store for Arch Linux (modular .so architect
 arch=('x86_64')
 license=('GPL-3.0-or-later')
 depends=('pacman' 'curl' 'polkit' 'util-linux' 'xdg-utils' 'fontconfig' 'libxkbcommon' 'libglvnd' 'pciutils')
-makedepends=('cargo' 'pkgconf')
+makedepends=('cargo' 'pkgconf' 'shared-mime-info' 'desktop-file-utils')
 # makepkg's default LTO flags (-flto) are injected into the C/asm objects that
 # Rust build scripts compile, which breaks linking of the module .so files.
 options=('!lto' '!debug')
@@ -23,4 +23,18 @@ build() {
 package() {
   cd "$startdir/.."
   make install DESTDIR="$pkgdir" PREFIX=/usr
+}
+
+post_install() {
+  update-mime-database /usr/share/mime
+  update-desktop-database /usr/share/applications
+}
+
+post_upgrade() {
+  post_install
+}
+
+post_remove() {
+  update-mime-database /usr/share/mime
+  update-desktop-database /usr/share/applications
 }
