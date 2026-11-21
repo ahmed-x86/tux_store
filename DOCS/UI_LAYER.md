@@ -72,6 +72,22 @@ Creates the window, loads the saved theme, binds models, installs the state, wir
 ### `config.rs`, `links.rs`
 Config is `~/.config/tux-store/config.json` (`{"dark": true}`). `links::package_url(repo, name)` builds archlinux.org / AUR / mirror URLs; `links::open` uses `xdg-open` and reaps the child.
 
+## Opening a local package file
+
+Right-click a `.pkg.tar.*` file → *Open With → Tux Store* (the `.desktop` entry
+accepts `%f` and declares the `application/x-alpm-package` MIME type shipped in
+`packaging/tux-store-mime.xml`). The CLI also accepts `tux-store openpkgfile
+PATH` or a bare `.pkg.tar.*` path. The path is canonicalised and validated in
+`app.rs`/`state.rs`; `State::open_local_file` puts a placeholder page on screen
+and publishes `LocalPackageRequested`. The search module answers with
+`LocalPackageReady` (from read-only `pacman -Qip`) and `DetailsView` shows the
+name, version, description and installed size, a "Local package file" badge, and
+an Install (or Reinstall) button that publishes `InstallFileRequested`. Progress
+reuses `ProgressCard` (target = package name) and the console. Screenshots,
+Dependencies and Add-ons are hidden; errors are shown on the page. The page is
+only offered when the active backend is pacman/libalpm with `install = true`;
+otherwise a "not supported yet" message is shown.
+
 ## Theming
 
 `Theme` is a global with `is-dark`; every colour is a property that switches on it. Colours in `.slint` files should reference `Theme.*`; the progress bars still use three literal hex colours (`#89b4fa`, `#cba6f7`, `#6c7086`) — a good first clean-up.
