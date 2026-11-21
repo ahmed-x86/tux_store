@@ -201,6 +201,8 @@ pub enum Operation {
     SystemDowngrade,
     /// Downgrade only these packages to their sync-repository versions.
     Downgrade { packages: Vec<String> },
+    /// Install a local `.pkg.tar.*` file (`pacman -U`).
+    InstallFile { path: String },
 }
 
 impl Operation {
@@ -337,6 +339,10 @@ pub enum Message {
     ExactRequested {
         name: String,
     },
+    /// Read metadata from a local `.pkg.tar.*` file (no install).
+    LocalPackageRequested {
+        path: String,
+    },
     AddonsRequested {
         package: String,
     },
@@ -375,6 +381,10 @@ pub enum Message {
     },
     InstallRequested {
         name: String,
+    },
+    /// Install the local package file already shown on the details page.
+    InstallFileRequested {
+        path: String,
     },
     RemoveRequested {
         name: String,
@@ -430,6 +440,17 @@ pub enum Message {
     },
     ExactReady {
         package: Package,
+    },
+    /// Answer to `LocalPackageRequested`; `error` is set instead of crashing
+    /// when the file cannot be read. `reinstall` means the same version is
+    /// already in the local database.
+    LocalPackageReady {
+        path: String,
+        package: Package,
+        details: PackageDetails,
+        error: Option<String>,
+        #[serde(default)]
+        reinstall: bool,
     },
     AddonsReady {
         package: String,
