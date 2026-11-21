@@ -64,7 +64,8 @@ fn main() -> ExitCode {
     }
     if arg == "--help" || arg == "-h" {
         println!(
-            "tux-store {}\n\nUSAGE:\n  tux-store                   start the store\n  tux-store openpackage NAME  open a package page directly\n  tux-store --dump-taxonomy   print every repository, group and category as JSON\n  tux-store --check-script FILE.json  validate an add-on script and explain problems\n\nENVIRONMENT:\n  TUX_LOG=error|warn|info|debug|trace   log level (default info)\n  TUX_MODULE_DIR=DIR                    where to look for libtux_*.so\n  TUX_DATA_DIR=DIR                      where categories.json / images live",
+            "tux-store {}\n\nUSAGE:\n  tux-store                   start the store\n  tux-store openpackage NAME  open a package page directly
+  tux-store openpkgfile FILE  open a local .pkg.tar.* file (details + Install)\n  tux-store --dump-taxonomy   print every repository, group and category as JSON\n  tux-store --check-script FILE.json  validate an add-on script and explain problems\n\nENVIRONMENT:\n  TUX_LOG=error|warn|info|debug|trace   log level (default info)\n  TUX_MODULE_DIR=DIR                    where to look for libtux_*.so\n  TUX_DATA_DIR=DIR                      where categories.json / images live",
             env!("CARGO_PKG_VERSION")
         );
         return ExitCode::SUCCESS;
