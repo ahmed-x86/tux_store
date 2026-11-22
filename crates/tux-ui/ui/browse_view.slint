@@ -1,4 +1,5 @@
 import { Theme } from "theme.slint";
+import { Strings } from "strings.slint";
 import { UiPackage, UiTaxonomyEntry } from "types.slint";
 import { PackageGrid, VScrollBar, ToTopButton, UnsupportedState } from "components.slint";
 
@@ -346,7 +347,7 @@ export component BrowseView inherits Rectangle {
                 Rectangle { horizontal-stretch: 1; }
 
                 if root.loading : Text {
-                    text: "Discovering…";
+                    text: Strings.discovering;
                     color: root.accent;
                     font-size: 12px;
                     font-weight: 600;
@@ -395,7 +396,7 @@ export component BrowseView inherits Rectangle {
                         if root.entries.length == 0 : Rectangle {
                             height: 160px;
                             Text {
-                                text: root.loading ? "Building the list from this machine…" : "Nothing to show here";
+                                text: root.loading ? Strings.browse-building : Strings.browse-empty;
                                 color: Theme.overlay1;
                                 font-size: 14px;
                                 horizontal-alignment: center;
@@ -452,7 +453,7 @@ export component BrowseView inherits Rectangle {
                                         vertical-alignment: center;
                                     }
                                     Text {
-                                        text: "All " + root.section-title;
+                                        text: Strings.all-prefix + root.section-title;
                                         color: crumb-ta.has-hover ? root.accent : Theme.overlay1;
                                         font-size: 12px;
                                         font-weight: 600;
@@ -467,7 +468,7 @@ export component BrowseView inherits Rectangle {
                             }
                             Rectangle { horizontal-stretch: 1; }
                             Text {
-                                text: root.packages.length + " packages listed";
+                                text: root.packages.length + Strings.packages-listed-suffix;
                                 color: Theme.overlay0;
                                 font-size: 11px;
                                 vertical-alignment: center;
@@ -480,7 +481,7 @@ export component BrowseView inherits Rectangle {
                         packages: root.packages;
                         has-more: root.has-more;
                         refresh-tick: root.refresh-tick;
-                        empty-text: root.loading ? "Loading packages…" : "No packages in this section";
+                        empty-text: root.loading ? Strings.browse-loading-packages : Strings.browse-no-packages;
                         app-clicked(p) => { root.app-clicked(p); }
                         more-clicked => { root.more-clicked(); }
                         icons-needed(first, last) => { root.icons-needed(first, last); }

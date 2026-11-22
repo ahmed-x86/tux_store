@@ -1,10 +1,11 @@
 import { Theme } from "theme.slint";
+import { Strings } from "strings.slint";
 import { UiPackage } from "types.slint";
 import { PackageGrid, PillButton, TopBar, UnsupportedState } from "components.slint";
 
 export component AddonsStore inherits Rectangle {
     in property <[UiPackage]> packages;
-    in property <string> store-title: "Addons Store";
+    in property <string> store-title: Strings.addons-title;
     in property <string> unsupported-text: "";
     in property <int> refresh-tick: 0;
     callback back-clicked();
@@ -15,7 +16,7 @@ export component AddonsStore inherits Rectangle {
 
     VerticalLayout {
         TopBar {
-            PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
+            PillButton { text: Strings.back-short; clicked => { root.back-clicked(); } }
         }
 
         Rectangle {
@@ -31,7 +32,7 @@ export component AddonsStore inherits Rectangle {
             vertical-stretch: 1;
             packages: root.packages;
             refresh-tick: root.refresh-tick;
-            empty-text: "Loading…";
+            empty-text: Strings.addons-loading;
             app-clicked(p) => { root.app-clicked(p); }
             icons-needed(first, last) => { root.icons-needed(first, last); }
         }

@@ -16,6 +16,7 @@ pub fn run(bus: Bus) -> Result<(), PlatformError> {
 
     let cfg = config::load();
     ui.global::<Theme>().set_is_dark(cfg.dark);
+    ui.global::<Theme>().set_reduce_motion(cfg.reduce_motion);
     ui.set_engine(cfg.engine.key().into());
     ui.set_app_version(env!("CARGO_PKG_VERSION").into());
 
