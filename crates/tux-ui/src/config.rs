@@ -11,6 +11,9 @@ pub struct Config {
     pub dark: bool,
     #[serde(default)]
     pub engine: Engine,
+    /// Collapse UI animations and stop the Home carousel auto-advancing.
+    #[serde(default)]
+    pub reduce_motion: bool,
 }
 
 fn default_dark() -> bool {
@@ -19,7 +22,7 @@ fn default_dark() -> bool {
 
 impl Default for Config {
     fn default() -> Self {
-        Config { dark: true, engine: Engine::Direct }
+        Config { dark: true, engine: Engine::Direct, reduce_motion: false }
     }
 }
 

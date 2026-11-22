@@ -1,26 +1,47 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Tux Store design tokens — single source of truth.
+//
+// Phase 0 is additive: every pre-existing property (base, mantle, text,
+// surface0, accents, …) is kept so the current views keep compiling. New code
+// should prefer the semantic roles and scales below. All colours, type sizes,
+// spacing, radii, elevation and motion live here; view files must not declare
+// literal colours or pixel values for design decisions.
+// ─────────────────────────────────────────────────────────────────────────────
 export global Theme {
     in-out property <bool> is-dark: true;
+    // Set from Config in a later phase; when true all animation durations
+    // collapse to 0ms and the Home carousel stops auto-advancing.
+    in-out property <bool> reduce-motion: false;
 
+    // ── Legacy palette (kept for compatibility) ────────────────────────────
     out property <color> base: is-dark ? #1e1e2e : #eff1f5;
     out property <color> mantle: is-dark ? #181825 : #e6e9ef;
     out property <color> crust: is-dark ? #11111b : #dce0e8;
-    
+
     out property <color> text: is-dark ? #cdd6f4 : #4c4f69;
     out property <color> subtext1: is-dark ? #bac2de : #5c5f77;
-    out property <color> subtext0: is-dark ? #a6adc8 : #6c6f85;
-    out property <color> overlay1: is-dark ? #7f849c : #8c8fa1;
-    out property <color> overlay0: is-dark ? #6c7086 : #9ca0b0;
-    
+    out property <color> subtext0: is-dark ? #a6adc8 : #656879;
+
+    // Contrast pass: the old overlay values (#6c7086 / #9ca0b0) failed WCAG AA
+    // on both backgrounds (3.6:1 dark, 2.3:1 light). These replacements give
+    // ~5.8:1 / ~7.4:1 on dark and ~4.9:1 / ~5.5:1 on light.
+    out property <color> overlay1: is-dark ? #a6adc8 : #5c5f77;
+    out property <color> overlay0: is-dark ? #9399b2 : #656879;
+
     out property <color> surface2: is-dark ? #585b70 : #acb0be;
     out property <color> surface1: is-dark ? #45475a : #bcc0cc;
     out property <color> surface0: is-dark ? #313244 : #ccd0da;
-    
+
     out property <color> red: is-dark ? #f38ba8 : #d20f39;
     out property <color> green: is-dark ? #a6e3a1 : #40a02b;
     out property <color> mauve: is-dark ? #cba6f7 : #8839ef;
     out property <color> pink: is-dark ? #f5c2e7 : #ea76cb;
     out property <color> blue: is-dark ? #89b4fa : #1e66f5;
-    
+    out property <color> sky: is-dark ? #74c7ec : #04a5e5;
+    out property <color> sapphire: is-dark ? #b4befe : #7287fd;
+    out property <color> teal: is-dark ? #94e2d5 : #179299;
+    out property <color> yellow: is-dark ? #f9e2af : #df8e1d;
+
     out property <[color]> accents: [
         is-dark ? #89b4fa : #1e66f5,
         is-dark ? #cba6f7 : #8839ef,
@@ -37,4 +58,66 @@ export global Theme {
         is-dark ? #89dceb : #209fb5,
         is-dark ? #f5e0dc : #dc8a78
     ];
+
+    // ── Semantic colour roles ──────────────────────────────────────────────
+    out property <color> bg: base;
+    out property <color> surface-1: surface0;
+    out property <color> surface-2: surface1;
+    out property <color> surface-3: surface2;
+    out property <color> border-subtle: surface1;
+    out property <color> border: surface2;
+    out property <color> text-primary: text;
+    out property <color> text-secondary: subtext1;
+    out property <color> text-tertiary: subtext0;
+    // in-out so a future accent picker (or config value) can override it.
+    in-out property <color> accent: blue;
+    out property <color> accent-soft: accent.transparentize(0.85);
+    out property <color> success: green;
+    out property <color> warning: yellow;
+    out property <color> danger: red;
+    out property <color> info: blue;
+    out property <color> focus-ring: blue;
+    out property <color> on-accent: crust;
+
+    // Overlays / scrims / special-purpose fills.
+    out property <color> scrim-solid: #000000;
+    out property <color> scrim: #00000099;
+    out property <color> scrim-strong: #000000cc;
+    out property <color> console-text: is-dark ? #a6e3a1 : #40a02b;
+    out property <color> neutral-bar: is-dark ? #6c7086 : #9ca0b0;
+
+    // Transaction / breakdown chart segments.
+    out property <color> progress-deps: blue;
+    out property <color> progress-app: mauve;
+    out property <color> progress-remaining: neutral-bar;
+
+    // ── Type scale ─────────────────────────────────────────────────────────
+    out property <length> fs-xs: 12px;
+    out property <length> fs-sm: 13px;
+    out property <length> fs-base: 14px;
+    out property <length> fs-lg: 16px;
+    out property <length> fs-xl: 20px;
+    out property <length> fs-2xl: 24px;
+    out property <length> fs-3xl: 32px;
+    out property <length> fs-display: 36px;
+
+    // ── Spacing scale ──────────────────────────────────────────────────────
+    out property <length> sp-1: 4px;
+    out property <length> sp-2: 8px;
+    out property <length> sp-3: 12px;
+    out property <length> sp-4: 16px;
+    out property <length> sp-6: 24px;
+    out property <length> sp-8: 32px;
+    out property <length> sp-12: 48px;
+
+    // ── Radius scale ───────────────────────────────────────────────────────
+    out property <length> radius-sm: 8px;
+    out property <length> radius-md: 12px;
+    out property <length> radius-lg: 16px;
+    out property <length> radius-xl: 20px;
+
+    // ── Motion ─────────────────────────────────────────────────────────────
+    out property <duration> motion-fast: reduce-motion ? 0ms : 120ms;
+    out property <duration> motion-base: reduce-motion ? 0ms : 200ms;
+    out property <duration> motion-slow: reduce-motion ? 0ms : 300ms;
 }

@@ -1,4 +1,5 @@
 import { Theme } from "theme.slint";
+import { Strings } from "strings.slint";
 import { UiUpdate, UiInstallState, OpPhase } from "types.slint";
 import { PillButton, ProgressCard } from "components.slint";
 
@@ -43,8 +44,8 @@ export component UpdateTab inherits Rectangle {
             VerticalLayout {
                 alignment: center;
                 Text {
-                    text: root.loading ? "Checking for updates…"
-                        : (root.updates.length == 0 ? "Your system is up to date" : ("" + root.updates.length + " updates available"));
+                    text: root.loading ? Strings.updates-checking
+                        : (root.updates.length == 0 ? Strings.updates-current : ("" + root.updates.length + Strings.updates-count-suffix));
                     color: Theme.text;
                     font-size: 20px;
                     font-weight: 800;
@@ -54,7 +55,7 @@ export component UpdateTab inherits Rectangle {
             VerticalLayout {
                 alignment: center;
                 PillButton {
-                    text: "Check again";
+                    text: Strings.updates-check-again;
                     enabled: !root.loading && !root.busy;
                     clicked => { root.refresh(); }
                 }
@@ -62,7 +63,7 @@ export component UpdateTab inherits Rectangle {
             if root.can-update : VerticalLayout {
                 alignment: center;
                 PillButton {
-                    text: "Update all";
+                    text: Strings.updates-update-all;
                     primary: true;
                     enabled: root.updates.length > 0 && !root.busy && !root.loading;
                     clicked => { root.upgrade-all(); }

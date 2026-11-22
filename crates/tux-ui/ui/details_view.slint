@@ -1,4 +1,5 @@
 import { Theme } from "theme.slint";
+import { Strings } from "strings.slint";
 import { UiPackage, UiPackageDetails, UiInstallState, UiSpecialCase, UiScriptInfo, OpPhase } from "types.slint";
 import { SuggestionCard, DepRow, HScrollBar, PillButton, ProgressCard, TopBar, ScreenshotGallery, ScreenshotViewer, VScrollBar, ToTopButton, UnsupportedState } from "components.slint";
 
@@ -80,7 +81,7 @@ export component DetailsView inherits Rectangle {
     callback forward-clicked();
     in property <UiSpecialCase> special-case;
     in property <string> local-error: "";
-    in property <string> local-install-label: "Install";
+    in property <string> local-install-label: Strings.install;
     in property <int> accent-idx;
     in property <UiScriptInfo> script-info;
     in property <bool> script-running;
@@ -176,8 +177,8 @@ export component DetailsView inherits Rectangle {
 
     VerticalLayout {
         TopBar {
-            PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
-            PillButton { text: "Forward ⟩"; enabled: root.can-forward; clicked => { root.forward-clicked(); } }
+            PillButton { text: Strings.back-short; clicked => { root.back-clicked(); } }
+            PillButton { text: Strings.forward-label; enabled: root.can-forward; clicked => { root.forward-clicked(); } }
         }
 
         // A Flickable's own layout info is "as big as my content", so inside a
@@ -302,7 +303,7 @@ export component DetailsView inherits Rectangle {
                                     border-radius: 12px;
                                     background: Theme.green.transparentize(0.85);
                                     installed-txt := Text {
-                                        text: "Installed";
+                                        text: Strings.badge-installed;
                                         color: Theme.green;
                                         font-size: 11px;
                                         font-weight: 700;
@@ -316,7 +317,7 @@ export component DetailsView inherits Rectangle {
                                     border-radius: 12px;
                                     background: Theme.blue.transparentize(0.82);
                                     local-txt := Text {
-                                        text: "Local package file";
+                                        text: Strings.badge-local-file;
                                         color: Theme.blue;
                                         font-size: 11px;
                                         font-weight: 700;
@@ -337,7 +338,7 @@ export component DetailsView inherits Rectangle {
                                         clicked => { root.open-url(root.pkg.repo, root.pkg.name); }
                                     }
                                     repo-txt := Text {
-                                        text: root.is-script ? "Add-on package" : (root.is-local-package ? "local" : root.pkg.repo);
+                                        text: root.is-script ? Strings.badge-addon : (root.is-local-package ? Strings.badge-local-repo : root.pkg.repo);
                                         color: root.is-script ? Theme.mauve : Theme.subtext0;
                                         font-size: 11px;
                                         font-weight: 700;
@@ -357,7 +358,7 @@ export component DetailsView inherits Rectangle {
                         }
 
                         Text {
-                            text: "Version " + root.pkg.version;
+                            text: Strings.version-prefix + root.pkg.version;
                             color: Theme.overlay1;
                             font-size: 12px;
                         }
@@ -371,7 +372,7 @@ export component DetailsView inherits Rectangle {
                                 padding-right: 12px;
                                 spacing: 12px;
                                 alignment: start;
-                                Text { text: "This package is an addon for"; color: Theme.subtext0; font-size: 13px; vertical-alignment: center; }
+                                Text { text: Strings.addon-for-prefix; color: Theme.subtext0; font-size: 13px; vertical-alignment: center; }
                                 TouchArea {
                                     mouse-cursor: pointer;
                                     clicked => { root.addon-clicked(root.special-case.is-addon-for); }
@@ -406,7 +407,7 @@ export component DetailsView inherits Rectangle {
                                 clicked => { root.run-script-clicked(); }
                             }
                             Text {
-                                text: root.script-info.installed ? "Run again" : "Run add-on";
+                                text: root.script-info.installed ? Strings.run-again : Strings.run-addon;
                                 color: root.script-info.installed ? root.accent : Theme.crust;
                                 font-size: 14px;
                                 font-weight: 700;
@@ -428,7 +429,7 @@ export component DetailsView inherits Rectangle {
                                 clicked => { root.uninstall-script-clicked(); }
                             }
                             Text {
-                                text: "Uninstall";
+                                text: Strings.uninstall;
                                 color: Theme.red;
                                 font-size: 14px;
                                 font-weight: 700;
@@ -451,7 +452,7 @@ export component DetailsView inherits Rectangle {
                                 clicked => { root.install-file-clicked(); }
                             }
                             Text {
-                                text: root.busy && root.mine ? "Working…" : root.local-install-label;
+                                text: root.busy && root.mine ? Strings.working : root.local-install-label;
                                 color: Theme.crust;
                                 font-size: 14px;
                                 font-weight: 700;
@@ -479,8 +480,8 @@ export component DetailsView inherits Rectangle {
                             }
                             Text {
                                 text: root.pkg.installed
-                                    ? (root.busy && root.mine ? "Uninstalling…" : "Remove")
-                                    : (root.busy && root.mine ? "Installing…" : "Install");
+                                    ? (root.busy && root.mine ? Strings.uninstalling : Strings.remove)
+                                    : (root.busy && root.mine ? Strings.installing : Strings.install);
                                 color: root.pkg.installed ? Theme.red : Theme.crust;
                                 font-size: 14px;
                                 font-weight: 700;
@@ -503,8 +504,8 @@ export component DetailsView inherits Rectangle {
                         alignment: space-between;
                         Text {
                             text: root.script-running
-                                ? (root.script-progress >= 0.98 ? "Finishing up…" : "Working…")
-                                : "What you'll download";
+                                ? (root.script-progress >= 0.98 ? Strings.op-finishing : Strings.working)
+                                : Strings.download-title;
                             color: Theme.text;
                             font-size: 16px;
                             font-weight: 700;
@@ -542,14 +543,14 @@ export component DetailsView inherits Rectangle {
                             spacing: 12px;
                             Text {
                                 horizontal-stretch: 1;
-                                text: "These values come from commands in a script that is not part of Tux Store.";
+                                text: Strings.script-values-note;
                                 color: Theme.subtext0;
                                 font-size: 12px;
                                 wrap: word-wrap;
                                 vertical-alignment: center;
                             }
                             PillButton {
-                                text: "Calculate size and version";
+                                text: Strings.calculate-size;
                                 clicked => { root.eval-script-clicked(); }
                             }
                         }
@@ -565,28 +566,28 @@ export component DetailsView inherits Rectangle {
                                 vertical-alignment: center;
                             }
                             if root.script-minimized : PillButton {
-                                text: "Show window";
+                                text: Strings.show-window;
                                 clicked => { root.show-script-clicked(); }
                             }
                         }
                         if !root.script-running : HorizontalLayout {
                             spacing: 24px;
-                            Legend { dot: Theme.mauve; text: "Needed while installing: " + root.script-info.extracted; }
-                            Legend { dot: #6c7086; text: "Free space on /: " + root.script-info.free; }
+                            Legend { dot: Theme.mauve; text: Strings.legend-needed-prefix + root.script-info.extracted; }
+                            Legend { dot: Theme.progress-remaining; text: Strings.legend-free-prefix + root.script-info.free; }
                         }
 
                         Rectangle { height: 1px; background: Theme.surface0; }
 
                         HorizontalLayout {
-                            Stat { label: "Total Download"; value: root.script-info.download; }
+                            Stat { label: Strings.stat-total-download; value: root.script-info.download; }
                             Rectangle { horizontal-stretch: 1; }
-                            Stat { label: "Needed while installing"; value: root.script-info.extracted; align: TextHorizontalAlignment.center; }
+                            Stat { label: Strings.stat-needed-installing; value: root.script-info.extracted; align: TextHorizontalAlignment.center; }
                             Rectangle { horizontal-stretch: 1; }
-                            Stat { label: "Total Installed"; value: root.script-info.installed-size; value-color: root.accent; align: TextHorizontalAlignment.right; }
+                            Stat { label: Strings.stat-total-installed; value: root.script-info.installed-size; value-color: root.accent; align: TextHorizontalAlignment.right; }
                         }
 
                         if root.script-info.low-space : Text {
-                            text: "⚠ There may not be enough free space for this add-on package.";
+                            text: Strings.low-space-warning;
                             color: Theme.red;
                             font-size: 13px;
                             font-weight: 700;
@@ -605,7 +606,7 @@ export component DetailsView inherits Rectangle {
                 if !root.is-script && !root.is-local-package : Card {
                     HorizontalLayout {
                         alignment: space-between;
-                        Text { text: "What you'll download"; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
+                        Text { text: Strings.download-title; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
                         if !root.details.is-loading : Text {
                             text: root.details.download-size-str;
                             color: root.accent;
@@ -616,13 +617,13 @@ export component DetailsView inherits Rectangle {
                     }
 
                     if root.details.is-loading : Text {
-                        text: "Calculating download size…";
+                        text: Strings.calculating-download;
                         color: Theme.overlay1;
                         font-size: 13px;
                     }
 
                     if !root.details.is-loading && !root.details.plan-ok : Text {
-                        text: "pacman could not build an install plan for this package (it is probably not in the official repositories).";
+                        text: Strings.no-install-plan;
                         color: Theme.overlay1;
                         font-size: 13px;
                         wrap: word-wrap;
@@ -638,28 +639,28 @@ export component DetailsView inherits Rectangle {
                             background: Theme.surface1;
                             clip: true;
                             HorizontalLayout {
-                                Rectangle { background: #6c7086; horizontal-stretch: max(0.0001, root.details.installed-ratio); }
-                                Rectangle { background: #89b4fa; horizontal-stretch: max(0.0001, root.details.new-ratio); }
-                                Rectangle { background: Theme.mauve; horizontal-stretch: max(0.0001, root.details.app-ratio); }
+                                Rectangle { background: Theme.progress-remaining; horizontal-stretch: max(0.0001, root.details.installed-ratio); }
+                                Rectangle { background: Theme.progress-deps; horizontal-stretch: max(0.0001, root.details.new-ratio); }
+                                Rectangle { background: Theme.progress-app; horizontal-stretch: max(0.0001, root.details.app-ratio); }
                             }
                         }
 
                         HorizontalLayout {
                             spacing: 24px;
-                            Legend { dot: #6c7086; text: "Already on disk: " + root.details.installed-deps-size-str; }
-                            Legend { dot: #89b4fa; text: "New dependencies: " + root.details.new-deps-size-str; }
-                            Legend { dot: Theme.mauve; text: "App itself: " + root.details.app-size-str; }
+                            Legend { dot: Theme.progress-remaining; text: Strings.legend-already-disk + root.details.installed-deps-size-str; }
+                            Legend { dot: Theme.progress-deps; text: Strings.legend-new-deps + root.details.new-deps-size-str; }
+                            Legend { dot: Theme.progress-app; text: Strings.legend-app-itself + root.details.app-size-str; }
                         }
 
                         Rectangle { height: 1px; background: Theme.surface0; }
 
                         // pacman-style transaction summary
                         HorizontalLayout {
-                            Stat { label: "Total Download"; value: root.details.total-download-str; }
+                            Stat { label: Strings.stat-total-download; value: root.details.total-download-str; }
                             Rectangle { horizontal-stretch: 1; }
-                            Stat { label: "Total Installed"; value: root.details.total-installed-str; align: TextHorizontalAlignment.center; }
+                            Stat { label: Strings.stat-total-installed; value: root.details.total-installed-str; align: TextHorizontalAlignment.center; }
                             Rectangle { horizontal-stretch: 1; }
-                            Stat { label: "Net Upgrade"; value: root.details.net-upgrade-str; value-color: root.accent; align: TextHorizontalAlignment.right; }
+                            Stat { label: Strings.net-upgrade; value: root.details.net-upgrade-str; value-color: root.accent; align: TextHorizontalAlignment.right; }
                         }
                     }
                 }
@@ -670,7 +671,7 @@ export component DetailsView inherits Rectangle {
                         alignment: space-between;
                         Text { text: root.special-case.type-name; color: Theme.text; font-size: 16px; font-weight: 700; vertical-alignment: center; }
                         if root.special-case.items.length > 6 : PillButton {
-                            text: "View more";
+                            text: Strings.view-more;
                             clicked => { root.view-all-addons-clicked(); }
                         }
                     }
@@ -706,7 +707,7 @@ export component DetailsView inherits Rectangle {
                 // ---- Screenshots (slider with arrows, like Google Play) ----
                 if root.screenshots.length > 0 && !root.is-local-package : VerticalLayout {
                     spacing: 14px;
-                    Text { text: "Screenshots"; color: Theme.text; font-size: 18px; font-weight: 700; }
+                    Text { text: Strings.screenshots; color: Theme.text; font-size: 18px; font-weight: 700; }
                     ScreenshotGallery {
                         images: root.screenshots;
                         accent: root.accent;
@@ -717,7 +718,7 @@ export component DetailsView inherits Rectangle {
                 // ---- Dependencies ------------------------------------------
                 if !root.is-script && !root.is-local-package && !root.details.is-loading && root.details.dependencies.length > 0 : Card {
                     Text {
-                        text: "Dependencies (" + root.details.dependencies.length + ")";
+                        text: Strings.dependencies-prefix + root.details.dependencies.length + ")";
                         color: Theme.text;
                         font-size: 16px;
                         font-weight: 700;
@@ -728,7 +729,7 @@ export component DetailsView inherits Rectangle {
                     }
                 }
                 if !root.is-script && !root.is-local-package && !root.details.is-loading && root.details.plan-ok && root.details.dependencies.length == 0 : Card {
-                    Text { text: "No additional dependencies required."; color: Theme.subtext1; font-size: 13px; }
+                    Text { text: Strings.no-dependencies; color: Theme.subtext1; font-size: 13px; }
                 }
 
                 // Soaks up free space: with a short page the suggestions sit at
@@ -739,7 +740,7 @@ export component DetailsView inherits Rectangle {
                 // ---- Suggestions -------------------------------------------
                 if root.suggestions.length > 0 : VerticalLayout {
                     spacing: 14px;
-                    Text { text: "You might also like"; color: Theme.text; font-size: 18px; font-weight: 700; }
+                    Text { text: Strings.suggestions; color: Theme.text; font-size: 18px; font-weight: 700; }
                     sug-flick := Flickable {
                         height: 190px;
                         content-width: root.suggestions.length * 184px;
@@ -763,17 +764,17 @@ export component DetailsView inherits Rectangle {
 
                 // ---- About this add-on package (last, like "You might also like") ----
                 if root.is-script : Card {
-                    Text { text: "About this add-on package"; color: Theme.text; font-size: 16px; font-weight: 700; }
+                    Text { text: Strings.about-addon; color: Theme.text; font-size: 16px; font-weight: 700; }
                     HorizontalLayout {
                         spacing: 40px;
                         alignment: start;
-                        Stat { label: "Source"; value: root.script-info.source; }
-                        Stat { label: "Author"; value: root.script-info.author; }
-                        Stat { label: "Administrator rights"; value: root.script-info.admin; }
-                        if root.script-info.installed : Stat { label: "Installed"; value: root.script-info.installed-text; value-color: Theme.green; }
+                        Stat { label: Strings.stat-source; value: root.script-info.source; }
+                        Stat { label: Strings.stat-author; value: root.script-info.author; }
+                        Stat { label: Strings.stat-admin; value: root.script-info.admin; }
+                        if root.script-info.installed : Stat { label: Strings.badge-installed; value: root.script-info.installed-text; value-color: Theme.green; }
                     }
                     Text {
-                        text: "Running it opens a guided window. Nothing on your system changes until you confirm the steps shown there.";
+                        text: Strings.script-guidance;
                         color: Theme.subtext0;
                         font-size: 13px;
                         wrap: word-wrap;
@@ -842,40 +843,40 @@ export component DetailsView inherits Rectangle {
 
                         HorizontalLayout {
                             alignment: space-between;
-                            Text { text: "Uninstall " + root.pkg.pretty-name; color: Theme.text; font-size: 20px; font-weight: 700; vertical-alignment: center; }
-                            PillButton { text: "Cancel"; clicked => { root.show-uninstall-modal = false; } }
+                            Text { text: Strings.uninstall-title-prefix + root.pkg.pretty-name; color: Theme.text; font-size: 20px; font-weight: 700; vertical-alignment: center; }
+                            PillButton { text: Strings.cancel; clicked => { root.show-uninstall-modal = false; } }
                         }
 
-                        Text { text: "Please select how you want to uninstall this package:"; color: Theme.subtext0; font-size: 14px; }
+                        Text { text: Strings.uninstall-question; color: Theme.subtext0; font-size: 14px; }
 
                         VerticalLayout {
                             spacing: 12px;
                             alignment: start;
                             RemoveOption {
-                                title: "Basic Uninstall";
-                                description: "Removes the app but keeps its settings and shared files.";
+                                title: Strings.uninstall-basic-title;
+                                description: Strings.uninstall-basic-desc;
                                 clicked => { root.show-uninstall-modal = false; root.remove-clicked("-R"); }
                             }
                             RemoveOption {
-                                title: "Uninstall and Reset";
-                                description: "Removes the app and deletes all its settings.";
+                                title: Strings.uninstall-reset-title;
+                                description: Strings.uninstall-reset-desc;
                                 clicked => { root.show-uninstall-modal = false; root.remove-clicked("-Rn"); }
                             }
                             RemoveOption {
-                                title: "Uninstall and Clean Shared Files";
-                                description: "Removes the app and shared files that are no longer needed. Keeps your settings.";
+                                title: Strings.uninstall-clean-title;
+                                description: Strings.uninstall-clean-desc;
                                 clicked => { root.show-uninstall-modal = false; root.remove-clicked("-Rs"); }
                             }
                             RemoveOption {
-                                title: "Force Uninstall (Advanced)";
-                                description: "Removes the app even if other apps rely on it. May break things!";
+                                title: Strings.uninstall-force-title;
+                                description: Strings.uninstall-force-desc;
                                 accent: Theme.red;
                                 outlined: true;
                                 clicked => { root.show-uninstall-modal = false; root.remove-clicked("-Rdd"); }
                             }
                             RemoveOption {
-                                title: "Complete Uninstall (Recommended)";
-                                description: "Safely removes the app, deletes its settings, and cleans up all unneeded files.";
+                                title: Strings.uninstall-complete-title;
+                                description: Strings.uninstall-complete-desc;
                                 accent: Theme.green;
                                 outlined: true;
                                 emphasized: true;

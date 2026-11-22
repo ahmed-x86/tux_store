@@ -1,0 +1,192 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// User-facing copy, centralised for i18n / RTL preparation.
+//
+// Views must reference `Strings.<name>` instead of inline English literals.
+// Symbols (arrows, check marks, "%") stay in the views: they are not copy.
+// A future translation layer only needs to replace this global (or bind these
+// properties from Rust), with no changes to layout code.
+// ─────────────────────────────────────────────────────────────────────────────
+export global Strings {
+    // ── App / chrome ───────────────────────────────────────────────────────
+    out property <string> app-name: "Tux Store";
+    out property <string> app-subtitle: "for Arch Linux";
+    out property <string> back-short: "⟨ Back";
+    out property <string> back-label: "Back";
+    out property <string> forward-label: "Forward ⟩";
+    out property <string> cancel: "Cancel";
+    out property <string> show: "Show";
+    out property <string> close: "Close";
+
+    // ── Main screen / navigation ───────────────────────────────────────────
+    out property <string> search-placeholder: "Search packages…";
+    out property <string> generic-search-placeholder: "Search…";
+    out property <string> search-busy: "Searching…";
+    out property <string> search-empty: "No packages found";
+    out property <string> tab-home: "Home";
+    out property <string> tab-updates: "Updates";
+    out property <string> tab-installed: "Installed";
+    out property <string> browse-section-label: "BROWSE";
+    out property <string> menu-categories: "Categories";
+    out property <string> menu-groups: "Groups";
+    out property <string> menu-repositories: "Repositories";
+    out property <string> menu-settings: "Settings";
+    out property <string> script-working-bar: "Add-on package is working…";
+    out property <string> for-connector: " for ";
+
+    // ── Shared components ──────────────────────────────────────────────────
+    out property <string> show-more: "Show more";
+    out property <string> console-title: "pacman output";
+    out property <string> console-button: "Console";
+
+    out property <string> op-uninstalling: "Uninstalling…";
+    out property <string> op-finishing: "Finishing up…";
+    out property <string> op-updating: "Updating system…";
+    out property <string> op-installing: "Installing…";
+    out property <string> op-uninstalled-ok: "Uninstalled successfully";
+    out property <string> op-updated-ok: "System updated successfully";
+    out property <string> op-installed-ok: "Installed successfully";
+    out property <string> op-uninstalled-fail: "Uninstallation failed";
+    out property <string> op-updated-fail: "System update failed";
+    out property <string> op-installed-fail: "Installation failed";
+
+    out property <string> details-show-output: "Show details";
+    out property <string> run-in-background: "Run in background";
+
+    // ── Smart downgrade dialog ─────────────────────────────────────────────
+    out property <string> downgrade-title: "Some installed packages are newer";
+    out property <string> downgrade-desc:
+        "These packages were installed or updated outside the official repositories. A normal update keeps them; you can also replace them with the repository versions.";
+    out property <string> downgrade-choose-title: "Choose packages to downgrade";
+    out property <string> downgrade-choose-desc:
+        "Tick only the packages you want to replace with the repository version.";
+    out property <string> downgrade-keep-title: "Keep them and update normally";
+    out property <string> downgrade-keep-desc:
+        "Keep the newer versions of these packages and update everything else.";
+    out property <string> downgrade-all-title: "Downgrade all of them";
+    out property <string> downgrade-all-desc:
+        "Replace every newer package with the version from the repositories.";
+    out property <string> downgrade-select-title: "Choose packages to downgrade";
+    out property <string> downgrade-select-desc:
+        "Only the packages you tick are replaced; the rest keep their newer version.";
+    out property <string> downgrade-selected-prefix: "Downgrade selected (";
+
+    // ── Details page ───────────────────────────────────────────────────────
+    out property <string> badge-installed: "Installed";
+    out property <string> badge-not-installed: "Not Installed";
+    out property <string> badge-installed-addon: "Installed add-on";
+    out property <string> view-addon: "View add-on";
+    out property <string> view-details: "View details";
+    out property <string> version-prefix: "Version ";
+    out property <string> badge-local-file: "Local package file";
+    out property <string> badge-addon: "Add-on package";
+    out property <string> badge-local-repo: "local";
+    out property <string> addon-for-prefix: "This package is an addon for";
+    out property <string> run-again: "Run again";
+    out property <string> run-addon: "Run add-on";
+    out property <string> uninstall: "Uninstall";
+    out property <string> working: "Working…";
+    out property <string> install: "Install";
+    out property <string> installing: "Installing…";
+    out property <string> remove: "Remove";
+    out property <string> uninstalling: "Uninstalling…";
+
+    out property <string> download-title: "What you'll download";
+    out property <string> calculate-size: "Calculate size and version";
+    out property <string> script-values-note:
+        "These values come from commands in a script that is not part of Tux Store.";
+    out property <string> show-window: "Show window";
+    out property <string> calculating-download: "Calculating download size…";
+    out property <string> no-install-plan:
+        "pacman could not build an install plan for this package (it is probably not in the official repositories).";
+    out property <string> legend-needed-prefix: "Needed while installing: ";
+    out property <string> legend-free-prefix: "Free space on /: ";
+    out property <string> stat-total-download: "Total Download";
+    out property <string> stat-needed-installing: "Needed while installing";
+    out property <string> stat-total-installed: "Total Installed";
+    out property <string> low-space-warning:
+        "⚠ There may not be enough free space for this add-on package.";
+    out property <string> legend-already-disk: "Already on disk: ";
+    out property <string> legend-new-deps: "New dependencies: ";
+    out property <string> legend-app-itself: "App itself: ";
+    out property <string> net-upgrade: "Net Upgrade";
+    out property <string> view-more: "View more";
+
+    out property <string> screenshots: "Screenshots";
+    out property <string> dependencies-prefix: "Dependencies (";
+    out property <string> no-dependencies: "No additional dependencies required.";
+    out property <string> suggestions: "You might also like";
+
+    out property <string> about-addon: "About this add-on package";
+    out property <string> stat-source: "Source";
+    out property <string> stat-author: "Author";
+    out property <string> stat-admin: "Administrator rights";
+    out property <string> script-guidance:
+        "Running it opens a guided window. Nothing on your system changes until you confirm the steps shown there.";
+
+    // ── Uninstall dialog ───────────────────────────────────────────────────
+    out property <string> uninstall-title-prefix: "Uninstall ";
+    out property <string> uninstall-question: "Please select how you want to uninstall this package:";
+    out property <string> uninstall-basic-title: "Basic Uninstall";
+    out property <string> uninstall-basic-desc:
+        "Removes the app but keeps its settings and shared files.";
+    out property <string> uninstall-reset-title: "Uninstall and Reset";
+    out property <string> uninstall-reset-desc:
+        "Removes the app and deletes all its settings.";
+    out property <string> uninstall-clean-title: "Uninstall and Clean Shared Files";
+    out property <string> uninstall-clean-desc:
+        "Removes the app and shared files that are no longer needed. Keeps your settings.";
+    out property <string> uninstall-force-title: "Force Uninstall (Advanced)";
+    out property <string> uninstall-force-desc:
+        "Removes the app even if other apps rely on it. May break things!";
+    out property <string> uninstall-complete-title: "Complete Uninstall (Recommended)";
+    out property <string> uninstall-complete-desc:
+        "Safely removes the app, deletes its settings, and cleans up all unneeded files.";
+
+    // ── Browse ─────────────────────────────────────────────────────────────
+    out property <string> discovering: "Discovering…";
+    out property <string> browse-empty: "Nothing to show here";
+    out property <string> browse-building: "Building the list from this machine…";
+    out property <string> all-prefix: "All ";
+    out property <string> packages-listed-suffix: " packages listed";
+    out property <string> browse-loading-packages: "Loading packages…";
+    out property <string> browse-no-packages: "No packages in this section";
+
+    // ── Installed ──────────────────────────────────────────────────────────
+    out property <string> installed-loading: "Loading installed apps…";
+    out property <string> installed-count-prefix: "Installed apps (";
+    out property <string> installed-filter: "Filter installed apps…";
+    out property <string> installed-empty: "Nothing to show";
+
+    // ── Updates ────────────────────────────────────────────────────────────
+    out property <string> updates-checking: "Checking for updates…";
+    out property <string> updates-current: "Your system is up to date";
+    out property <string> updates-count-suffix: " updates available";
+    out property <string> updates-check-again: "Check again";
+    out property <string> updates-update-all: "Update all";
+
+    // ── Settings ───────────────────────────────────────────────────────────
+    out property <string> settings-title: "Settings";
+    out property <string> settings-appearance: "APPEARANCE";
+    out property <string> settings-app-theme: "App Theme";
+    out property <string> settings-theme-desc: "Select your preferred color scheme";
+    out property <string> theme-light: "Light";
+    out property <string> theme-dark: "Dark";
+    out property <string> settings-engine-section: "PACKAGE ENGINE";
+    out property <string> settings-engine: "Engine";
+    out property <string> settings-engine-desc:
+        "How Tux Store asks pacman questions and runs transactions. Direct commands start a pacman process for every operation; libalpm talks to the library directly.";
+    out property <string> engine-direct: "Direct pacman";
+    out property <string> engine-libalpm: "libalpm";
+    out property <string> settings-storage: "STORAGE";
+    out property <string> settings-cache: "Cache";
+    out property <string> settings-cache-desc:
+        "Downloaded icons and other cached data (~/.cache/tux-store). Clearing also re-reads your icon theme";
+    out property <string> clear-cache: "Clear cache";
+    out property <string> settings-about: "ABOUT";
+    out property <string> settings-version-prefix: "Version ";
+    out property <string> settings-about-desc: " — a native package store for Arch Linux";
+
+    // ── Add-ons store ──────────────────────────────────────────────────────
+    out property <string> addons-title: "Addons Store";
+    out property <string> addons-loading: "Loading…";
+}

@@ -1,4 +1,5 @@
 import { Theme } from "theme.slint";
+import { Strings } from "strings.slint";
 import { PillButton, TopBar } from "components.slint";
 
 component ChoiceButton inherits Rectangle {
@@ -85,7 +86,7 @@ export component SettingsView inherits Rectangle {
 
     VerticalLayout {
         TopBar {
-            PillButton { text: "⟨ Back"; clicked => { root.back-clicked(); } }
+            PillButton { text: Strings.back-short; clicked => { root.back-clicked(); } }
         }
 
         Flickable {
@@ -105,22 +106,22 @@ export component SettingsView inherits Rectangle {
                     spacing: 32px;
                     alignment: start;
 
-                    Text { text: "Settings"; color: Theme.text; font-size: 28px; font-weight: 800; }
+                    Text { text: Strings.settings-title; color: Theme.text; font-size: 28px; font-weight: 800; }
 
                     VerticalLayout {
                         spacing: 12px;
-                        SectionLabel { text: "APPEARANCE"; }
+                        SectionLabel { text: Strings.settings-appearance; }
                         SettingCard {
                             SettingRow {
-                                title: "App Theme";
-                                subtitle: "Select your preferred color scheme";
+                                title: Strings.settings-app-theme;
+                                subtitle: Strings.settings-theme-desc;
                                 ChoiceButton {
-                                    label: "Light";
+                                    label: Strings.theme-light;
                                     selected: !Theme.is-dark;
                                     clicked => { Theme.is-dark = false; root.theme-selected(false); }
                                 }
                                 ChoiceButton {
-                                    label: "Dark";
+                                    label: Strings.theme-dark;
                                     selected: Theme.is-dark;
                                     clicked => { Theme.is-dark = true; root.theme-selected(true); }
                                 }
@@ -130,20 +131,20 @@ export component SettingsView inherits Rectangle {
 
                     VerticalLayout {
                         spacing: 12px;
-                        SectionLabel { text: "PACKAGE ENGINE"; }
+                        SectionLabel { text: Strings.settings-engine-section; }
                         SettingCard {
                             SettingRow {
-                                title: "Engine";
-                                subtitle: "How Tux Store asks pacman questions and runs transactions. Direct commands start a pacman process for every operation; libalpm talks to the library directly.";
+                                title: Strings.settings-engine;
+                                subtitle: Strings.settings-engine-desc;
                                 ChoiceButton {
-                                    label: "Direct pacman";
+                                    label: Strings.engine-direct;
                                     width: 150px;
                                     selected: root.engine == "direct";
                                     enabled: root.engine-enabled;
                                     clicked => { root.engine-selected("direct"); }
                                 }
                                 ChoiceButton {
-                                    label: "libalpm";
+                                    label: Strings.engine-libalpm;
                                     width: 110px;
                                     selected: root.engine == "libalpm";
                                     enabled: root.engine-enabled;
@@ -161,23 +162,23 @@ export component SettingsView inherits Rectangle {
 
                     VerticalLayout {
                         spacing: 12px;
-                        SectionLabel { text: "STORAGE"; }
+                        SectionLabel { text: Strings.settings-storage; }
                         SettingCard {
                             SettingRow {
-                                title: "Cache";
-                                subtitle: root.cache-status == "" ? "Downloaded icons and other cached data (~/.cache/tux-store). Clearing also re-reads your icon theme" : root.cache-status;
-                                PillButton { text: "Clear cache"; clicked => { root.clear-cache-clicked(); } }
+                                title: Strings.settings-cache;
+                                subtitle: root.cache-status == "" ? Strings.settings-cache-desc : root.cache-status;
+                                PillButton { text: Strings.clear-cache; clicked => { root.clear-cache-clicked(); } }
                             }
                         }
                     }
 
                     VerticalLayout {
                         spacing: 12px;
-                        SectionLabel { text: "ABOUT"; }
+                        SectionLabel { text: Strings.settings-about; }
                         SettingCard {
                             SettingRow {
-                                title: "Tux Store";
-                                subtitle: "Version " + root.app-version + " — a native package store for Arch Linux";
+                                title: Strings.app-name;
+                                subtitle: Strings.settings-version-prefix + root.app-version + Strings.settings-about-desc;
                             }
                         }
                     }

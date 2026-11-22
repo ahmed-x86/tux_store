@@ -1,4 +1,5 @@
 import { Theme } from "theme.slint";
+import { Strings } from "strings.slint";
 import { UiPackage } from "types.slint";
 import { PackageGrid, SearchBox } from "components.slint";
 
@@ -22,7 +23,7 @@ export component InstalledTab inherits Rectangle {
             padding-bottom: 8px;
             spacing: 12px;
             Text {
-                text: root.loading ? "Loading installed apps…" : ("Installed apps (" + root.total + ")");
+                text: root.loading ? Strings.installed-loading : (Strings.installed-count-prefix + root.total + ")");
                 color: Theme.text;
                 font-size: 20px;
                 font-weight: 800;
@@ -33,7 +34,7 @@ export component InstalledTab inherits Rectangle {
                 alignment: center;
                 SearchBox {
                     text <=> root.filter;
-                    placeholder: "Filter installed apps…";
+                    placeholder: Strings.installed-filter;
                     edited(t) => { root.filter-edited(t); }
                 }
             }
@@ -43,7 +44,7 @@ export component InstalledTab inherits Rectangle {
             packages: root.packages;
             has-more: root.has-more;
             refresh-tick: root.refresh-tick;
-            empty-text: root.loading ? "" : "Nothing to show";
+            empty-text: root.loading ? "" : Strings.installed-empty;
             app-clicked(p) => { root.app-clicked(p); }
             more-clicked => { root.more-clicked(); }
             icons-needed(first, last) => { root.icons-needed(first, last); }
