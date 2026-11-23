@@ -1,0 +1,442 @@
+{
+  "schema": 2,
+  "id": "misterdownloadmanager-id-1",
+  "title": "Install Mister Download Manager",
+  "description": "Mister Download Manager is a download manager with browser extensions for Firefox and Chrome. This detects the latest release on GitHub, downloads the official Linux AppImage and wraps it into a local pacman package (icon + desktop entry + a misterdownloadmanager command). The latest version is detected automatically.",
+  "version": {
+    "label": "Latest Mister Download Manager version",
+    "script": "latest-version.sh"
+  },
+  "author": "Tux Store Team",
+  "keywords": [
+    "misterdownloadmanager",
+    "mister download manager",
+    "mister",
+    "download manager",
+    "downloader",
+    "downloads",
+    "idm",
+    "internet download manager",
+    "appimage",
+    "browser extension",
+    "firefox",
+    "chrome",
+    "ميستر داونلود مانجر",
+    "ميستر",
+    "مدير تحميل",
+    "مدير التحميلات",
+    "داونلود مانجر",
+    "تحميل",
+    "تحميلات",
+    "برنامج تحميل",
+    "تسريع التحميل",
+    "بديل idm"
+  ],
+  "show_on_home": true,
+  "category": "utilities",
+  "top_button": {
+    "label": "Official Website",
+    "url": "https://misterdownloadmanager.com/",
+    "icon": "external-link",
+    "position": "top-right"
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size",
+      "script": "download-size.sh"
+    },
+    "installed_mb": {
+      "label": "Installed size",
+      "script": "installed-size.sh"
+    },
+    "extracted_mb": 0,
+    "note": "The size is read from the latest GitHub release and may change over time."
+  },
+  "icon": [
+    {
+      "file": "misterdownloadmanager-id-1.png"
+    }
+  ],
+  "vars": {
+    "preflight": "",
+    "latest_version": "",
+    "installed_version": ""
+  },
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Install Mister Download Manager",
+      "tone": "info",
+      "message": [
+        "Mister Download Manager is a download manager that works together with your browser.",
+        "",
+        "This downloads the latest official AppImage from GitHub and wraps it into a local pacman package, so you get a menu entry, an icon and a “misterdownloadmanager” command. Nothing inside the app is modified.",
+        "",
+        "When it finishes you will get the links to the Firefox and Chrome extensions."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "preflight"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-requirements.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_result",
+      "on_failure": "error_generic"
+    },
+    "preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "detect_version"
+    },
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "detect_version": {
+      "type": "check",
+      "command": {
+        "label": "Checking the latest Mister Download Manager version…",
+        "script": "latest-version.sh"
+      },
+      "capture": "latest_version",
+      "on_success": "detect_result",
+      "on_failure": "error_generic"
+    },
+    "detect_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "latest_version",
+            "one_of": [
+              "",
+              "unknown"
+            ]
+          },
+          "goto": "no_version"
+        }
+      ],
+      "default": "confirm"
+    },
+    "no_version": {
+      "type": "dialog",
+      "title": "Could not find the latest version",
+      "tone": "error",
+      "message": [
+        "Could not read the latest release from GitHub.",
+        "Check your internet connection and try again."
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Install Mister Download Manager ${latest_version}",
+      "tone": "info",
+      "message": [
+        "Ready to install Mister Download Manager ${latest_version}.",
+        "",
+        "Method: official AppImage wrapped as a pacman package.",
+        "",
+        "You will be asked for your password once to install the package."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "download_step"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "download_step": {
+      "type": "run",
+      "title": "Downloading Mister Download Manager…",
+      "message": "Please wait.",
+      "commands": [
+        {
+          "label": "Downloading the AppImage",
+          "script": "download-appimage.sh",
+          "progress": "percent",
+          "percent": 40,
+          "expected_secs": 60
+        }
+      ],
+      "on_success": "build_step",
+      "on_failure": "install_failed"
+    },
+    "build_step": {
+      "type": "run",
+      "title": "Packaging Mister Download Manager…",
+      "message": "Building a pacman package from the AppImage.",
+      "commands": [
+        {
+          "label": "Building the package",
+          "script": "build-package.sh",
+          "percent": 70,
+          "expected_secs": 30
+        }
+      ],
+      "on_success": "install_step",
+      "on_failure": "install_failed"
+    },
+    "install_step": {
+      "type": "run",
+      "title": "Installing Mister Download Manager…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing the package (admin password required)",
+          "script": "install-package.sh",
+          "root": true,
+          "percent": 95
+        },
+        {
+          "label": "Cleaning up temporary files",
+          "script": "cleanup-after-install.sh",
+          "ignore_failure": true,
+          "percent": 100
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Verifying the installation…",
+        "script": "reading-installed-version.sh"
+      },
+      "capture": "installed_version",
+      "on_success": "verify_result",
+      "on_failure": "install_failed"
+    },
+    "verify_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "installed_version",
+            "eq": ""
+          },
+          "goto": "install_failed"
+        }
+      ],
+      "default": "record_install"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_version": "${installed_version}"
+      },
+      "packages": [
+        "misterdownloadmanager"
+      ],
+      "next": "extensions"
+    },
+    "extensions": {
+      "type": "dialog",
+      "title": "Get the browser extension",
+      "tone": "success",
+      "message": [
+        "Mister Download Manager is installed. To catch downloads from your browser, add the extension:",
+        "",
+        "Firefox:",
+        "https://addons.mozilla.org/en-US/firefox/addon/mister-download-manager/",
+        "",
+        "Chrome / Chromium:",
+        "https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp",
+        "",
+        "Press a button to open the page in your browser, or Finish to close."
+      ],
+      "buttons": [
+        {
+          "label": "Open Firefox add-on",
+          "goto": "open_firefox"
+        },
+        {
+          "label": "Open Chrome Web Store",
+          "goto": "open_chrome"
+        },
+        {
+          "label": "Finish",
+          "style": "primary",
+          "goto": "done"
+        }
+      ]
+    },
+    "open_firefox": {
+      "type": "check",
+      "command": {
+        "label": "Opening the Firefox add-on page…",
+        "script": "open-link.sh",
+        "args": [
+          "https://addons.mozilla.org/en-US/firefox/addon/mister-download-manager/"
+        ]
+      },
+      "on_success": "extensions",
+      "on_failure": "extensions"
+    },
+    "open_chrome": {
+      "type": "check",
+      "command": {
+        "label": "Opening the Chrome Web Store page…",
+        "script": "open-link.sh",
+        "args": [
+          "https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp"
+        ]
+      },
+      "on_success": "extensions",
+      "on_failure": "extensions"
+    },
+    "done": {
+      "type": "finish",
+      "success": true,
+      "title": "Mister Download Manager installed",
+      "button": "Close",
+      "mark": "installed",
+      "message": [
+        "Mister Download Manager ${installed_version} is installed.",
+        "",
+        "Open it from your applications menu, or run “misterdownloadmanager” from a terminal.",
+        "",
+        "Browser extensions:",
+        "Firefox: https://addons.mozilla.org/en-US/firefox/addon/mister-download-manager/",
+        "Chrome: https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp"
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "“${last_failed}” did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "dialog",
+      "title": "Remove Mister Download Manager?",
+      "tone": "warning",
+      "message": [
+        "This removes the misterdownloadmanager package (and dependencies nothing else needs).",
+        "Your downloaded files are not touched — only the app itself is removed."
+      ],
+      "buttons": [
+        {
+          "label": "Remove Mister Download Manager",
+          "style": "danger",
+          "goto": "un_run"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Mister Download Manager…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing the package (admin password required)",
+          "script": "removing-misterdownloadmanager.sh",
+          "root": true,
+          "percent": 100
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "Mister Download Manager removed",
+      "message": "Mister Download Manager was removed from your computer. You can remove the browser extension from your browser's add-ons page."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Mister Download Manager could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    }
+  }
+}
