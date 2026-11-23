@@ -1,0 +1,470 @@
+{
+  "schema": 2,
+  "id": "protonvpn-id-1",
+  "title": "Install Proton VPN",
+  "description": "Proton VPN is a privacy-focused VPN service. This installs the Proton VPN desktop app and/or the protonvpn command-line tool from the Arch [extra] repository (a community-maintained package, no AUR needed), together with the helpers they need: NetworkManager, a keyring and a network applet. The latest version is detected automatically.",
+  "version": {
+    "label": "Latest Proton VPN version",
+    "script": "latest-version.sh"
+  },
+  "author": "Tux Store Team",
+  "keywords": [
+    "protonvpn",
+    "proton vpn",
+    "proton",
+    "vpn",
+    "privacy",
+    "security",
+    "kill switch",
+    "wireguard",
+    "openvpn",
+    "anonymous",
+    "proxy",
+    "networkmanager",
+    "cli",
+    "gui",
+    "بروتون",
+    "بروتون في بي ان",
+    "في بي ان",
+    "فبن",
+    "شبكة خاصة",
+    "خصوصية",
+    "حماية",
+    "فك الحجب",
+    "كسر الحجب",
+    "تغيير الاي بي",
+    "امان"
+  ],
+  "show_on_home": true,
+  "category": "utilities",
+  "top_button": {
+    "label": "Arch Wiki - ProtonVPN",
+    "url": "https://wiki.archlinux.org/title/ProtonVPN",
+    "icon": "external-link",
+    "position": "top-right"
+  },
+  "info": {
+    "download_mb": {
+      "label": "Download size (app + CLI + libraries)",
+      "script": "download-size.sh"
+    },
+    "note": "The size is read from your own package databases and covers only what is not installed yet."
+  },
+  "icon": [
+    {
+      "file": "protonvpn-id-1.png"
+    }
+  ],
+  "vars": {
+    "components": "gui cli",
+    "proton_pkgs": "",
+    "preflight": "",
+    "nm_state": "",
+    "enable_nm": "no",
+    "helper_pkgs": "",
+    "helper_text": "",
+    "latest_version": "",
+    "installed_version": ""
+  },
+  "start": "welcome",
+  "uninstall": "un_start",
+  "steps": {
+    "welcome": {
+      "type": "dialog",
+      "title": "Install Proton VPN",
+      "tone": "info",
+      "message": [
+        "Proton VPN is a privacy-focused VPN. On the next screen you choose what to install: the desktop app, the command-line tool, or both.",
+        "",
+        "Everything comes from the Arch [extra] repository with pacman. No AUR helper is needed.",
+        "",
+        "Proton VPN connects through NetworkManager and keeps your login in the system keyring, so a few helper packages may be added too. You will see the full list before anything is installed."
+      ],
+      "buttons": [
+        {
+          "label": "Continue",
+          "style": "primary",
+          "goto": "choose_components"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "choose_components": {
+      "type": "choice",
+      "title": "What do you want to install?",
+      "store_as": "components",
+      "multiple": true,
+      "default": "gui cli",
+      "min_select": 1,
+      "next": "pkg_list",
+      "continue_label": "Continue",
+      "options": [
+        {
+          "value": "gui",
+          "label": "Desktop app (GUI)",
+          "hint": "The Proton VPN window: sign in, pick a server and connect with a click."
+        },
+        {
+          "value": "cli",
+          "label": "Command-line tool (CLI)",
+          "hint": "The “protonvpn” command for the terminal: sign in, connect and disconnect from a shell."
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Back",
+          "goto": "welcome"
+        }
+      ]
+    },
+    "pkg_list": {
+      "type": "check",
+      "command": {
+        "label": "Preparing the package list…",
+        "script": "selected-packages.sh"
+      },
+      "capture": "proton_pkgs",
+      "on_success": "preflight",
+      "on_failure": "error_generic"
+    },
+    "preflight": {
+      "type": "check",
+      "command": {
+        "label": "Checking your system…",
+        "script": "checking-requirements.sh"
+      },
+      "capture": "preflight",
+      "on_success": "preflight_result",
+      "on_failure": "error_generic"
+    },
+    "preflight_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "preflight",
+            "ne": ""
+          },
+          "goto": "preflight_failed"
+        }
+      ],
+      "default": "nm_check"
+    },
+    "preflight_failed": {
+      "type": "dialog",
+      "title": "Not ready yet",
+      "tone": "warning",
+      "message": "${preflight}",
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "nm_check": {
+      "type": "check",
+      "command": {
+        "label": "Checking NetworkManager…",
+        "script": "nm-status.sh"
+      },
+      "capture": "nm_state",
+      "on_success": "nm_result",
+      "on_failure": "error_generic"
+    },
+    "nm_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "nm_state",
+            "ne": "active"
+          },
+          "goto": "nm_warning"
+        }
+      ],
+      "default": "helpers"
+    },
+    "nm_warning": {
+      "type": "dialog",
+      "title": "NetworkManager is not running",
+      "tone": "warning",
+      "message": [
+        "Proton VPN cannot connect without NetworkManager, and it is not running on this system.",
+        "",
+        "If you let Tux Store enable it, NetworkManager takes over your network connections. This can drop your connection for a moment, and it should not run together with another network manager (systemd-networkd, iwd on its own, netctl…).",
+        "",
+        "If your current setup works and you do not want to change it, cancel here."
+      ],
+      "buttons": [
+        {
+          "label": "Install and enable NetworkManager",
+          "style": "primary",
+          "set": {
+            "enable_nm": "yes"
+          },
+          "goto": "helpers"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "helpers": {
+      "type": "check",
+      "command": {
+        "label": "Looking for missing helper packages…",
+        "script": "pick-helpers.sh"
+      },
+      "capture": "helper_pkgs",
+      "on_success": "helpers_text",
+      "on_failure": "error_generic"
+    },
+    "helpers_text": {
+      "type": "check",
+      "command": {
+        "label": "Preparing the summary…",
+        "script": "describe-helpers.sh"
+      },
+      "capture": "helper_text",
+      "on_success": "detect_version",
+      "on_failure": "error_generic"
+    },
+    "detect_version": {
+      "type": "check",
+      "command": {
+        "label": "Checking the latest Proton VPN version…",
+        "script": "latest-version.sh"
+      },
+      "capture": "latest_version",
+      "on_success": "detect_result",
+      "on_failure": "error_generic"
+    },
+    "detect_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "latest_version",
+            "one_of": [
+              "",
+              "unknown"
+            ]
+          },
+          "goto": "no_version"
+        }
+      ],
+      "default": "confirm"
+    },
+    "no_version": {
+      "type": "dialog",
+      "title": "Proton VPN was not found",
+      "tone": "error",
+      "message": [
+        "Could not read the Proton VPN version from your package databases.",
+        "Make sure the [extra] repository is enabled and run: sudo pacman -Syu"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "confirm": {
+      "type": "dialog",
+      "title": "Install Proton VPN ${latest_version}",
+      "tone": "info",
+      "message": [
+        "Ready to install Proton VPN ${latest_version}.",
+        "",
+        "Packages: ${proton_pkgs}",
+        "Helper packages: ${helper_text}",
+        "Enable NetworkManager now: ${enable_nm}",
+        "",
+        "You will be asked for your password once."
+      ],
+      "buttons": [
+        {
+          "label": "Install",
+          "style": "primary",
+          "goto": "install_step"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "install_step": {
+      "type": "run",
+      "title": "Installing Proton VPN…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Installing the packages (admin password required)",
+          "script": "install-packages.sh",
+          "root": true,
+          "percent": 95,
+          "expected_secs": 60
+        }
+      ],
+      "on_success": "verify",
+      "on_failure": "install_failed"
+    },
+    "verify": {
+      "type": "check",
+      "command": {
+        "label": "Verifying the installation…",
+        "script": "reading-installed-version.sh"
+      },
+      "capture": "installed_version",
+      "on_success": "verify_result",
+      "on_failure": "install_failed"
+    },
+    "verify_result": {
+      "type": "branch",
+      "cases": [
+        {
+          "when": {
+            "var": "installed_version",
+            "eq": ""
+          },
+          "goto": "install_failed"
+        }
+      ],
+      "default": "record_install"
+    },
+    "record_install": {
+      "type": "record",
+      "set": {
+        "installed_version": "${installed_version}"
+      },
+      "packages": [
+        "${proton_pkgs}"
+      ],
+      "next": "done"
+    },
+    "done": {
+      "type": "finish",
+      "success": true,
+      "title": "Proton VPN installed",
+      "button": "Close",
+      "mark": "installed",
+      "message": [
+        "Proton VPN ${installed_version} is installed.",
+        "",
+        "Desktop app: open “Proton VPN” from your applications menu and sign in with your Proton account.",
+        "",
+        "Command line:",
+        "  protonvpn signin <username>",
+        "  protonvpn connect",
+        "  protonvpn disconnect",
+        "",
+        "Split tunneling (desktop app only) additionally needs systemd-resolved to be running."
+      ]
+    },
+    "install_failed": {
+      "type": "dialog",
+      "title": "The installation did not finish",
+      "tone": "error",
+      "message": [
+        "Something went wrong (step: ${last_failed}). Use “Show details” to read the output.",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "error_generic": {
+      "type": "dialog",
+      "title": "A check failed",
+      "tone": "error",
+      "message": [
+        "“${last_failed}” did not work (exit code ${last_exit_code}).",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    },
+    "un_start": {
+      "type": "dialog",
+      "title": "Remove Proton VPN?",
+      "tone": "warning",
+      "message": [
+        "This removes the Proton VPN package(s) and the libraries nothing else needs.",
+        "",
+        "Disconnect and turn off the kill switch in the app first, so your network is not left blocked.",
+        "",
+        "NetworkManager, the keyring and the network applet stay, because other programs use them."
+      ],
+      "buttons": [
+        {
+          "label": "Remove Proton VPN",
+          "style": "danger",
+          "goto": "un_run"
+        },
+        {
+          "label": "Cancel",
+          "exit": true
+        }
+      ]
+    },
+    "un_run": {
+      "type": "run",
+      "title": "Removing Proton VPN…",
+      "message": "Please don't turn off the computer until I'm finished.",
+      "commands": [
+        {
+          "label": "Removing the packages (admin password required)",
+          "script": "removing-protonvpn.sh",
+          "root": true,
+          "percent": 100
+        }
+      ],
+      "on_success": "un_done",
+      "on_failure": "un_failed"
+    },
+    "un_done": {
+      "type": "finish",
+      "success": true,
+      "mark": "uninstalled",
+      "title": "Proton VPN removed",
+      "message": "Proton VPN was removed from your computer."
+    },
+    "un_failed": {
+      "type": "dialog",
+      "title": "Proton VPN could not be removed",
+      "tone": "error",
+      "message": [
+        "Step: ${last_failed}. Use “Show details” to read the output.",
+        "",
+        "${last_output}"
+      ],
+      "buttons": [
+        {
+          "label": "Close",
+          "style": "primary",
+          "exit": true
+        }
+      ]
+    }
+  }
+}
