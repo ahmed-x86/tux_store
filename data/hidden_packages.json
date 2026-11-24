@@ -28,6 +28,8 @@
     "bibleedit",
     "gnome-bible",
     "theword",
-    "bible-kjv"
+    "bible-kjv",
+    "Podman Compose",
+    "podman-desktop"
   ]
 }
